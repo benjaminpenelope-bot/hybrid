@@ -224,7 +224,7 @@ export function BodyView({ profile, weights, measures, photos, rate, weekly }: P
                   placeholder="cm"
                   value={measure[key] ?? ''}
                   onChange={(e) => setMeasure({ ...measure, [key]: e.target.value })}
-                  className="num w-full rounded-[11px] border border-line2 bg-bg2 px-3 py-3 text-[15px] text-text outline-none focus:border-mut"
+                  className="num w-full rounded-[11px] border border-line2 bg-bg2 px-3 py-3 text-base text-text outline-none focus:border-mut"
                 />
               </label>
             ))}

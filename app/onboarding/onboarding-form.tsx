@@ -125,7 +125,7 @@ function BenchmarkPicker({
           onChange={(e) => onChange({ ...draft, value: e.target.value })}
           placeholder="Nombre de répétitions"
           aria-label={`${label} — nombre de répétitions`}
-          className="mt-[9px] w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-[15px] text-text outline-none focus:border-mut"
+          className="mt-[9px] w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
         />
       )}
     </div>

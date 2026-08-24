@@ -153,7 +153,7 @@ export function AjoutSeance({
               value={date}
               max={maxDate}
               onChange={(e) => setDate(e.target.value)}
-              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-[15px] text-text outline-none focus:border-mut"
+              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
             />
           </label>
 
@@ -165,7 +165,7 @@ export function AjoutSeance({
               placeholder={discipline.titre}
               maxLength={120}
               onChange={(e) => setTitre(e.target.value)}
-              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-[15px] text-text outline-none placeholder:text-dim focus:border-mut"
+              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none placeholder:text-dim focus:border-mut"
             />
           </label>
 
@@ -201,7 +201,7 @@ export function AjoutSeance({
                       <select
                         value={l.key}
                         onChange={(e) => majLigne(l.uid, { key: e.target.value })}
-                        className="min-w-0 flex-1 rounded-[9px] border border-line2 bg-card px-2.5 py-2 text-[13.5px] text-text outline-none focus:border-mut"
+                        className="min-w-0 flex-1 rounded-[9px] border border-line2 bg-card px-2.5 py-2 text-base text-text outline-none focus:border-mut"
                       >
                         {parZone.map((g) => (
                           <optgroup key={g.zone} label={zoneLabel(g.zone)}>
@@ -233,7 +233,7 @@ export function AjoutSeance({
                           max={50}
                           value={l.sets}
                           onChange={(e) => majLigne(l.uid, { sets: Number(e.target.value) || 1 })}
-                          className="num w-full rounded-[9px] border border-line2 bg-card px-2.5 py-2 text-center text-[15px] text-text outline-none focus:border-mut"
+                          className="num w-full rounded-[9px] border border-line2 bg-card px-2.5 py-2 text-center text-base text-text outline-none focus:border-mut"
                         />
                       </label>
                       <span className="text-[13px] text-dim">×</span>
@@ -248,7 +248,7 @@ export function AjoutSeance({
                           max={2000}
                           value={l.reps}
                           onChange={(e) => majLigne(l.uid, { reps: Number(e.target.value) || 1 })}
-                          className="num w-full rounded-[9px] border border-line2 bg-card px-2.5 py-2 text-center text-[15px] text-text outline-none focus:border-mut"
+                          className="num w-full rounded-[9px] border border-line2 bg-card px-2.5 py-2 text-center text-base text-text outline-none focus:border-mut"
                         />
                       </label>
                     </div>
@@ -290,7 +290,7 @@ export function AjoutSeance({
               rows={2}
               maxLength={1000}
               onChange={(e) => setNote(e.target.value)}
-              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-[15px] text-text outline-none focus:border-mut"
+              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
             />
           </label>
 

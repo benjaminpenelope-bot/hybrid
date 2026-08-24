@@ -61,7 +61,7 @@ export function MotDePasse({ invite }: { invite: boolean }) {
               value={mdp}
               autoComplete="new-password"
               onChange={(e) => setMdp(e.target.value)}
-              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-[15px] text-text outline-none focus:border-mut"
+              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
             />
           </label>
 
@@ -72,7 +72,7 @@ export function MotDePasse({ invite }: { invite: boolean }) {
               value={confirmation}
               autoComplete="new-password"
               onChange={(e) => setConfirmation(e.target.value)}
-              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-[15px] text-text outline-none focus:border-mut"
+              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
             />
           </label>
 

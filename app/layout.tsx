@@ -28,6 +28,16 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  /*
+   * Pas de zoom à deux doigts : dans une app installée, il déplace la mise en
+   * page sans jamais rien révéler de plus, et on en sort mal.
+   *
+   * iOS n'applique ce verrou qu'en mode autonome — dans Safari il l'ignore
+   * volontairement, pour ne pas priver de zoom qui en a besoin. C'est le bon
+   * partage : figé dans l'app, libre dans le navigateur.
+   */
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

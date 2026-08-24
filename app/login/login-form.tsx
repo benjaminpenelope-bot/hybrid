@@ -26,7 +26,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
 }
 
 const CHAMP =
-  'mb-3 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-[15px] text-text outline-none transition-colors focus:border-mut'
+  'mb-3 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none transition-colors focus:border-mut'
 
 export function LoginForm({ suite, erreur }: { suite: string; erreur?: string }) {
   const [mode, setMode] = useState<Mode>('mot-de-passe')

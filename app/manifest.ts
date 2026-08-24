@@ -15,14 +15,11 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: 'fr',
     categories: ['health', 'fitness', 'sports'],
     /*
-     * Deux fichiers distincts, et pas le même déclaré deux fois : un masque
-     * Android rogne l'icône sur un cercle de 80 % du côté. Le logo remplit son
-     * cadre, donc la variante `maskable` est la même image remise à 86 % sur
-     * du noir — sans quoi les pointes des trois bras seraient coupées.
+     * Pas de variante `maskable` : elle doit remplir toute sa zone, et le logo
+     * est détouré. La déclarer laisserait des trous là où le masque attend de
+     * la matière. Sans elle, chaque système pose l'icône dans son propre
+     * cadre, ce que le détourage gère très bien.
      */
-    icons: [
-      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: '/icon-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-    ],
+    icons: [{ src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }],
   }
 }

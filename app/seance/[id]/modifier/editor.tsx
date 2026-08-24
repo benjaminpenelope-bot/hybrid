@@ -99,7 +99,7 @@ export function SessionEditor({ session, profile }: { session: Session; profile:
   }
 
   const input =
-    'w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-[15px] text-text outline-none focus:border-mut'
+    'w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut'
 
   return (
     <main className="wrap py-5">

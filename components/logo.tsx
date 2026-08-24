@@ -10,9 +10,9 @@
  * Une image et non un `next/image` : le logo est minuscule à l'écran et déjà
  * dans le dossier public, l'optimiseur n'apporterait qu'une requête de plus.
  *
- * Le fichier porte son propre fond sombre (pas de transparence). Les coins
- * arrondis le font lire comme une tuile d'application plutôt que comme un
- * carré noir posé sur l'interface.
+ * Le fichier est détouré : il se pose directement sur l'interface, sans tuile
+ * ni coins arrondis. Ses trois couleurs reprennent celles des disciplines —
+ * violet le street workout, orange la course, bleu la natation.
  */
 
 /** Violet de la marque. */
@@ -28,12 +28,12 @@ export function LogoMark({
 }) {
   return (
     <img
-      src="/logo.png"
+      src="/logo2.png"
       width={size}
       height={size}
       alt={title ?? ''}
       aria-hidden={title ? undefined : true}
-      className="shrink-0 rounded-[22%]"
+      className="shrink-0"
       style={{ width: size, height: size }}
     />
   )

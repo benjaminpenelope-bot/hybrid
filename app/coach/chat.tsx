@@ -280,7 +280,7 @@ export function CoachChat({
           onChange={(e) => setInput(e.target.value)}
           placeholder="Écris au coach…"
           aria-label="Message au coach"
-          className="min-w-0 flex-1 rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-[15px] text-text outline-none focus:border-mut"
+          className="min-w-0 flex-1 rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
         />
         <Button type="submit" disabled={busy || input.trim() === ''} className="w-[92px] shrink-0">
           Envoyer
