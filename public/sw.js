@@ -9,9 +9,10 @@
  * Une donnée périmée affichée comme fraîche serait pire que pas de donnée.
  */
 
-const VERSION = 'v1'
+const VERSION = 'v2'
 const SHELL = `shell-${VERSION}`
 const PAGES = `pages-${VERSION}`
+const RSC = `rsc-${VERSION}`
 
 const OFFLINE_URL = '/hors-ligne'
 
@@ -42,6 +43,34 @@ function isStatic(url) {
   return url.pathname.startsWith('/_next/static') || url.pathname.startsWith('/fonts')
 }
 
+/**
+ * Changement d'onglet côté client : le routeur ne recharge pas la page, il va
+ * chercher la charge utile React du nouvel écran. Ces requêtes ne portent pas
+ * `mode: 'navigate'` — sans ce cas, elles échouaient hors ligne et l'athlète
+ * restait bloqué sur l'écran d'accueil.
+ */
+function isRouterFetch(request) {
+  return request.headers.get('RSC') === '1'
+}
+
+/**
+ * Préchargement anticipé du routeur. Sur un écran dynamique, il ne rend que la
+ * frontière de chargement, pas le contenu : le mettre en cache ferait servir
+ * un squelette perpétuel hors ligne. On le laisse passer sans le retenir.
+ */
+function isPrefetch(request) {
+  return request.headers.get('Next-Router-Prefetch') === '1'
+}
+
+/**
+ * Même URL, deux réponses différentes selon l'en-tête `RSC` : la page HTML et
+ * la charge utile du routeur. Les ranger sous la même clé ferait servir l'une
+ * à la place de l'autre, et l'écran s'afficherait en HTML brut.
+ */
+function rscKey(url) {
+  return new Request(`${url.pathname}${url.search ? `${url.search}&` : '?'}__sw=rsc`)
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
@@ -63,6 +92,22 @@ self.addEventListener('fetch', (event) => {
             return response
           }),
       ),
+    )
+    return
+  }
+
+  // Navigation du routeur : réseau d'abord, cache en secours. C'est ce qui
+  // permet de changer d'onglet hors ligne, sur les écrans déjà visités.
+  if (isRouterFetch(request) && !isPrefetch(request)) {
+    const cle = rscKey(url)
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone()
+          caches.open(RSC).then((cache) => cache.put(cle, copy))
+          return response
+        })
+        .catch(async () => (await caches.match(cle)) ?? Response.error()),
     )
     return
   }

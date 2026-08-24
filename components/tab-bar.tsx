@@ -58,7 +58,12 @@ export function TabBar() {
                 key={tab.href}
                 href={tab.href as Route}
                 aria-current={active ? 'page' : undefined}
-                className={`flex flex-1 flex-col items-center gap-1 py-1.5 font-display text-[10px] font-semibold uppercase tracking-[0.09em] transition-colors ${
+                /*
+                 * `min-h` explicite : la règle des 44 px de globals.css vise
+                 * les boutons, pas un lien nu. `touch-manipulation` retire le
+                 * délai que Safari garde pour guetter un double appui.
+                 */
+                className={`flex min-h-[48px] flex-1 touch-manipulation flex-col items-center justify-center gap-1 py-1.5 font-display text-[10px] font-semibold uppercase tracking-[0.09em] transition-colors active:opacity-60 ${
                   active ? 'text-text' : 'text-dim'
                 }`}
               >
@@ -117,7 +122,7 @@ function SideLink({
     <Link
       href={href as Route}
       aria-current={active ? 'page' : undefined}
-      className={`flex items-center gap-3 rounded-[10px] px-3 py-2 text-[13px] font-medium transition-colors ${
+      className={`flex min-h-[44px] touch-manipulation items-center gap-3 rounded-[10px] px-3 py-2 text-[13px] font-medium transition-colors active:opacity-60 ${
         active ? 'bg-cardHi text-text' : 'text-mut hover:bg-card hover:text-text'
       }`}
       style={active ? { boxShadow: 'inset 2px 0 0 var(--brand)' } : undefined}
