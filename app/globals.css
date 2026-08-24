@@ -145,6 +145,32 @@
   }
 }
 
+/*
+ * Animation de chargement : la marque bat, un halo pulse au même rythme.
+ *
+ * Les deux keyframes reviennent à leur état de repos à 100 % — c'est ce qui
+ * rend l'arrêt propre. La règle « prefers-reduced-motion » plus bas écrase la
+ * durée à 0,01 ms : sans ce retour au repos, le logo se figerait sur une image
+ * intermédiaire, à une taille arbitraire.
+ */
+@keyframes battement {
+  0% { transform: scale(1); }
+  10% { transform: scale(1.18); }
+  22% { transform: scale(1.04); }
+  32% { transform: scale(1.12); }
+  46% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes halo {
+  0% { opacity: 0.22; transform: scale(0.94); }
+  12% { opacity: 0.6; transform: scale(1.1); }
+  26% { opacity: 0.28; transform: scale(0.98); }
+  36% { opacity: 0.48; transform: scale(1.05); }
+  50% { opacity: 0.22; transform: scale(0.94); }
+  100% { opacity: 0.22; transform: scale(0.94); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
