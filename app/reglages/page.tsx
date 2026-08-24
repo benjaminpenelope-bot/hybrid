@@ -8,7 +8,7 @@ import { MotDePasse } from './mot-de-passe'
 import { StravaCard } from './strava-card'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Réglages · Athlete OS' }
+export const metadata = { title: 'Réglages · Hybrid' }
 
 /** Messages d'erreur renvoyés par les routes OAuth, traduits pour l'athlète. */
 const ERREURS: Record<string, string> = {

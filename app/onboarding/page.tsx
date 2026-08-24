@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient, currentUserId } from '@/lib/supabase/server'
 import { OnboardingForm } from './onboarding-form'
 
-export const metadata: Metadata = { title: 'Bienvenue · Athlete OS' }
+export const metadata: Metadata = { title: 'Bienvenue · Hybrid' }
 
 export default async function OnboardingPage() {
   const userId = await currentUserId()

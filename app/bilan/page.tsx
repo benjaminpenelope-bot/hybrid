@@ -14,7 +14,7 @@ import { computeScores } from '@/lib/engine/scoring'
 import { currentUserId } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Bilan · Athlete OS' }
+export const metadata = { title: 'Bilan · Hybrid' }
 
 export default async function Page() {
   const userId = await currentUserId()

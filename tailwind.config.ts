@@ -29,6 +29,8 @@ const config: Config = {
         physique: '#8A9BB0',
         force: '#B98A4E',
         endurance: '#C05B6E',
+        /* Marque : châssis uniquement, jamais sur une donnée. */
+        brand: '#924DDE',
       },
       fontFamily: {
         display: ['var(--font-barlow)', 'Impact', 'sans-serif'],

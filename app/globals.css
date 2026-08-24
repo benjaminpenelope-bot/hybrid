@@ -21,6 +21,14 @@
   --ok: #5bbf7b;
   --warn: #e0a73c;
   --bad: #d8524a;
+
+  /*
+   * Violet de marque. Règle : il ne vit que dans le châssis — marque, focus,
+   * élément de navigation actif. Il ne touche jamais une donnée. Sur un
+   * graphique ou une carte de séance, un violet veut dire street workout
+   * (--street) ; y ajouter un violet de marque rendrait la lecture ambiguë.
+   */
+  --brand: #924dde;
 }
 
 @layer base {
@@ -46,7 +54,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--text);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
   }
 

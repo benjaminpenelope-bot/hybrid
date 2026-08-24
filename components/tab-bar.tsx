@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { Route } from 'next'
+import { LogoMark } from '@/components/logo'
 
 const TABS = [
   { href: '/', icon: '🏠', label: 'Accueil' },
@@ -80,9 +81,12 @@ export function TabBar() {
         className="fixed inset-y-0 left-0 z-50 hidden w-[220px] flex-col gap-1 border-r border-line bg-bg2 px-3 py-6 lg:flex"
         aria-label="Navigation principale"
       >
-        <div className="px-2 pb-5">
-          <div className="dsp text-[20px] tracking-[0.04em]">ATHLETE OS</div>
-          <div className="eyebrow mt-1">Hybride</div>
+        <div className="flex items-center gap-2.5 px-2 pb-5">
+          <LogoMark size={30} />
+          <div>
+            <div className="dsp text-[20px] tracking-[0.04em]">HYBRID</div>
+            <div className="eyebrow mt-0.5">Course · Nage · Barre</div>
+          </div>
         </div>
 
         {TABS.map((tab) => (
@@ -116,6 +120,7 @@ function SideLink({
       className={`flex items-center gap-3 rounded-[10px] px-3 py-2 text-[13px] font-medium transition-colors ${
         active ? 'bg-cardHi text-text' : 'text-mut hover:bg-card hover:text-text'
       }`}
+      style={active ? { boxShadow: 'inset 2px 0 0 var(--brand)' } : undefined}
     >
       <span className={`text-[15px] leading-none ${active ? '' : 'grayscale opacity-70'}`} aria-hidden>
         {icon}

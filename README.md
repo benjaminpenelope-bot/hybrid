@@ -1,4 +1,4 @@
-# ATHLETE OS
+# HYBRID
 
 PWA d'entraînement hybride mono-utilisateur : course, natation, street workout, suivi physique.
 Next.js 14 (App Router, TypeScript strict) + Supabase + Tailwind.

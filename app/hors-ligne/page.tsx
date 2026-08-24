@@ -1,4 +1,4 @@
-export const metadata = { title: 'Hors ligne · Athlete OS' }
+export const metadata = { title: 'Hors ligne · Hybrid' }
 
 export default function Page() {
   return (

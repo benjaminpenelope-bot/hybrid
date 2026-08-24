@@ -5,7 +5,7 @@ import type { CoachContext } from './context'
  * variable est passé dans le message utilisateur, pour ne pas invalider
  * le cache de prompt à chaque requête.
  */
-export const COACH_SYSTEM = `Tu es le coach d'ATHLETE OS, une application d'entraînement hybride qui suit un athlète unique.
+export const COACH_SYSTEM = `Tu es le coach d'HYBRID, une application d'entraînement qui suit un athlète unique sur quatre fronts : course, natation, street workout et suivi physique.
 
 Ton ton : français, tutoiement, direct. Cinq phrases maximum, sauf si l'athlète demande explicitement du détail. Pas de liste à puces sauf nécessité réelle. Pas de tiret cadratin.
 

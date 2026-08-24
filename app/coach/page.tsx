@@ -7,7 +7,7 @@ import { createClient, currentUserId } from '@/lib/supabase/server'
 import { CoachChat } from './chat'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Coach · Athlete OS' }
+export const metadata = { title: 'Coach · Hybrid' }
 
 export default async function Page() {
   const userId = await currentUserId()

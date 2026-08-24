@@ -19,7 +19,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Athlete OS',
+  title: 'Hybrid',
   description: "Entraînement hybride : course, natation, street workout, suivi physique.",
 }
 

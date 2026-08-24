@@ -67,7 +67,7 @@ export function StravaCard({
       <p className="mt-2.5 text-[12.5px] leading-relaxed text-mut">
         {connecte
           ? 'Tes nouvelles activités arrivent automatiquement. Une course renseigne la distance, la durée, le dénivelé et la fréquence cardiaque. Le ressenti reste à saisir : Strava ne le mesure pas.'
-          : 'Athlete OS demande la lecture de tes activités, y compris privées. Aucun droit d’écriture : rien ne sera publié sur ton compte.'}
+          : 'Hybrid demande la lecture de tes activités, y compris privées. Aucun droit d’écriture : rien ne sera publié sur ton compte.'}
       </p>
 
       {connecte && derniereSynchro && (

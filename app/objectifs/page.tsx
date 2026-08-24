@@ -6,7 +6,7 @@ import { computeGoals, HORIZONS } from '@/lib/engine/goals'
 import { currentUserId } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Objectifs · Athlete OS' }
+export const metadata = { title: 'Objectifs · Hybrid' }
 
 export default async function Page() {
   const userId = await currentUserId()
