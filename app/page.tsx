@@ -28,10 +28,15 @@ import { hasSupabaseEnv } from '@/lib/supabase/env'
 import { currentUserId } from '@/lib/supabase/server'
 import { SESSION_META } from '@/lib/ui/session-meta'
 import { ConfigurationRequise } from './configuration-requise'
+import { DebugMiseEnPage } from './debug-mise-en-page'
 
 export const dynamic = 'force-dynamic'
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { debug?: string }
+}) {
   if (!hasSupabaseEnv()) return <ConfigurationRequise />
 
   const userId = await currentUserId()
@@ -57,6 +62,9 @@ export default async function Page() {
 
   return (
     <main className="wrap wrap-large py-[18px]">
+      {/* Sonde temporaire, activée par ?debug=1. À retirer une fois la cause trouvée. */}
+      {searchParams.debug === '1' && <DebugMiseEnPage />}
+
       <header className="flex items-start justify-between">
         <div className="flex items-center gap-2.5">
           <LogoMark size={26} />
@@ -73,7 +81,12 @@ export default async function Page() {
         </div>
       </header>
 
-      <div className="mt-3.5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
+      {/*
+        `grid-cols-1` explicite plutôt que la piste implicite : une piste `auto`
+        se dimensionne sur le contenu et peut déborder son conteneur, alors que
+        `grid-cols-1` vaut `minmax(0, 1fr)` et reste bornée.
+      */}
+      <div className="mt-3.5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
         <div>
           <ScoreRing scores={scores} />
 
