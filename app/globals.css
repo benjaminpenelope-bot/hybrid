@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tokens du prototype. La couleur n'identifie qu'une discipline ou un niveau d'alerte. */
+:root {
+  --bg: #0b0c0e;
+  --bg2: #101215;
+  --card: #141719;
+  --card-hi: #191d20;
+  --line: #24282d;
+  --line2: #2e333a;
+  --text: #eff1f3;
+  --mut: #878e98;
+  --dim: #5b626b;
+  --run: #e2603a;
+  --swim: #2f97ae;
+  --street: #7c6be3;
+  --legs: #c2547a;
+  --rest: #565d67;
+  --ok: #5bbf7b;
+  --warn: #e0a73c;
+  --bad: #d8524a;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 86px;
+    overflow-x: hidden;
+  }
+
+  /* Cibles tactiles : 44 px minimum. */
+  button,
+  a[role='button'],
+  [role='tab'] {
+    min-height: 44px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line2);
+    border-radius: 99px;
+  }
+}
+
+@layer components {
+  .dsp {
+    @apply font-display uppercase font-semibold leading-none;
+    letter-spacing: 0.02em;
+  }
+
+  .num {
+    @apply font-display font-semibold;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+
+  .eyebrow {
+    @apply font-display uppercase text-mut font-semibold;
+    letter-spacing: 0.16em;
+    font-size: 11px;
+  }
+
+  /* Mobile d'abord : colonne unique à 520 px. Sur grand écran, la même
+     grille s'élargit au lieu de laisser deux tiers de l'écran vides. */
+  .wrap {
+    @apply mx-auto w-full px-4;
+    max-width: 520px;
+  }
+
+  @media (min-width: 1024px) {
+    .wrap {
+      max-width: 1120px;
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+  }
+
+  /* Écrans à tâche unique : connexion, onboarding, séance en cours. Les
+     étaler sur 1120 px ne montrerait rien de plus, seulement du vide. */
+  .wrap-etroit {
+    max-width: 520px;
+  }
+
+  /* Écrans qui se lisent en colonne : conversation du coach, onglets de perfs.
+     Une ligne de texte trop longue se lit mal, quelle que soit la place. */
+  @media (min-width: 1024px) {
+    .wrap-moyen {
+      max-width: 780px;
+    }
+  }
+
+  /*
+   * Deux colonnes sur grand écran pour une pile de sections indépendantes.
+   * L'ordre de lecture reste le même qu'en mobile : gauche puis droite.
+   * Les marges hautes des sections sont neutralisées, la grille s'en charge.
+   */
+  @media (min-width: 1024px) {
+    .colonnes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+      align-items: start;
+    }
+
+    .colonnes > * {
+      margin-top: 0;
+    }
+  }
+
+  .card {
+    @apply rounded-card border border-line bg-card p-4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

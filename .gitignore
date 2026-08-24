@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+build
+.DS_Store
+*.pem
+npm-debug.log*
+.env
+.env.local
+.env*.local
+.vercel
+next-env.d.ts
+*.tsbuildinfo
+# Le service worker est écrit à la main (public/sw.js) et doit être versionné.
+# Seuls les fichiers générés par un outil de build sont ignorés ici.
+public/workbox-*.js
