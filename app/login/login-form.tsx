@@ -72,9 +72,11 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
     <div className="mt-6">
       {erreur && (
         <p className="mb-4 rounded-[11px] border border-bad/40 bg-bad/10 p-3 text-[12.5px] leading-relaxed text-text">
-          {erreur === 'lien_expire'
-            ? 'Ce lien a expiré ou a déjà servi. Demandes-en un nouveau.'
-            : 'Ce lien est invalide. Demandes-en un nouveau.'}
+          {erreur === 'lien_autre_navigateur'
+            ? "Ce lien a été demandé depuis un autre navigateur que celui-ci. Pour des raisons de sécurité il ne fonctionne que là où il a été demandé. Redemande-en un depuis cet appareil, ou connecte-toi avec ton mot de passe."
+            : erreur === 'lien_expire'
+              ? 'Ce lien a expiré ou a déjà servi. Demandes-en un nouveau.'
+              : 'Ce lien est invalide. Demandes-en un nouveau.'}
         </p>
       )}
 
