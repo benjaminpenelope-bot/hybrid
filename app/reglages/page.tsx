@@ -50,7 +50,7 @@ export default async function Page({
   const configure = stravaConfigured() && chiffrementDisponible()
 
   return (
-    <main className="wrap wrap-moyen py-[18px]">
+    <main className="wrap py-[18px]">
       <h1 className="dsp text-[22px]">Réglages</h1>
       <p className="mb-5 mt-2 text-[12.5px] leading-relaxed text-mut">
         Les imports ne remplissent que ce qui est mesuré. Ce qu&apos;une montre ne sait pas dire

@@ -93,26 +93,33 @@
     max-width: 520px;
   }
 
+  /*
+   * Sur grand écran, la largeur par défaut double à peine celle du téléphone.
+   * Aller plus loin étire des composants dessinés pour une colonne : un bouton
+   * de 1 000 px, une note de 11 px sur toute la largeur, un chiffre perdu dans
+   * un coin de carte. C'est un défaut, pas de l'espace gagné.
+   *
+   * La pleine largeur est donc une exception à demander (`wrap-large`), pas
+   * un réglage dont il faut se protéger. Une page ajoutée demain sera juste
+   * par défaut.
+   */
   @media (min-width: 1024px) {
     .wrap {
-      max-width: 1120px;
+      max-width: 860px;
       padding-left: 32px;
       padding-right: 32px;
+    }
+
+    /* Réservé aux écrans réellement construits en plusieurs colonnes. */
+    .wrap-large {
+      max-width: 1120px;
     }
   }
 
   /* Écrans à tâche unique : connexion, onboarding, séance en cours. Les
-     étaler sur 1120 px ne montrerait rien de plus, seulement du vide. */
+     étaler ne montrerait rien de plus, seulement du vide. */
   .wrap-etroit {
     max-width: 520px;
-  }
-
-  /* Écrans qui se lisent en colonne : conversation du coach, onglets de perfs.
-     Une ligne de texte trop longue se lit mal, quelle que soit la place. */
-  @media (min-width: 1024px) {
-    .wrap-moyen {
-      max-width: 780px;
-    }
   }
 
   /*

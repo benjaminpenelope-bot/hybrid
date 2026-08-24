@@ -18,7 +18,7 @@ export default async function Page() {
   const exercices = await loadExercises()
 
   return (
-    <main className="wrap py-[18px]">
+    <main className="wrap wrap-large py-[18px]">
       <h1 className="dsp mb-4 text-[22px]">Semaine</h1>
       <WeekView sessions={state.sessions} today={todayISO()} exercices={exercices} />
     </main>

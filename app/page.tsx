@@ -56,7 +56,7 @@ export default async function Page() {
   const trend = weightTrend(state, today)
 
   return (
-    <main className="wrap py-[18px]">
+    <main className="wrap wrap-large py-[18px]">
       <header className="flex items-start justify-between">
         <div className="flex items-center gap-2.5">
           <LogoMark size={26} />

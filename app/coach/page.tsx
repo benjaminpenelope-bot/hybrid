@@ -32,7 +32,7 @@ export default async function Page() {
     .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
 
   return (
-    <main className="wrap wrap-moyen py-[18px]">
+    <main className="wrap py-[18px]">
       <h1 className="dsp mb-4 text-[22px]">Coach</h1>
       <CoachChat
         opening={openingMessage(state, today)}
