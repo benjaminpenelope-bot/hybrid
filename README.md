@@ -37,7 +37,7 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 | Séances de vélo | aucune. Le cyclisme est enregistré au profil, jamais programmé, et l'onboarding refuse le vélo seul |
 | Ateliers HYROX (traîneau, rameur, ski erg) | non mesurables : aucun écran ne permet de les enregistrer |
 | Coach en ligne | code à jour (Claude Opus 5, raisonnement adaptatif, repli serveur sur refus), mais **jamais exercé** : `ANTHROPIC_API_KEY` est vide. Le mode hors ligne, déterministe, est celui qui tourne |
-| Limite d'usage du coach | **posée** — 3/jour et 20/mois en gratuit, 15/jour et 100/mois en payant, réglables par variables d'environnement (`COACH_LIMITE_*`). Plafond atteint : le coach répond en local, il ne tombe pas |
+| Limite d'usage du coach | **posée** — 3/jour et 20/mois en gratuit, 15/jour et 60/mois en payant, réglables par variables d'environnement (`COACH_LIMITE_*`). Plafond atteint : le coach répond en local, il ne tombe pas |
 | Modèle du coach | Sonnet 5 en gratuit, Opus 5 en payant. Le raisonnement dur est en TypeScript, le modèle présente un verdict déjà calculé |
 | Envoi d'e-mails | SMTP Supabase partagé, plafonné autour de 4 inscriptions par heure. Bloquant pour un vrai lancement |
 | Suppression de compte et export RGPD | absents. Obligatoires pour un SaaS |

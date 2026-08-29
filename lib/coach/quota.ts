@@ -46,10 +46,10 @@ function entier(nom: string, defaut: number): number {
  *   dessus. Vingt centimes au pire par compte gratuit, soit un coût
  *   d'acquisition assumé.
  *
- *   pro — 100 par mois pour 9,99 €. Au pire environ 1,50 € d'API, soit 15 %
- *   du prix ; en pratique bien moins, personne n'écrit cent messages à son
- *   coach. Le plafond ne borne pas l'usage normal, il borne la traîne — le
- *   descendre à 60 ramènerait le pire cas sous le dixième du prix.
+ *   pro — 60 par mois pour 9,99 €, soit deux messages par jour en moyenne.
+ *   Au pire environ 0,90 € d'API, moins d'un dixième du prix ; en pratique
+ *   bien loin du compte, personne n'écrit soixante messages à son coach. Le
+ *   plafond ne borne pas l'usage normal, il borne la traîne.
  *
  * Réglables sans redéploiement : les mesures réelles vaudront toujours mieux
  * que cette estimation, et `coach_usage` les enregistre pour ça.
@@ -61,7 +61,7 @@ export const LIMITES: Record<Plan, Limites> = {
   },
   pro: {
     jour: entier('COACH_LIMITE_PRO_JOUR', 15),
-    mois: entier('COACH_LIMITE_PRO_MOIS', 100),
+    mois: entier('COACH_LIMITE_PRO_MOIS', 60),
   },
 }
 
