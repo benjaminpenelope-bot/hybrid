@@ -13,17 +13,33 @@ Next.js 14 (App Router, TypeScript strict) + Supabase + Tailwind.
 | Étape | Contenu | État |
 |---|---|---|
 | 1 | Schéma Supabase, RLS, seed | fait |
-| 2 | `lib/engine/` complet + tests Vitest | fait — 182 tests verts |
+| 2 | `lib/engine/` complet + tests Vitest | fait — 310 tests verts |
 | 3 | Auth et onboarding | fait |
 | 4 | Accueil, séance du jour, mode séance, résumé | fait |
 | 5 | Semaine, éditeur, adaptation automatique | fait |
 | 6 | Perfs, Corps, Objectifs, Récupération, Bilans | fait |
 | 7 | Signaux et coach | fait |
-| 8 | PWA et offline | à venir |
-| 9 | Strava, puis import Health | à venir |
+| 8 | PWA et offline | fait |
+| 9 | Strava, puis import Health | code complet, inerte |
+| 10 | Objectifs et contraintes déclarés | fait |
+| 11 | Couche de décision et écran Aujourd'hui | fait |
 
-Tous les écrans sont construits. Restent la PWA hors ligne (étape 8) et les intégrations
-Strava / Apple Health (étape 9).
+Tous les écrans sont construits.
+
+L'étape 9 est écrite mais ne tourne pas : l'API Strava n'est ouverte qu'aux abonnés payants,
+et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais exercé.
+
+### Ce qui reste
+
+| Sujet | État |
+|---|---|
+| Planificateur multi-sport | partiel — le microcycle est filtré par sports déclarés et jours disponibles, mais la périodisation propre à chaque objectif reste à écrire |
+| Séances de vélo | aucune. Le cyclisme est enregistré au profil, jamais programmé, et l'onboarding refuse le vélo seul |
+| Ateliers HYROX (traîneau, rameur, ski erg) | non mesurables : aucun écran ne permet de les enregistrer |
+| Coach en ligne | jamais exercé, `ANTHROPIC_API_KEY` vide. Le mode hors ligne, déterministe, est celui qui tourne |
+| Envoi d'e-mails | SMTP Supabase partagé, plafonné autour de 4 inscriptions par heure. Bloquant pour un vrai lancement |
+| Suppression de compte et export RGPD | absents. Obligatoires pour un SaaS |
+| Abonnements | table `subscriptions` et `entitlement()` à écrire, avant tout branchement de paiement |
 
 ---
 
@@ -33,7 +49,7 @@ Strava / Apple Health (étape 9).
 npm install
 cp .env.example .env.local   # puis renseigner les clés
 npm run dev                  # http://localhost:3400
-npm test                     # 182 tests
+npm test                     # 310 tests
 npm run typecheck
 ```
 
@@ -309,7 +325,7 @@ Le prototype ne servait qu'un athlète, dont la base était connue ; l'app en se
 npm test
 ```
 
-182 tests sur `program`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
+310 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
 limites exigés : historique vide, une seule séance, benchmarks absents, semaine de deload,
 première semaine de données (pas de faux rouge sur le ratio de charge).
 

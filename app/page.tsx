@@ -8,7 +8,18 @@ export const metadata: Metadata = {
     "L'entraîneur intelligent qui adapte ton programme à ton objectif, tes sports, ta charge et ta récupération.",
 }
 
-const sports = ['Course', 'Musculation', 'Cyclisme', 'Natation', 'HYROX'] as const
+/*
+ * `bientot` marque ce que l'app enregistre sans encore le programmer. Annoncer
+ * un sport que le generateur ne sait pas produire ferait promettre a la page
+ * ce que l'application ne tient pas.
+ */
+const sports = [
+  { nom: 'Course', bientot: false },
+  { nom: 'Musculation', bientot: false },
+  { nom: 'Natation', bientot: false },
+  { nom: 'HYROX', bientot: false },
+  { nom: 'Cyclisme', bientot: true },
+] as const
 
 const steps = [
   ['01', 'Définis ton objectif', 'Marathon, HYROX, force, muscle ou condition physique.'],
@@ -19,7 +30,7 @@ const steps = [
 
 const appScreens = [
   ['AUJOURD’HUI', 'Sache exactement quoi faire.', 'Sortie tempo', '42 min · intensité 3/5'],
-  ['SEMAINE', 'Visualise ton programme.', '5 séances', '2 course · 1 musculation · 1 natation · 1 vélo'],
+  ['SEMAINE', 'Visualise ton programme.', '6 séances', '3 course · 1 musculation · 2 natation'],
   ['PERFORMANCES', 'Comprends ta progression.', '+12 %', 'charge maîtrisée sur 28 jours'],
   ['ENTRAÎNEUR', 'Adapte ton entraînement.', 'Réduire', 'fatigue élevée détectée'],
 ] as const
@@ -50,10 +61,10 @@ export default function LandingPage() {
             <div className="mb-5 flex flex-wrap gap-2">
               {sports.map((sport) => (
                 <span
-                  key={sport}
+                  key={sport.nom}
                   className="rounded-full border border-[#924dde33] bg-white/[0.035] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-[#EFF1F3]"
                 >
-                  {sport}
+                  {sport.nom}
                 </span>
               ))}
             </div>
@@ -137,14 +148,18 @@ export default function LandingPage() {
       <section className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
         <SectionHeader eyebrow="Les 5 sports" title="Tout ton entraînement. Au même endroit." />
         <p className="mt-4 max-w-[720px] text-[15px] leading-7 text-mut">
-          Un marathonien peut aussi faire de la musculation, du vélo et de la natation. HYBRID
-          construit une stratégie globale au lieu de traiter chaque discipline séparément.
+          Un marathonien peut aussi faire de la musculation et de la natation. HYBRID construit une
+          stratégie globale au lieu de traiter chaque discipline séparément. Le vélo est suivi dans
+          ton profil ; ses séances arriveront avec le planificateur multi-sport.
         </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {sports.map((sport) => (
-            <article key={sport} className="rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_30%_10%,rgba(146,77,222,0.15),rgba(255,255,255,0.035)_44%,rgba(255,255,255,0.02))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <article key={sport.nom} className="rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_30%_10%,rgba(146,77,222,0.15),rgba(255,255,255,0.035)_44%,rgba(255,255,255,0.02))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               <div className="h-2 w-10 rounded-full bg-brand" />
-              <h3 className="dsp mt-8 text-[28px]">{sport}</h3>
+              <h3 className="dsp mt-8 text-[28px]">{sport.nom}</h3>
+              {sport.bientot && (
+                <p className="eyebrow mt-2 text-[9.5px] text-mut">Suivi, pas encore programmé</p>
+              )}
             </article>
           ))}
         </div>
