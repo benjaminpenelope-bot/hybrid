@@ -3,6 +3,7 @@ import { half } from './math'
 import type {
   Exercise,
   Finisher,
+  GoalType,
   ISODate,
   Session,
   SessionKind,
@@ -50,6 +51,11 @@ export interface PlanOptions {
    * les jours du microcycle sont conserves.
    */
   availableWeekdays?: number[]
+  /**
+   * Objectif principal declare. Determine la repartition de la semaine.
+   * Absent = la repartition d'origine, dominee par la course.
+   */
+  goal?: GoalType | null
 }
 
 function defaultId(): string {
@@ -478,7 +484,26 @@ export function slotFor(weekday: number, restWeekday: number): Slot {
   return ((((weekday - restWeekday) % 7) + 7) % 7) as Slot
 }
 
-const SLOT_TYPE: Record<Slot, SessionType> = {
+/**
+ * MICROCYCLE PAR OBJECTIF
+ *
+ * La repartition de la semaine depend de ce que l'athlete vise. Elle etait
+ * la meme pour tout le monde : quelqu'un qui declarait viser la force
+ * recevait trois sorties de course et une seule seance de barre.
+ *
+ * Trois regles ont guide chaque ligne :
+ *
+ * 1. Jamais deux fois le meme groupe musculaire a moins de trois jours.
+ * 2. Une sortie longue seulement quand l'objectif porte sur une distance —
+ *    elle n'a aucun sens pour un objectif de force.
+ * 3. Le jour 0 est toujours du repos : il vient du profil, pas de l'objectif.
+ *
+ * Ce qui n'est PAS encore differencie : la prescription elle-meme. Force et
+ * hypertrophie partagent cette repartition parce qu'elles different par les
+ * charges, les repetitions et la reserve — pas par la structure de la
+ * semaine — et cette distinction-la reste a ecrire dans `buildStrength`.
+ */
+const MICROCYCLE_DEFAUT: Record<Slot, SessionType> = {
   0: 'REST',
   1: 'UPPER',
   2: 'RUN',
@@ -486,6 +511,102 @@ const SLOT_TYPE: Record<Slot, SessionType> = {
   4: 'RUN',
   5: 'SWIM',
   6: 'LONG',
+}
+
+/** Semaine dominee par la course, avec sortie longue. */
+const MICROCYCLE_DISTANCE = MICROCYCLE_DEFAUT
+
+/** Semaine dominee par la barre : haut et bas alternes, course en soutien. */
+const MICROCYCLE_FORCE: Record<Slot, SessionType> = {
+  0: 'REST',
+  1: 'UPPER',
+  2: 'LOWER',
+  3: 'RUN',
+  4: 'UPPER',
+  5: 'LOWER',
+  6: 'RUN',
+}
+
+/** Street workout : tirage prioritaire, mais deux seances hautes au plus. */
+const MICROCYCLE_STREET: Record<Slot, SessionType> = {
+  0: 'REST',
+  1: 'UPPER',
+  2: 'RUN',
+  3: 'LOWER',
+  4: 'UPPER',
+  5: 'RUN',
+  6: 'LOWER',
+}
+
+/**
+ * HYROX : huit kilometres de course fractionnes entre huit ateliers, dont
+ * cinq sollicitent surtout les jambes (traineau pousse et tire, fentes
+ * lestees, wall balls, rameur). D'ou deux seances basses pour une haute.
+ */
+const MICROCYCLE_HYROX: Record<Slot, SessionType> = {
+  0: 'REST',
+  1: 'LOWER',
+  2: 'RUN',
+  3: 'UPPER',
+  4: 'RUN',
+  5: 'LOWER',
+  6: 'LONG',
+}
+
+const MICROCYCLES: Record<GoalType, Record<Slot, SessionType>> = {
+  /*
+   * Les trois objectifs de course partagent une structure : ce qui les
+   * separe est le volume, deja porte par `weekVolume` et `baseWeeklyKm`,
+   * pas la forme de la semaine.
+   */
+  marathon: MICROCYCLE_DISTANCE,
+  semi: MICROCYCLE_DISTANCE,
+  dix_km: MICROCYCLE_DISTANCE,
+  endurance: MICROCYCLE_DISTANCE,
+  hybride: MICROCYCLE_DEFAUT,
+  force: MICROCYCLE_FORCE,
+  hypertrophie: MICROCYCLE_FORCE,
+  street_workout: MICROCYCLE_STREET,
+  hyrox: MICROCYCLE_HYROX,
+}
+
+/**
+ * Pourquoi la sortie longue, selon l'objectif. Elle ne « decide pas ton
+ * marathon » quand on prepare un HYROX.
+ */
+const POURQUOI_LONGUE: Record<GoalType, string> = {
+  marathon: 'La sortie longue est la seance qui decide de ton marathon.',
+  semi: 'La sortie longue est ce qui rend les derniers kilometres du semi tenables.',
+  dix_km: "Meme sur 10 km, c'est le fond construit ici qui tient l'allure jusqu'au bout.",
+  hyrox:
+    "Un HYROX, c'est huit kilometres entre les ateliers : cette sortie construit le fond qui te permet de courir encore au huitieme.",
+  endurance: "C'est elle qui construit ton endurance de base.",
+  hybride: "C'est elle qui construit le fond sur lequel tout le reste s'appuie.",
+  force: "C'est elle qui construit ton endurance de base.",
+  hypertrophie: "C'est elle qui construit ton endurance de base.",
+  street_workout: "C'est elle qui construit ton endurance de base.",
+}
+
+/** Repartition retenue. Sans objectif declare, celle d'origine. */
+export function microcycleDe(objectif?: GoalType | null): Record<Slot, SessionType> {
+  return objectif ? (MICROCYCLES[objectif] ?? MICROCYCLE_DEFAUT) : MICROCYCLE_DEFAUT
+}
+
+/** Emplacements de course d'une repartition, sortie longue comprise. */
+function slotsDeCourse(micro: Record<Slot, SessionType>): Slot[] {
+  return ([0, 1, 2, 3, 4, 5, 6] as Slot[]).filter(
+    (s) => micro[s] === 'RUN' || micro[s] === 'LONG',
+  )
+}
+
+/**
+ * Le footing souple est le dernier `RUN` de la semaine — celui qui suit le
+ * plus de jours charges. Dans la repartition d'origine c'est le slot 4, ce
+ * qui reproduit exactement le comportement anterieur.
+ */
+export function estFootingSouple(slot: Slot, micro: Record<Slot, SessionType>): boolean {
+  const plats = slotsDeCourse(micro).filter((s) => micro[s] === 'RUN')
+  return plats.length > 0 && plats[plats.length - 1] === slot
 }
 
 export interface RunSplit {
@@ -502,6 +623,41 @@ export function runSplit(w: number, baseKm: number = RUN_KM_W1): RunSplit {
   const easy = half(vol * 0.3)
   const fundamental = half(vol * 0.28)
   return { easy, fundamental, long: half(vol - easy - fundamental) }
+}
+
+/** Poids de chaque role dans le volume de la semaine. Voir `RunSplit`. */
+const POIDS = { fundamental: 0.28, easy: 0.3, long: 0.42 } as const
+
+/**
+ * Kilometres de chaque sortie.
+ *
+ * Les poids restent absolus, volontairement. Une semaine de force n'a que
+ * deux courses et pas de sortie longue : les renormaliser pour conserver le
+ * volume hebdomadaire concentrerait toute la semaine dans ces deux sorties.
+ * A 35 km de base, ca donnait un « footing souple » de 18 km — pas un plan,
+ * une blessure.
+ *
+ * Le volume de course baisse donc quand l'objectif n'est pas la course. Ce
+ * n'est pas une perte accidentelle : c'est la consequence directe d'avoir
+ * choisi la force, et chaque seance prise isolement reste courable.
+ */
+export function kmDesCourses(
+  w: number,
+  baseKm: number,
+  micro: Record<Slot, SessionType>,
+): Map<Slot, number> {
+  const vol = weekVolume(w, baseKm)
+  const out = new Map<Slot, number>()
+  for (const slot of slotsDeCourse(micro)) {
+    const poids =
+      micro[slot] === 'LONG'
+        ? POIDS.long
+        : estFootingSouple(slot, micro)
+          ? POIDS.easy
+          : POIDS.fundamental
+    out.set(slot, half(vol * poids))
+  }
+  return out
 }
 
 /**
@@ -578,9 +734,10 @@ export function buildSession(
     makeId = defaultId,
     sports = [],
     availableWeekdays = [],
+    goal = null,
   } = opts
   const w = Math.max(1, week)
-  const { easy, fundamental, long } = runSplit(w, baseKm)
+  const micro = microcycleDe(goal)
   const phase = phaseAt(date, w, raceDate)
   const base = {
     id: makeId(),
@@ -596,8 +753,15 @@ export function buildSession(
   // Sans doubles, le samedi est une natation endurance et les jambes sont
   // enchainees au footing du mercredi. Avec doubles, le samedi redevient
   // une séance LOWER complète doublee de la natation endurance.
+  /*
+   * Historique conserve : sans doubles le samedi est une nage, avec doubles
+   * il redevient une seance jambes complete doublee de la nage. La condition
+   * porte sur le type reellement place la, pas sur le seul numero de slot,
+   * pour que les repartitions sans nage n'en heritent pas.
+   */
+  const duSlot = micro[slot]
   const voulu: SessionType =
-    forcedType ?? (slot === 5 ? (allowDoubles ? 'LOWER' : 'SWIM') : SLOT_TYPE[slot])
+    forcedType ?? (slot === 5 && duSlot === 'SWIM' && allowDoubles ? 'LOWER' : duSlot)
 
   /*
    * Un type impose vient de l'editeur : l'athlete a choisi, on n'y touche pas.
@@ -650,8 +814,8 @@ export function buildSession(
       }
 
     case 'RUN': {
-      const km = slot === 4 ? easy : fundamental
-      const isEasy = slot === 4
+      const km = kmDesCourses(w, baseKm, micro).get(slot) ?? runSplit(w, baseKm).fundamental
+      const isEasy = estFootingSouple(slot, micro)
       if (isEasy) {
         return {
           ...base,
@@ -784,7 +948,8 @@ export function buildSession(
             : null,
       }
 
-    default:
+    default: {
+      const long = kmDesCourses(w, baseKm, micro).get(slot) ?? runSplit(w, baseKm).long
       return {
         ...base,
         type: 'LONG',
@@ -793,7 +958,7 @@ export function buildSession(
         duration: Math.round(long * 7),
         intensity: 3,
         goal: `${long} km en continu, très lentement.`,
-        why: `Phase ${phase.label}. La sortie longue est la séance qui décide de ton marathon. On l'allonge de 1 km par semaine maximum.`,
+        why: `Phase ${phase.label}. ${POURQUOI_LONGUE[goal ?? 'endurance'] ?? POURQUOI_LONGUE.endurance} On l'allonge de 1 km par semaine maximum.`,
         target: "Allure 6:40–7:10/km. L'objectif est la durée, pas l'allure.",
         cues: [
           'Pars plus lentement que ce qui te semble confortable',
@@ -811,6 +976,7 @@ export function buildSession(
           },
         ],
       }
+    }
   }
 }
 

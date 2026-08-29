@@ -13,7 +13,7 @@ Next.js 14 (App Router, TypeScript strict) + Supabase + Tailwind.
 | Étape | Contenu | État |
 |---|---|---|
 | 1 | Schéma Supabase, RLS, seed | fait |
-| 2 | `lib/engine/` complet + tests Vitest | fait — 310 tests verts |
+| 2 | `lib/engine/` complet + tests Vitest | fait — 321 tests verts |
 | 3 | Auth et onboarding | fait |
 | 4 | Accueil, séance du jour, mode séance, résumé | fait |
 | 5 | Semaine, éditeur, adaptation automatique | fait |
@@ -33,7 +33,7 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 
 | Sujet | État |
 |---|---|
-| Planificateur multi-sport | partiel — le microcycle est filtré par sports déclarés et jours disponibles, mais la périodisation propre à chaque objectif reste à écrire |
+| Planificateur multi-sport | partiel — la répartition de la semaine dépend de l'objectif, des sports déclarés et des jours disponibles. Reste à différencier la **prescription** de force selon l'objectif : force et hypertrophie partagent aujourd'hui le même microcycle et les mêmes séries |
 | Séances de vélo | aucune. Le cyclisme est enregistré au profil, jamais programmé, et l'onboarding refuse le vélo seul |
 | Ateliers HYROX (traîneau, rameur, ski erg) | non mesurables : aucun écran ne permet de les enregistrer |
 | Coach en ligne | jamais exercé, `ANTHROPIC_API_KEY` vide. Le mode hors ligne, déterministe, est celui qui tourne |
@@ -49,7 +49,7 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 npm install
 cp .env.example .env.local   # puis renseigner les clés
 npm run dev                  # http://localhost:3400
-npm test                     # 310 tests
+npm test                     # 321 tests
 npm run typecheck
 ```
 
@@ -325,7 +325,7 @@ Le prototype ne servait qu'un athlète, dont la base était connue ; l'app en se
 npm test
 ```
 
-310 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
+321 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
 limites exigés : historique vide, une seule séance, benchmarks absents, semaine de deload,
 première semaine de données (pas de faux rouge sur le ratio de charge).
 

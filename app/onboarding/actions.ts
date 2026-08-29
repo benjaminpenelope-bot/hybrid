@@ -200,16 +200,18 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
   if (cleanupError) return { ok: false, message: cleanupError.message }
 
   /*
-   * Le microcycle reste celui de la course / natation / force, mais il est
-   * desormais filtre : les jours non disponibles deviennent du repos, et un
-   * type de seance dont le sport n'a pas ete declare est remplace par un
-   * sport pratique — ou retire. La periodisation propre a chaque objectif
-   * reste a faire.
+   * Le plan depend maintenant des trois reponses : l'objectif principal
+   * choisit la repartition de la semaine, les sports declares filtrent ce
+   * qui est realisable, et les jours disponibles decident quand.
+   *
+   * Ce qui reste a differencier : la prescription de force selon que
+   * l'objectif est la force ou l'hypertrophie.
    */
   const plan = generatePlan(today, PLAN_WEEKS, 1, {
     restWeekday,
     allowDoubles: disponibilites.allowDoubles,
     raceDate: objectifs.principal.date,
+    goal: objectifs.principal.type,
     sports,
     availableWeekdays: disponibilites.availableWeekdays,
     ...(baseKm !== null ? { baseKm } : {}),

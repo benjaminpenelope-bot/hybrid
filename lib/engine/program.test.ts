@@ -13,12 +13,15 @@ import {
   rotatePostpone,
   runPhase,
   runSplit,
+  estFootingSouple,
+  kmDesCourses,
+  microcycleDe,
   swimTarget,
   typePraticable,
   typeRetenu,
   weekVolume,
 } from './program'
-import type { Sport } from './types'
+import type { GoalType, SessionType, Sport } from './types'
 
 /** Lundi 16 mars 2026. Toutes les dates des tests en découlent. */
 const MONDAY = '2026-03-16'
@@ -311,5 +314,104 @@ describe('jours disponibles', () => {
   it('conserve la semaine complete quand la disponibilite est inconnue', () => {
     const s = generatePlan(MONDAY, 1, 1, { restWeekday: 1, makeId: () => 'x' })
     expect(s.filter((x) => x.type !== 'REST').length).toBe(6)
+  })
+})
+
+
+describe('microcycle par objectif', () => {
+  const semaine = (goal: GoalType | null) =>
+    generatePlan(MONDAY, 1, 1, {
+      restWeekday: 1,
+      goal,
+      makeId: (() => {
+        let i = 0
+        return () => `m${++i}`
+      })(),
+    }).map((s) => s.type)
+
+  const compte = (types: SessionType[], t: SessionType) => types.filter((x) => x === t).length
+
+  it('donne plus de barre que de course a un objectif de force', () => {
+    // C'est le defaut corrige : l'objectif force recevait trois sorties de
+    // course et une seule seance de barre.
+    const t = semaine('force')
+    const barre = compte(t, 'UPPER') + compte(t, 'LOWER')
+    const course = compte(t, 'RUN') + compte(t, 'LONG')
+    expect(barre).toBeGreaterThan(course)
+  })
+
+  it('garde la course dominante pour un marathon', () => {
+    const t = semaine('marathon')
+    expect(compte(t, 'RUN') + compte(t, 'LONG')).toBe(3)
+    expect(compte(t, 'LONG')).toBe(1)
+  })
+
+  it('ne programme aucune sortie longue sur un objectif de force', () => {
+    // Elle n'a aucun sens quand l'objectif ne porte pas sur une distance.
+    expect(semaine('force')).not.toContain('LONG')
+    expect(semaine('street_workout')).not.toContain('LONG')
+  })
+
+  it('garde la sortie longue pour un HYROX, qui court huit kilometres', () => {
+    expect(semaine('hyrox')).toContain('LONG')
+  })
+
+  it('ne repete jamais un groupe musculaire a moins de trois jours', () => {
+    for (const goal of ['force', 'hypertrophie', 'street_workout', 'hyrox'] as GoalType[]) {
+      const micro = microcycleDe(goal)
+      for (const type of ['UPPER', 'LOWER'] as SessionType[]) {
+        const jours = ([0, 1, 2, 3, 4, 5, 6] as const).filter((s) => micro[s] === type)
+        for (let i = 1; i < jours.length; i++) {
+          expect(jours[i]! - jours[i - 1]!).toBeGreaterThanOrEqual(3)
+        }
+      }
+    }
+  })
+
+  it('laisse le jour 0 au repos quel que soit l’objectif', () => {
+    // Le jour de repos vient du profil, pas de l'objectif.
+    const tous: GoalType[] = [
+      'marathon', 'semi', 'dix_km', 'hyrox', 'force',
+      'hypertrophie', 'street_workout', 'endurance', 'hybride',
+    ]
+    for (const goal of tous) expect(microcycleDe(goal)[0]).toBe('REST')
+  })
+
+  it('conserve la repartition d’origine sans objectif declare', () => {
+    expect(semaine(null)).toEqual(semaine('hybride'))
+  })
+})
+
+describe('volume de course reparti', () => {
+  it('ne concentre jamais la semaine dans une sortie demesuree', () => {
+    // Renormaliser pour conserver le volume hebdomadaire donnait un
+    // « footing souple » de 18 km sur un objectif de force.
+    const plafond = runSplit(3, 30).long
+    for (const goal of ['marathon', 'force', 'street_workout', 'hyrox'] as GoalType[]) {
+      for (const km of kmDesCourses(3, 30, microcycleDe(goal)).values()) {
+        expect(km).toBeLessThanOrEqual(plafond)
+      }
+    }
+  })
+
+  it('fait moins courir un objectif de force qu’un objectif de marathon', () => {
+    // Consequence assumee du choix d'objectif, pas une perte accidentelle.
+    const total = (goal: GoalType) =>
+      [...kmDesCourses(3, 30, microcycleDe(goal)).values()].reduce((a, b) => a + b, 0)
+    expect(total('force')).toBeLessThan(total('marathon'))
+  })
+
+  it('donne le volume d’origine a un objectif de course', () => {
+    const total = [...kmDesCourses(3, 30, microcycleDe('marathon')).values()].reduce(
+      (a, b) => a + b,
+      0,
+    )
+    expect(Math.abs(total - weekVolume(3, 30))).toBeLessThanOrEqual(1)
+  })
+
+  it('designe le dernier footing de la semaine comme footing souple', () => {
+    // Reproduit le comportement d'origine, ou c'etait le slot 4.
+    expect(estFootingSouple(4, microcycleDe('marathon'))).toBe(true)
+    expect(estFootingSouple(2, microcycleDe('marathon'))).toBe(false)
   })
 })
