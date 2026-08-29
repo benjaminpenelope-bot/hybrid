@@ -71,6 +71,21 @@ export async function ouvrirPaiement(
 
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3400'
 
+  /*
+   * S'abonner pendant l'essai ne doit pas faire perdre les jours restants.
+   * On decale donc le premier prelevement a la fin de l'essai maison : sans
+   * ca, souscrire au deuxieme jour reviendrait a jeter douze jours offerts,
+   * et l'athlete a raison d'attendre — exactement ce qu'un essai ne doit pas
+   * encourager.
+   *
+   * Stripe refuse un `trial_end` a moins de 48 h : passe ce seuil on
+   * n'envoie rien, l'abonnement demarre tout de suite.
+   */
+  const essaiEnCours = await lireAbonnement(userId)
+  const finEssai =
+    essaiEnCours?.statut === 'essai' ? new Date(essaiEnCours.periodeFin).getTime() : 0
+  const dansPlusDe48h = finEssai - Date.now() > 48 * 3600 * 1000
+
   try {
     const session = await stripeClient().checkout.sessions.create({
       mode: 'subscription',
@@ -83,7 +98,10 @@ export async function ouvrirPaiement(
        * les evenements de renouvellement et de resiliation ne portent que
        * l'abonnement, et sans lui le webhook ne saurait pas a qui l'attribuer.
        */
-      subscription_data: { metadata: { hybrid_user_id: userId } },
+      subscription_data: {
+        metadata: { hybrid_user_id: userId },
+        ...(dansPlusDe48h ? { trial_end: Math.floor(finEssai / 1000) } : {}),
+      },
       metadata: { hybrid_user_id: userId },
     })
     if (!session.url) return { ok: false, message: 'Stripe n’a pas renvoyé de page de paiement.' }

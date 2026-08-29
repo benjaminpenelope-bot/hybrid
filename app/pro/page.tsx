@@ -57,6 +57,9 @@ export default async function Page({
     essaiDisponible(userId),
   ])
   const restants = abonnement ? joursRestants(abonnement, new Date()) : 0
+  const enEssai = plan === 'pro' && abonnement?.statut === 'essai'
+  /** Deja payant : c'est le seul cas ou l'on ne propose plus de s'abonner. */
+  const dejaAbonne = plan === 'pro' && abonnement?.source === 'stripe'
 
   return (
     <main className="wrap py-[18px]">
@@ -123,20 +126,32 @@ export default async function Page({
           ou {PRIX.annuel} à l&apos;année, soit deux mois offerts.
         </p>
 
-        {ouvert && plan !== 'pro' && (
+        {/*
+          Les boutons restent visibles pendant l'essai. Les masquer obligerait
+          a attendre l'expiration pour s'abonner, soit l'inverse de ce qu'un
+          essai sert a faire. Ils ne disparaissent que pour qui paie deja.
+        */}
+        {ouvert && !dejaAbonne && (
           <div className="mt-4 border-t border-line pt-4">
+            {enEssai && (
+              <p className="mb-3 text-[12.5px] leading-relaxed text-mut">
+                Tu peux t&apos;abonner dès maintenant : tes {restants} jour
+                {restants > 1 ? 's' : ''} d&apos;essai restants sont conservés, et le premier
+                prélèvement n&apos;a lieu qu&apos;à leur terme.
+              </p>
+            )}
             <PaiementBoutons prix={{ mensuel: PRIX.mensuel, annuel: PRIX.annuel }} />
           </div>
         )}
 
-        {ouvert && plan === 'pro' && abonnement?.source === 'stripe' && (
+        {ouvert && dejaAbonne && (
           <div className="mt-4 border-t border-line pt-4">
             <PortailBouton />
           </div>
         )}
       </section>
 
-      {plan !== 'pro' && (
+      {plan !== 'pro' && essai && (
         <section className="card">
           <p className="eyebrow">Essai</p>
           <p className="mb-3 mt-2 text-[13.5px] leading-relaxed">
