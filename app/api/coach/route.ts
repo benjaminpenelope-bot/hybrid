@@ -5,6 +5,7 @@ import { loadState } from '@/lib/db/queries'
 import { buildCoachContext } from '@/lib/coach/context'
 import { localAnswer } from '@/lib/coach/local'
 import { contextBlock, COACH_SYSTEM } from '@/lib/coach/prompt'
+import { enregistrerUsage, etatQuota, messageQuota, MODELES } from '@/lib/coach/quota'
 import { COACH_TOOLS, TOOL_LABELS, validateProposal, type ToolName } from '@/lib/coach/tools'
 import { todayISO } from '@/lib/engine/date'
 import { currentUserId } from '@/lib/supabase/server'
@@ -23,29 +24,16 @@ import { currentUserId } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-const MODEL = 'claude-opus-5'
-
 /**
  * Le raisonnement adaptatif consomme le meme budget que la reponse. A 1 024
  * jetons — la valeur d'origine, ecrite quand le modele ne raisonnait pas — la
- * reponse partait entiere en reflexion et se coupait avant la premiere phrase.
- * La longueur reelle est tenue par le prompt (cinq phrases), pas par ce
- * plafond, qui n'est la que comme garde-fou.
+ * reponse partait entiere en reflexion et se coupait avant la premiere
+ * phrase. La longueur reelle est tenue par le prompt (cinq phrases), pas par
+ * ce plafond, qui n'est la que comme garde-fou.
  */
 const MAX_TOKENS = 8000
 
-/**
- * Un coach d'entrainement n'est pas un probleme difficile, et l'athlete attend
- * devant son ecran : `medium` raisonne assez pour croiser charge, recuperation
- * et verdict sans faire patienter pour rien.
- */
-const EFFORT = 'medium' as const
-
-/**
- * Repli serveur en cas de refus des classificateurs. Sans lui, une requete
- * declinee ne rend rien du tout. « default » laisse Anthropic router selon le
- * motif du refus, ce qui evite d'avoir a maintenir une liste de modeles.
- */
+/** Beta du repli serveur sur refus. Voir `ConfigModele.repliServeur`. */
 const BETA_REPLI = 'server-side-fallback-2026-07-01'
 
 const bodySchema = z.object({
@@ -118,19 +106,32 @@ export async function POST(request: NextRequest) {
   const history = parsed.data.messages
   const lastUser = [...history].reverse().find((m) => m.role === 'user')?.content ?? ''
 
-  /* ── Sans clé API, le coach répond localement plutôt que d'échouer ── */
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return ndjson(
+  /** Réponse locale : même forme, que ce soit faute de clé ou faute de quota. */
+  const repliLocal = (avertissement?: string): Response =>
+    ndjson(
       new ReadableStream({
         start(controller) {
+          if (avertissement) controller.enqueue(line({ type: 'error', message: avertissement }))
           controller.enqueue(line({ type: 'text', text: localAnswer(lastUser, state, today) }))
           controller.enqueue(line({ type: 'done', offline: true }))
           controller.close()
         },
       }),
     )
-  }
+
+  /* ── Sans clé API, le coach répond localement plutôt que d'échouer ── */
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) return repliLocal()
+
+  /*
+   * Plafond d'usage. Vérifié avant l'appel, donc avant la dépense — le
+   * vérifier après ne bornerait rien. Un plafond atteint ne casse pas le
+   * coach : il le fait répondre en local, comme sans clé.
+   */
+  const quota = await etatQuota(userId, today)
+  if (!quota.autorise) return repliLocal(messageQuota(quota))
+
+  const config = MODELES[quota.plan]
 
   const client = new Anthropic({ apiKey })
   const context = buildCoachContext(state, today)
@@ -149,12 +150,11 @@ export async function POST(request: NextRequest) {
     async start(controller) {
       try {
         const run = client.beta.messages.stream({
-          model: MODEL,
+          model: config.modele,
           max_tokens: MAX_TOKENS,
           thinking: { type: 'adaptive' },
-          output_config: { effort: EFFORT },
-          betas: [BETA_REPLI],
-          fallbacks: 'default',
+          output_config: { effort: config.effort },
+          ...(config.repliServeur ? { betas: [BETA_REPLI], fallbacks: 'default' as const } : {}),
           // Le prompt systeme ne bouge pas d'un appel a l'autre : il est mis
           // en cache, et le contexte variable voyage dans le tour utilisateur.
           system: [{ type: 'text', text: COACH_SYSTEM, cache_control: { type: 'ephemeral' } }],
@@ -200,6 +200,17 @@ export async function POST(request: NextRequest) {
             }),
           )
         }
+
+        /*
+         * On compte apres coup, sur la consommation reelle. Compter avant
+         * facturerait a l'athlete un appel qui a pu echouer, et les jetons ne
+         * seraient de toute facon pas connus.
+         */
+        await enregistrerUsage(userId, {
+          input: final.usage.input_tokens,
+          output: final.usage.output_tokens,
+          cacheRead: final.usage.cache_read_input_tokens ?? 0,
+        })
 
         controller.enqueue(line({ type: 'done', offline: false }))
       } catch (error) {
