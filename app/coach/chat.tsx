@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -78,6 +79,8 @@ export function CoachChat({
   const [proposals, setProposals] = useState<Proposal[]>([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
+  /** Proposition d'abonnement, uniquement quand le plafond gratuit est atteint. */
+  const [offre, setOffre] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
 
@@ -95,6 +98,7 @@ export function CoachChat({
     setStreaming('')
     setProposals([])
     setNotice(null)
+    setOffre(null)
     setBusy(true)
     void saveCoachMessage('user', trimmed)
 
@@ -147,6 +151,9 @@ export function CoachChat({
               ...prev,
               { id: event.id, name: event.name, input: event.input, label: event.label, state: 'pending' },
             ])
+          } else if (event.type === 'quota') {
+            setNotice(event.message)
+            setOffre(event.offre ?? null)
           } else if (event.type === 'error') {
             setNotice(event.message)
           } else if (event.type === 'done' && event.offline) {
@@ -269,9 +276,27 @@ export function CoachChat({
       </div>
 
       {notice && (
-        <p className="mt-4 rounded-[11px] border border-warn/40 bg-warn/10 p-3 text-[12.5px] leading-relaxed text-text">
-          {notice}
-        </p>
+        <div className="mt-4 rounded-[11px] border border-warn/40 bg-warn/10 p-3">
+          <p className="text-[12.5px] leading-relaxed text-text">{notice}</p>
+          {/*
+            L'offre n'apparait que sur un plafond atteint en gratuit. Elle est
+            absente d'une panne reseau — proposer un abonnement quand le
+            service est en defaut ferait payer pour une reparation.
+          */}
+          {offre && (
+            <>
+              <p className="mt-2 border-t border-warn/30 pt-2 text-[12.5px] leading-relaxed text-mut">
+                {offre}
+              </p>
+              <Link
+                href="/pro"
+                className="mt-3 inline-block rounded-[10px] border border-brand bg-brand/10 px-3 py-2 text-[12.5px] text-text"
+              >
+                Voir HYBRID PRO
+              </Link>
+            </>
+          )}
+        </div>
       )}
 
       {!busy && (

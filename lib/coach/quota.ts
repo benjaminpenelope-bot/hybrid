@@ -1,3 +1,4 @@
+import { estPro, lireAbonnement } from '@/lib/coach/abonnement'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
@@ -88,14 +89,14 @@ export function evaluer(plan: Plan, utiliseJour: number, utiliseMois: number): E
 }
 
 /**
- * Plan de l'athlète.
+ * Plan de l'athlète, unique point de vérité.
  *
- * Toujours `free` pour l'instant : la table `subscriptions` n'existe pas
- * encore, et rien ne permet de distinguer un abonné. Le jour où elle
- * arrivera, c'est cette fonction qui changera, et elle seule.
+ * Tout le reste de l'application ne connaît que `free` ou `pro` : ni Stripe,
+ * ni Apple, ni la date d'échéance. Le jour où l'achat intégré iOS s'ajoutera,
+ * rien ne changera au-delà de `lireAbonnement`.
  */
-export async function planDe(_userId: string): Promise<Plan> {
-  return 'free'
+export async function planDe(userId: string, maintenant = new Date()): Promise<Plan> {
+  return estPro(await lireAbonnement(userId), maintenant) ? 'pro' : 'free'
 }
 
 /** Premier jour du mois d'une date ISO. */
@@ -160,11 +161,33 @@ export async function enregistrerUsage(userId: string, jetons: UsageJetons): Pro
   }
 }
 
-/** Message affiché quand le plafond est atteint. */
-export function messageQuota(etat: EtatQuota): string {
-  return etat.motif === 'mois'
-    ? 'Tu as atteint ta limite de messages pour ce mois-ci. Le coach répond en local jusqu’au mois prochain.'
-    : 'Tu as atteint ta limite de messages pour aujourd’hui. Le coach répond en local, et repart demain.'
+/**
+ * Ce qu'on dit quand le plafond est atteint.
+ *
+ * Deux choses distinctes : ce qui se passe, et ce qu'on peut y faire.
+ * Constater la limite sans indiquer la sortie laisse l'athlete devant un mur ;
+ * mais un plafond atteint en PRO n'a aucune sortie a proposer, et lui vendre
+ * quelque chose serait insultant.
+ */
+export interface MessageQuota {
+  texte: string
+  /** Proposition de passer a l'offre superieure, quand elle a un sens. */
+  offre: string | null
+}
+
+export function messageQuota(etat: EtatQuota): MessageQuota {
+  const quand =
+    etat.motif === 'mois'
+      ? 'pour ce mois-ci. Le coach répond en local jusqu’au mois prochain.'
+      : 'pour aujourd’hui. Le coach répond en local, et repart demain.'
+
+  return {
+    texte: `Tu as atteint ta limite de messages ${quand}`,
+    offre:
+      etat.plan === 'free'
+        ? `HYBRID PRO passe à ${LIMITES.pro.jour} messages par jour et ${LIMITES.pro.mois} par mois, sur un modèle qui réfléchit plus longtemps. 14 jours d’essai, sans carte.`
+        : null,
+  }
 }
 
 /**

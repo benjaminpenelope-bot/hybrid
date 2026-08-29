@@ -51,6 +51,7 @@ const bodySchema = z.object({
 
 type Event =
   | { type: 'text'; text: string }
+  | { type: 'quota'; message: string; offre: string | null }
   | { type: 'proposal'; id: string; name: ToolName; input: unknown; label: string }
   | { type: 'done'; offline: boolean }
   | { type: 'error'; message: string }
@@ -108,11 +109,11 @@ export async function POST(request: NextRequest) {
   const lastUser = [...history].reverse().find((m) => m.role === 'user')?.content ?? ''
 
   /** Réponse locale : même forme, que ce soit faute de clé ou faute de quota. */
-  const repliLocal = (avertissement?: string): Response =>
+  const repliLocal = (entete?: Event): Response =>
     ndjson(
       new ReadableStream({
         start(controller) {
-          if (avertissement) controller.enqueue(line({ type: 'error', message: avertissement }))
+          if (entete) controller.enqueue(line(entete))
           controller.enqueue(line({ type: 'text', text: localAnswer(lastUser, state, today) }))
           controller.enqueue(line({ type: 'done', offline: true }))
           controller.close()
@@ -130,7 +131,10 @@ export async function POST(request: NextRequest) {
    * coach : il le fait répondre en local, comme sans clé.
    */
   const quota = await etatQuota(userId, today)
-  if (!quota.autorise) return repliLocal(messageQuota(quota))
+  if (!quota.autorise) {
+    const m = messageQuota(quota)
+    return repliLocal({ type: 'quota', message: m.texte, offre: m.offre })
+  }
 
   const config = MODELES[quota.plan]
 
@@ -229,8 +233,7 @@ export async function POST(request: NextRequest) {
          */
         console.error('[coach] appel en ligne echoue', error)
 
-        const message = messageDErreur(error)
-        controller.enqueue(line({ type: 'error', message }))
+        controller.enqueue(line({ type: 'error', message: messageDErreur(error) }))
         controller.enqueue(line({ type: 'text', text: localAnswer(lastUser, state, today) }))
         controller.enqueue(line({ type: 'done', offline: true }))
       } finally {

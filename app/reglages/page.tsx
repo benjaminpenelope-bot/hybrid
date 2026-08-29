@@ -1,7 +1,10 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { formatDate } from '@/lib/engine/date'
 import { stravaConfigured } from '@/lib/strava/client'
 import { chiffrementDisponible } from '@/lib/strava/crypto'
+import { joursRestants, lireAbonnement } from '@/lib/coach/abonnement'
+import { LIMITES, planDe } from '@/lib/coach/quota'
 import { createClient, currentUserId } from '@/lib/supabase/server'
 import { HealthImport } from './health-import'
 import { MesDonnees } from './mes-donnees'
@@ -39,6 +42,8 @@ export default async function Page({
 }) {
   const userId = await currentUserId()
   if (!userId) redirect('/login?suite=/reglages')
+
+  const [plan, abonnement] = await Promise.all([planDe(userId), lireAbonnement(userId)])
 
   // Le client ne lit jamais la table `integrations` : ses droits y sont
   // révoqués. Cette fonction ne rend qu'un état, jamais un jeton.
@@ -95,6 +100,31 @@ export default async function Page({
           valable dans les deux cas plutôt que d'affirmer à côté.
         */}
         <MotDePasse invite={searchParams.mdp === '1'} />
+      </section>
+
+      <section className="mt-6">
+        <h2 className="eyebrow mb-2.5">Abonnement</h2>
+        <div className="card">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="text-[14px]">{plan === 'pro' ? 'HYBRID PRO' : 'HYBRID'}</h3>
+            <span className="num shrink-0 text-[12.5px] text-mut">
+              {plan === 'pro' ? 'actif' : 'gratuit'}
+            </span>
+          </div>
+
+          <p className="mt-2 text-[12.5px] leading-relaxed text-mut">
+            {plan === 'pro' && abonnement
+              ? `${abonnement.statut === 'essai' ? 'Essai' : 'Abonnement'} en cours, ${joursRestants(abonnement, new Date())} jour(s) restant(s). Coach : ${LIMITES.pro.jour} messages par jour.`
+              : `Coach : ${LIMITES.free.jour} messages par jour, ${LIMITES.free.mois} par mois. Tout le reste de l’app est inclus, sans limite.`}
+          </p>
+
+          <Link
+            href="/pro"
+            className="mt-3 inline-block rounded-[10px] border border-line2 bg-bg2 px-3 py-2 text-[12.5px] text-text"
+          >
+            {plan === 'pro' ? 'Voir mon abonnement' : 'Découvrir HYBRID PRO'}
+          </Link>
+        </div>
       </section>
 
       <section className="mt-6">

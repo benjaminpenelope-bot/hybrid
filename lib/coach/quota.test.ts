@@ -26,7 +26,7 @@ describe('plafonds', () => {
     // faux, puisque demain sera bloqué aussi.
     const e = evaluer('free', LIMITES.free.jour, LIMITES.free.mois)
     expect(e.motif).toBe('mois')
-    expect(messageQuota(e)).toContain('mois')
+    expect(messageQuota(e).texte).toContain('mois')
   })
 
   it('ne rend jamais un restant négatif', () => {
@@ -40,6 +40,20 @@ describe('plafonds', () => {
   it('donne plus de marge au plan payant qu’au gratuit', () => {
     expect(LIMITES.pro.mois).toBeGreaterThan(LIMITES.free.mois)
     expect(LIMITES.pro.jour).toBeGreaterThan(LIMITES.free.jour)
+  })
+})
+
+describe('proposition d’abonnement', () => {
+  it('propose PRO quand un compte gratuit bute sur son plafond', () => {
+    const m = messageQuota(evaluer('free', LIMITES.free.jour, 0))
+    expect(m.offre).not.toBeNull()
+    expect(m.offre).toContain(String(LIMITES.pro.jour))
+  })
+
+  it('ne propose rien à un abonné qui bute sur le sien', () => {
+    // Lui vendre ce qu'il paie deja serait insultant, et il n'y a pas
+    // d'offre au-dessus.
+    expect(messageQuota(evaluer('pro', LIMITES.pro.jour, 0)).offre).toBeNull()
   })
 })
 
