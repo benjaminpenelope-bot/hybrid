@@ -4,17 +4,19 @@ import { useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
+import { MDP_MIN } from '@/lib/validation/auth'
 import {
   sendMagicLink,
   sendPasswordReset,
   signInWithPassword,
+  signUpWithPassword,
   type LoginState,
 } from './actions'
 
 const INITIAL: LoginState = { status: 'idle' }
 
 /** Trois façons d'entrer, une seule affichée à la fois. */
-type Mode = 'mot-de-passe' | 'lien' | 'oubli'
+type Mode = 'mot-de-passe' | 'inscription' | 'lien' | 'oubli'
 
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
@@ -33,10 +35,18 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
   const [mdpState, mdpAction] = useFormState(signInWithPassword, INITIAL)
   const [lienState, lienAction] = useFormState(sendMagicLink, INITIAL)
   const [oubliState, oubliAction] = useFormState(sendPasswordReset, INITIAL)
+  const [inscriptionState, inscriptionAction] = useFormState(signUpWithPassword, INITIAL)
   const [oauthError, setOauthError] = useState<string | null>(null)
   const [busy, setBusy] = useState<'google' | 'apple' | null>(null)
 
-  const state = mode === 'mot-de-passe' ? mdpState : mode === 'lien' ? lienState : oubliState
+  const state =
+    mode === 'mot-de-passe'
+      ? mdpState
+      : mode === 'inscription'
+        ? inscriptionState
+        : mode === 'lien'
+          ? lienState
+          : oubliState
 
   const signInWith = async (provider: 'google' | 'apple') => {
     setBusy(provider)
@@ -62,7 +72,9 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
         <p className="mt-3 text-[13.5px] leading-relaxed text-mut">
           {mode === 'oubli'
             ? "Si un compte existe pour cette adresse, un lien vient de partir. Il te ramènera ici, connecté, sur l'écran où définir un nouveau mot de passe."
-            : 'Un lien de connexion vient de partir. Il est valable une heure et ne fonctionne qu’une fois. Ouvre-le depuis ce téléphone pour rester connecté ici.'}
+            : mode === 'inscription'
+              ? "Si cette adresse n'a pas déjà de compte, un mail de confirmation vient de partir. Ouvre-le pour activer ton compte : ce sera le seul mail nécessaire, tu te connecteras ensuite avec ton mot de passe."
+              : 'Un lien de connexion vient de partir. Il est valable une heure et ne fonctionne qu’une fois. Ouvre-le depuis ce téléphone pour rester connecté ici.'}
         </p>
       </div>
     )
@@ -120,6 +132,81 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
               Mot de passe oublié
             </button>
           </div>
+
+          <p className="mt-4 border-t border-line pt-4 text-[12.5px] leading-relaxed text-mut">
+            Pas encore de compte ?{' '}
+            <button
+              type="button"
+              onClick={() => setMode('inscription')}
+              className="text-text underline"
+            >
+              En créer un
+            </button>
+          </p>
+        </form>
+      )}
+
+      {/*
+        L'inscription pose un mot de passe tout de suite. Sans elle, un
+        nouveau venu passait par le lien magique et arrivait sans mot de
+        passe : il en redemandait un a chaque visite, soit un e-mail par
+        connexion sur un service d'envoi plafonne.
+      */}
+      {mode === 'inscription' && (
+        <form action={inscriptionAction}>
+          <input type="hidden" name="suite" value={suite} />
+          <label htmlFor="email-inscription" className="eyebrow mb-[7px] block">
+            Adresse e-mail
+          </label>
+          <input
+            id="email-inscription"
+            name="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            required
+            placeholder="toi@exemple.fr"
+            className={CHAMP}
+          />
+          <label htmlFor="password-inscription" className="eyebrow mb-[7px] block">
+            Mot de passe
+          </label>
+          <input
+            id="password-inscription"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            minLength={MDP_MIN}
+            required
+            className={CHAMP}
+          />
+          <label htmlFor="confirmation-inscription" className="eyebrow mb-[7px] block">
+            Confirme ton mot de passe
+          </label>
+          <input
+            id="confirmation-inscription"
+            name="confirmation"
+            type="password"
+            autoComplete="new-password"
+            minLength={MDP_MIN}
+            required
+            className={CHAMP}
+          />
+          <p className="mb-3 text-[11.5px] leading-relaxed text-dim">
+            {MDP_MIN} caractères minimum. Un seul mail te sera envoyé, pour confirmer ton
+            adresse.
+          </p>
+          {inscriptionState.status === 'error' && (
+            <p className="mb-3 text-[12.5px] leading-relaxed text-bad">{inscriptionState.message}</p>
+          )}
+          <SubmitButton label="Créer mon compte" pendingLabel="Création…" />
+          <button
+            type="button"
+            onClick={() => setMode('mot-de-passe')}
+            className="eyebrow mt-3 block text-dim"
+          >
+            J&apos;ai déjà un compte
+          </button>
         </form>
       )}
 
