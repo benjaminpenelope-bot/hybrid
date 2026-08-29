@@ -17,3 +17,6 @@ public/workbox-*.js
 
 # Sorties de graphify : régénérables avec /graphify, et 2 Mo de JSON + HTML.
 graphify-out/
+
+# Exports de compte : donnees personnelles, jamais versionnees.
+export-*.json
