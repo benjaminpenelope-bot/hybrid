@@ -193,6 +193,108 @@ export function raceFeasibility(from: ISODate, raceDate: ISODate): RaceFeasibili
 
 /* ── Contenu des séances de force ──────────────────────────── */
 
+/* ── Dosage de la force selon l'objectif ───────────────────── */
+
+/**
+ * Comment l'objectif change la prescription de force.
+ *
+ * La repartition de la semaine dependait deja de l'objectif, mais pas les
+ * series : viser la force ou l'hypertrophie donnait exactement les memes
+ * seances. Or c'est precisement la que les deux se separent — pas dans le
+ * nombre de seances, mais dans la charge, les repetitions et le repos.
+ *
+ * Force : moins de repetitions, plus de repos. En poids de corps, on ne
+ * devient pas fort en en faisant plus, mais en rendant chaque repetition plus
+ * dure — d'ou la consigne d'ajouter du lest ou de durcir la variante.
+ *
+ * Hypertrophie : plus de repetitions, moins de repos, et on s'approche
+ * davantage de l'echec.
+ *
+ * Les autres objectifs gardent la prescription d'origine : elle est calee sur
+ * un athlete hybride, ce qui reste le bon compromis quand la force n'est pas
+ * la priorite.
+ */
+interface Dosage {
+  /** Decalage applique aux repetitions. */
+  reps: number
+  /** Multiplicateur du temps de repos. */
+  repos: number
+  /** Repetitions en reserve visees. */
+  rir: number
+  /** Ce qui change, dit a l'athlete. */
+  note: string
+}
+
+const DOSAGES: Partial<Record<GoalType, Dosage>> = {
+  force: {
+    reps: -2,
+    repos: 1.5,
+    rir: 2,
+    note: 'Séries courtes et repos longs : lest ou variante plus dure plutôt que plus de répétitions.',
+  },
+  hypertrophie: {
+    reps: +3,
+    repos: 0.7,
+    rir: 1,
+    note: 'Séries longues et repos courts, plus près de l’échec : c’est le volume qui fait grossir.',
+  },
+}
+
+/** Repetitions minimales : en dessous, une serie au poids du corps n'a plus de sens. */
+const REPS_MIN = 3
+
+/**
+ * Repos plancher, en secondes.
+ *
+ * Multiplier un repos deja court en donne un irrealiste : 60 s reduites de
+ * 30 % tombent a 42 s, ce que personne ne tient entre deux series de releves
+ * de jambes. Le multiplicateur decrit une intention, le plancher l'empeche
+ * de produire une consigne intenable.
+ */
+const REPOS_MIN = 45
+
+/**
+ * Decale une fourchette de repetitions.
+ *
+ * Ne touche que ce qui est chiffre. « AMRAP », « 50 % du max » ou une
+ * distance restent tels quels : decaler un test de maximum le viderait de
+ * son sens, et c'est justement le repere que l'application refuse d'inventer.
+ */
+export function decalerReps(reps: string, delta: number): string {
+  const plage = reps.match(/^(\d+)\u2013(\d+)$/)
+  if (plage) {
+    const bas = Math.max(REPS_MIN, Number(plage[1]) + delta)
+    const haut = Math.max(bas + 1, Number(plage[2]) + delta)
+    return `${bas}\u2013${haut}`
+  }
+  const seul = reps.match(/^(\d+)$/)
+  if (seul) return `${Math.max(REPS_MIN, Number(seul[1]) + delta)}`
+  return reps
+}
+
+/** Applique le dosage de l'objectif a une prescription de base. */
+export function doserPourObjectif(exercices: Exercise[], objectif?: GoalType | null): Exercise[] {
+  const d = objectif ? DOSAGES[objectif] : undefined
+  if (!d) return exercices
+
+  return exercices.map((e) =>
+    // Une serie de test se mesure telle quelle, sinon ce n'est plus un test.
+    e.test
+      ? e
+      : {
+          ...e,
+          reps: decalerReps(e.reps, d.reps),
+          rest: Math.max(REPOS_MIN, Math.round(e.rest * d.repos)),
+          rir: d.rir,
+        },
+  )
+}
+
+/** Phrase expliquant le dosage, vide quand l'objectif ne le modifie pas. */
+export function noteDeDosage(objectif?: GoalType | null): string {
+  return (objectif && DOSAGES[objectif]?.note) ?? ''
+}
+
 export function buildStrength(kind: 'UPPER' | 'LOWER', w: number): Exercise[] {
   const prog = Math.floor((w - 1) / 3) // +1 rep toutes les 3 semaines
   if (kind === 'UPPER') {
@@ -738,6 +840,9 @@ export function buildSession(
   } = opts
   const w = Math.max(1, week)
   const micro = microcycleDe(goal)
+  // Prefixe d'un espace : vide, il ne laisse aucune trace dans le texte.
+  const note = noteDeDosage(goal)
+  const dosage = note ? ` ${note}` : ''
   const phase = phaseAt(date, w, raceDate)
   const base = {
     id: makeId(),
@@ -804,13 +909,13 @@ export function buildSession(
         duration: 50,
         intensity: 3,
         goal: 'Force relative sur barre. Tractions et dips en progression douce.',
-        why: "La force relative se construit loin de l'échec, en repetant des séries propres semaine après semaine. Le jour de test est la seule exception.",
+        why: `La force relative se construit loin de l'échec, en repetant des séries propres semaine après semaine. Le jour de test est la seule exception.${dosage}`,
         target: "Jamais à l'échec sauf jour de test. Si la dernière répétition se dégrade, la série est finie.",
         cues: [
           'Échauffe les épaules et les coudes 5 min avant la première traction',
           'Repos complet entre les séries : la qualité prime sur la densite',
         ],
-        exercises: buildStrength('UPPER', w),
+        exercises: doserPourObjectif(buildStrength('UPPER', w), goal),
       }
 
     case 'RUN': {
@@ -929,13 +1034,13 @@ export function buildSession(
         duration: 45,
         intensity: 3,
         goal: 'Renforcement structurel : genoux, chevilles, chaîne postérieure.',
-        why: 'Le volume de course va doubler en trois mois. Sans travail de force, ce sont les tendons qui lâchent en premier.',
+        why: `Le volume de course va doubler en trois mois. Sans travail de force, ce sont les tendons qui lâchent en premier.${dosage}`,
         target: "Pas d'échec musculaire. On cherche la qualité de mouvement et la resistance tendineuse.",
         cues: [
           'Place 24 h avant la sortie longue : reste à RIR 2–3',
           'Si les cuisses tirent encore demain matin, tu es alle trop loin',
         ],
-        exercises: buildStrength('LOWER', w),
+        exercises: doserPourObjectif(buildStrength('LOWER', w), goal),
         extra:
           allowDoubles && slot === 5
             ? {

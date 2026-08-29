@@ -5,6 +5,9 @@ import {
   baseWeeklyKm,
   buildLegFinisher,
   buildSession,
+  buildStrength,
+  decalerReps,
+  doserPourObjectif,
   generatePlan,
   isDeloadWeek,
   MIN_WEEKS_FOR_SPECIFIC,
@@ -413,5 +416,56 @@ describe('volume de course reparti', () => {
     // Reproduit le comportement d'origine, ou c'etait le slot 4.
     expect(estFootingSouple(4, microcycleDe('marathon'))).toBe(true)
     expect(estFootingSouple(2, microcycleDe('marathon'))).toBe(false)
+  })
+})
+
+describe('dosage de la force selon l’objectif', () => {
+  const haut = (goal: GoalType | null) => doserPourObjectif(buildStrength('UPPER', 4), goal)
+  const traction = (goal: GoalType | null) => haut(goal).find((e) => e.n === 'Tractions strictes')!
+
+  it('ne touche à rien sans objectif déclaré', () => {
+    expect(haut(null)).toEqual(buildStrength('UPPER', 4))
+  })
+
+  it('raccourcit les séries et allonge le repos pour la force', () => {
+    // En poids de corps on ne devient pas fort en en faisant plus, mais en
+    // rendant chaque repetition plus dure.
+    const base = traction(null)
+    const f = traction('force')
+    expect(f.rest).toBeGreaterThan(base.rest)
+    expect(Number(f.reps.split('–')[0])).toBeLessThan(Number(base.reps.split('–')[0]))
+  })
+
+  it('allonge les séries et raccourcit le repos pour l’hypertrophie', () => {
+    const base = traction(null)
+    const h = traction('hypertrophie')
+    expect(h.rest).toBeLessThan(base.rest)
+    expect(Number(h.reps.split('–')[0])).toBeGreaterThan(Number(base.reps.split('–')[0]))
+    expect(h.rir).toBeLessThan(base.rir)
+  })
+
+  it('ne descend jamais sous un repos tenable', () => {
+    // 60 s reduites de 30 % donnaient 42 s entre deux series de releves de
+    // jambes : une consigne que personne ne suit.
+    for (const e of haut('hypertrophie')) expect(e.rest).toBeGreaterThanOrEqual(45)
+  })
+
+  it('laisse les séries de test intactes', () => {
+    // Decaler un test de maximum le viderait de son sens — c'est le repere
+    // meme que l'application refuse d'inventer.
+    const semaine1 = doserPourObjectif(buildStrength('UPPER', 1), 'hypertrophie')
+    const tests = semaine1.filter((e) => e.test)
+    expect(tests.length).toBeGreaterThan(0)
+    expect(tests.every((e) => e.reps === 'AMRAP' && e.rir === 0)).toBe(true)
+  })
+
+  it('ne modifie pas une consigne non chiffrée', () => {
+    expect(decalerReps('AMRAP', -2)).toBe('AMRAP')
+    expect(decalerReps('50 % du max', 3)).toBe('50 % du max')
+  })
+
+  it('garde une fourchette cohérente près du plancher', () => {
+    // Le bas ne descend pas sous 3, et le haut reste au-dessus du bas.
+    expect(decalerReps('4–5', -5)).toBe('3–4')
   })
 })

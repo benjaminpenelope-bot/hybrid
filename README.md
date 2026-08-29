@@ -13,7 +13,7 @@ Next.js 14 (App Router, TypeScript strict) + Supabase + Tailwind.
 | Étape | Contenu | État |
 |---|---|---|
 | 1 | Schéma Supabase, RLS, seed | fait |
-| 2 | `lib/engine/` complet + tests Vitest | fait — 349 tests verts |
+| 2 | `lib/engine/` complet + tests Vitest | fait — 361 tests verts |
 | 3 | Auth et onboarding | fait |
 | 4 | Accueil, séance du jour, mode séance, résumé | fait |
 | 5 | Semaine, éditeur, adaptation automatique | fait |
@@ -33,16 +33,17 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 
 | Sujet | État |
 |---|---|
-| Planificateur multi-sport | partiel — la répartition de la semaine dépend de l'objectif, des sports déclarés et des jours disponibles. Reste à différencier la **prescription** de force selon l'objectif : force et hypertrophie partagent aujourd'hui le même microcycle et les mêmes séries |
+| Planificateur multi-sport | la répartition de la semaine **et** la prescription de force dépendent de l'objectif, des sports déclarés et des jours disponibles. Reste le vélo |
 | Séances de vélo | aucune. Le cyclisme est enregistré au profil, jamais programmé, et l'onboarding refuse le vélo seul |
 | Ateliers HYROX (traîneau, rameur, ski erg) | non mesurables : aucun écran ne permet de les enregistrer |
-| Coach en ligne | code à jour (Claude Opus 5, raisonnement adaptatif, repli serveur sur refus), mais **jamais exercé** : `ANTHROPIC_API_KEY` est vide. Le mode hors ligne, déterministe, est celui qui tourne |
+| Coach en ligne | **en service**, exercé en production. Repli local automatique en cas de panne, de refus ou de plafond atteint |
 | Limite d'usage du coach | **posée** — 3/jour et 20/mois en gratuit, 15/jour et 60/mois en payant, réglables par variables d'environnement (`COACH_LIMITE_*`). Plafond atteint : le coach répond en local, il ne tombe pas |
 | Modèle du coach | Sonnet 5 en gratuit, Opus 5 en payant. Le raisonnement dur est en TypeScript, le modèle présente un verdict déjà calculé |
-| Envoi d'e-mails | SMTP Supabase partagé, plafonné autour de 4 inscriptions par heure. Bloquant pour un vrai lancement |
-| Suppression de compte et export RGPD | absents. Obligatoires pour un SaaS |
-| Abonnements | **table posée**, agnostique du fournisseur (Stripe, achat intégré Apple, geste manuel). `planDe()` la lit. L'essai de 14 jours sans carte fonctionne ; le paiement n'est pas branché et la page le dit |
-| Paiement | **code écrit** — page de paiement, portail de résiliation, webhook signé. Il manque les clés : `STRIPE_SECRET_KEY`, les deux `price_...` et `STRIPE_WEBHOOK_SECRET`. Sans elles la page annonce que le paiement n'est pas ouvert |
+| Envoi d'e-mails | SMTP Supabase partagé, ~4 envois/heure. L'inscription avec mot de passe ramène la consommation à **un seul e-mail par compte** au lieu d'un par connexion, mais le plafond reste : bloquant pour un lancement public. Attend un domaine |
+| Suppression de compte et export RGPD | **faits**. Export par le client de session, donc borné par la RLS ; suppression avec purge du Storage et du cache de l'appareil |
+| Abonnements | **en service**. Essai de 14 jours sans carte, abonnement possible pendant l'essai sans perdre les jours restants, résiliation qui court jusqu'au terme payé |
+| Paiement | **en production, mode live**. Parcours complet exercé de bout en bout : paiement, webhook signé, bascule de plan, résiliation |
+| Connexion Apple et Google | masquée : les fournisseurs ne sont pas activés côté Supabase. Le code est en place, `OAUTH_ACTIF` la rallume |
 | Achat intégré iOS | non branché. Apple prélève 15 à 30 % ; la table `subscriptions` est déjà agnostique, il ne restera qu'à écrire la vérification de reçu |
 
 ---
@@ -53,7 +54,7 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 npm install
 cp .env.example .env.local   # puis renseigner les clés
 npm run dev                  # http://localhost:3400
-npm test                     # 349 tests
+npm test                     # 361 tests
 npm run typecheck
 ```
 
@@ -329,7 +330,7 @@ Le prototype ne servait qu'un athlète, dont la base était connue ; l'app en se
 npm test
 ```
 
-349 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
+361 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
 limites exigés : historique vide, une seule séance, benchmarks absents, semaine de deload,
 première semaine de données (pas de faux rouge sur le ratio de charge).
 
