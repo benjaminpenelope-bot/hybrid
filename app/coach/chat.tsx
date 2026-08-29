@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { fenetre } from '@/lib/coach/historique'
 import type { ToolName } from '@/lib/coach/tools'
 import { applyProposal, saveCoachMessage } from './actions'
 
@@ -101,10 +102,26 @@ export function CoachChat({
       const response = await fetch('/api/coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next }),
+        // On n'envoie que la fenetre : l'etat local peut contenir plus de
+        // messages que le serveur n'en accepte, et l'historique est de toute
+        // facon la ligne de cout la plus lourde.
+        body: JSON.stringify({ messages: fenetre(next) }),
       })
 
-      if (!response.ok || !response.body) throw new Error('Réponse indisponible.')
+      if (!response.ok) {
+        /*
+         * Le serveur explique pourquoi il refuse. Jeter ce message pour
+         * afficher « verifie ta connexion » envoie chercher la panne au
+         * mauvais endroit : c'est exactement ce qui s'est passe quand la
+         * fenetre de conversation depassait la limite.
+         */
+        const detail = await response
+          .json()
+          .then((c: { error?: string }) => c.error)
+          .catch(() => null)
+        throw new Error(detail ?? `Le serveur a répondu ${response.status}.`)
+      }
+      if (!response.body) throw new Error('Réponse indisponible.')
 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
@@ -143,8 +160,12 @@ export function CoachChat({
         void saveCoachMessage('assistant', answer)
       }
       setStreaming('')
-    } catch {
-      setNotice("La requête a échoué. Vérifie ta connexion, puis réessaie.")
+    } catch (e) {
+      setNotice(
+        e instanceof Error && e.message !== ''
+          ? e.message
+          : 'La requête a échoué. Vérifie ta connexion, puis réessaie.',
+      )
       setStreaming('')
     } finally {
       setBusy(false)

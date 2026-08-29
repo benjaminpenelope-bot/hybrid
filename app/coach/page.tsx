@@ -3,6 +3,7 @@ import { loadState } from '@/lib/db/queries'
 import { quickPrompts } from '@/lib/coach/context'
 import { openingMessage } from '@/lib/coach/local'
 import { todayISO } from '@/lib/engine/date'
+import { MAX_TOURS_ENVOYES } from '@/lib/coach/historique'
 import { createClient, currentUserId } from '@/lib/supabase/server'
 import { CoachChat } from './chat'
 
@@ -19,13 +20,18 @@ export default async function Page() {
   const today = todayISO()
   const supabase = createClient()
 
-  /** Les 20 derniers messages : de quoi retrouver le fil sans noyer le contexte. */
+  /*
+   * On charge la fenetre d'envoi, pas un nombre choisi a part. C'est le
+   * decalage entre les deux qui avait casse le coach : la page en chargeait
+   * vingt, le client ajoutait le message en cours, et le serveur refusait le
+   * vingt-et-unieme.
+   */
   const { data } = await supabase
     .from('coach_messages')
     .select('role, content')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(20)
+    .limit(MAX_TOURS_ENVOYES)
 
   const history = (data ?? [])
     .reverse()

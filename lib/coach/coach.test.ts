@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { emptyState, seedState } from '../seed-data'
 import { addDays } from '../engine/date'
 import { buildCoachContext, quickPrompts } from './context'
+import { fenetre, MAX_TOURS_ENVOYES } from './historique'
 import { localAnswer, openingMessage } from './local'
 import { validateProposal, COACH_TOOLS } from './tools'
 import type { AthleteState } from '../engine/types'
@@ -78,6 +79,29 @@ describe('ce que le coach sait de la declaration', () => {
     const v = buildCoachContext(seedState(TODAY), TODAY).verdict_du_jour
     expect(v.action).toBeDefined()
     expect(Array.isArray(v.preuves)).toBe(true)
+  })
+})
+
+describe('fenêtre de conversation', () => {
+  const conversation = (n: number) => Array.from({ length: n }, (_, i) => i)
+
+  it('ne depasse jamais ce que le serveur accepte', () => {
+    // Le defaut d'origine : la page chargeait 20 messages, le client y
+    // ajoutait celui en cours, et le serveur refusait le vingt-et-unieme.
+    // Le coach tombait definitivement des que l'historique etait plein.
+    const pleine = [...conversation(MAX_TOURS_ENVOYES), 999]
+    expect(fenetre(pleine)).toHaveLength(MAX_TOURS_ENVOYES)
+  })
+
+  it('garde la fin de la conversation, pas le debut', () => {
+    // C'est le contexte proche qui sert a repondre.
+    const f = fenetre([...conversation(MAX_TOURS_ENVOYES), 999])
+    expect(f[f.length - 1]).toBe(999)
+    expect(f[0]).toBe(1)
+  })
+
+  it('laisse une conversation courte intacte', () => {
+    expect(fenetre([1, 2, 3])).toEqual([1, 2, 3])
   })
 })
 

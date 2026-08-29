@@ -5,6 +5,7 @@ import { loadState } from '@/lib/db/queries'
 import { buildCoachContext } from '@/lib/coach/context'
 import { localAnswer } from '@/lib/coach/local'
 import { contextBlock, COACH_SYSTEM } from '@/lib/coach/prompt'
+import { MAX_TOURS_ENVOYES } from '@/lib/coach/historique'
 import { enregistrerUsage, etatQuota, messageQuota, MODELES } from '@/lib/coach/quota'
 import { COACH_TOOLS, TOOL_LABELS, validateProposal, type ToolName } from '@/lib/coach/tools'
 import { todayISO } from '@/lib/engine/date'
@@ -45,7 +46,7 @@ const bodySchema = z.object({
       }),
     )
     .min(1)
-    .max(20),
+    .max(MAX_TOURS_ENVOYES),
 })
 
 type Event =
