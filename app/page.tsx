@@ -18,7 +18,7 @@ const sports = [
   { nom: 'Musculation', bientot: false },
   { nom: 'Natation', bientot: false },
   { nom: 'HYROX', bientot: false },
-  { nom: 'Cyclisme', bientot: true },
+  { nom: 'Cyclisme', bientot: false },
 ] as const
 
 const steps = [
@@ -148,9 +148,9 @@ export default function LandingPage() {
       <section className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
         <SectionHeader eyebrow="Les 5 sports" title="Tout ton entraînement. Au même endroit." />
         <p className="mt-4 max-w-[720px] text-[15px] leading-7 text-mut">
-          Un marathonien peut aussi faire de la musculation et de la natation. HYBRID construit une
-          stratégie globale au lieu de traiter chaque discipline séparément. Le vélo est suivi dans
-          ton profil ; ses séances arriveront avec le planificateur multi-sport.
+          Un marathonien peut aussi rouler, nager et pousser de la fonte. HYBRID construit une
+          stratégie globale au lieu de traiter chaque discipline séparément : le volume de course,
+          les séances de barre et les sorties vélo se répondent au lieu de s&rsquo;additionner.
         </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {sports.map((sport) => (

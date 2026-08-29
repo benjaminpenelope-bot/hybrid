@@ -36,6 +36,7 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 | Planificateur multi-sport | **fait**. Répartition de la semaine, prescription de force et sports substitués dépendent de l'objectif, des sports déclarés et des jours disponibles |
 | Séances de vélo | **faites**. Tempo, endurance, récupération et sortie longue, dosées en minutes. Le vélo entre par la substitution de sport : un cycliste reçoit un vrai programme, un coureur qui roule aussi voit ses créneaux de nage devenir des sorties vélo |
 | Ateliers HYROX (traîneau, rameur, ski erg) | non mesurables : aucun écran ne permet de les enregistrer |
+| Contraste `--dim` | 104 usages sous le seuil WCAG AA (3,0 au lieu de 4,5). Corrigé aux deux endroits qui le méritaient — les cinq visages et les preuves du verdict ; remonter le jeton éclaircirait 30 fichiers d'un coup et relève d'un choix de design |
 | Coach en ligne | **en service**, exercé en production. Repli local automatique en cas de panne, de refus ou de plafond atteint |
 | Limite d'usage du coach | **posée** — 3/jour et 20/mois en gratuit, 15/jour et 60/mois en payant, réglables par variables d'environnement (`COACH_LIMITE_*`). Plafond atteint : le coach répond en local, il ne tombe pas |
 | Modèle du coach | Sonnet 5 en gratuit, Opus 5 en payant. Le raisonnement dur est en TypeScript, le modèle présente un verdict déjà calculé |

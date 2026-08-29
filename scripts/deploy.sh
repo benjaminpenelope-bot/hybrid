@@ -23,7 +23,7 @@ set -a && . ./.env.local && set +a
 
 # Le domaine de production. Sert au lien magique et au retour OAuth : s'il est
 # faux, les liens reçus par mail renvoient vers localhost.
-SITE="${1:-https://hybrid.vercel.app}"
+SITE="${1:-https://hybrid-drab-theta.vercel.app}"
 
 pousser() {
   local nom="$1" valeur="$2" env="$3"

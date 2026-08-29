@@ -386,20 +386,6 @@ export function OnboardingForm() {
               onChange={(v) => set('sports', v)}
             />
           </Question>
-          {d.sports.includes('cycling') && sportPlanifiable && (
-            <p className="rounded-[11px] border border-warn/40 bg-warn/10 p-3 text-[12.5px] leading-relaxed text-text">
-              Le cyclisme est enregistré dans ton profil, mais le générateur ne
-              produit pas encore de séances de vélo. Elles arriveront avec le
-              planificateur multi-sport.
-            </p>
-          )}
-          {d.sports.length > 0 && !sportPlanifiable && (
-            <p className="rounded-[11px] border border-bad/40 bg-bad/10 p-3 text-[12.5px] leading-relaxed text-text">
-              Avec le cyclisme seul, ton programme serait vide : aucune séance de
-              vélo n’est encore générée. Ajoute la course, la natation ou la force
-              pour recevoir un plan.
-            </p>
-          )}
         </section>
       )}
 
