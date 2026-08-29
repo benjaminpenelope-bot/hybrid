@@ -7,6 +7,7 @@ import type {
   Session,
   SessionKind,
   SessionType,
+  Sport,
 } from './types'
 
 /**
@@ -39,6 +40,16 @@ export interface PlanOptions {
   baseKm?: number
   /** Injectable pour rendre les tests deterministes. */
   makeId?: () => string
+  /**
+   * Sports declares. Vide = inconnu : le microcycle historique s'applique tel
+   * quel, ce qui preserve les comptes anterieurs au questionnaire.
+   */
+  sports?: Sport[]
+  /**
+   * Jours ou l'athlete peut s'entrainer, 0 = dimanche. Vide = inconnu, tous
+   * les jours du microcycle sont conserves.
+   */
+  availableWeekdays?: number[]
 }
 
 function defaultId(): string {
@@ -499,6 +510,59 @@ export function runSplit(w: number, baseKm: number = RUN_KM_W1): RunSplit {
  * @param weekday jour de la semaine, 0 = dimanche
  * @param forcedType impose un type, en ignorant le microcycle (editeur de séance)
  */
+/* ── Sports declares ───────────────────────────────────────── */
+
+/** Sport necessaire pour realiser un type de seance. */
+const SPORTS_DU_TYPE: Record<SessionType, Sport[]> = {
+  RUN: ['running'],
+  LONG: ['running'],
+  SWIM: ['swimming'],
+  UPPER: ['strength', 'street_workout'],
+  LOWER: ['strength', 'street_workout'],
+  REST: [],
+}
+
+/**
+ * Remplacants acceptables, du plus proche au plus eloigne. On reste d'abord
+ * dans la meme famille — une nage se remplace par une course avant de se
+ * remplacer par de la force — pour que l'equilibre du microcycle survive a la
+ * substitution.
+ */
+const REMPLACANTS: Record<SessionType, SessionType[]> = {
+  SWIM: ['RUN', 'UPPER'],
+  RUN: ['SWIM', 'UPPER'],
+  LONG: ['SWIM', 'LOWER'],
+  UPPER: ['LOWER', 'RUN', 'SWIM'],
+  LOWER: ['UPPER', 'RUN', 'SWIM'],
+  REST: [],
+}
+
+/** L'athlete pratique-t-il ce qu'exige ce type de seance ? */
+export function typePraticable(type: SessionType, sports: Sport[]): boolean {
+  const requis = SPORTS_DU_TYPE[type]
+  if (requis.length === 0) return true
+  return requis.some((s) => sports.includes(s))
+}
+
+/**
+ * Type effectivement retenu compte tenu des sports declares.
+ *
+ * Sans declaration, rien ne change : un tableau vide veut dire « on ne sait
+ * pas », et supposer que l'athlete ne pratique rien viderait le programme des
+ * comptes crees avant le questionnaire.
+ *
+ * Le cyclisme n'a pas de seance generable : il ne peut donc jamais servir de
+ * remplacant. Un athlete qui ne declarerait que du velo n'aurait aucun jour
+ * praticable — c'est pourquoi l'onboarding refuse cette combinaison plutot
+ * que de livrer un programme vide.
+ */
+export function typeRetenu(type: SessionType, sports: Sport[]): SessionType {
+  if (sports.length === 0) return type
+  if (typePraticable(type, sports)) return type
+  const remplacant = REMPLACANTS[type].find((t) => typePraticable(t, sports))
+  return remplacant ?? 'REST'
+}
+
 export function buildSession(
   date: ISODate,
   week: number,
@@ -512,6 +576,8 @@ export function buildSession(
     raceDate = null,
     baseKm = RUN_KM_W1,
     makeId = defaultId,
+    sports = [],
+    availableWeekdays = [],
   } = opts
   const w = Math.max(1, week)
   const { easy, fundamental, long } = runSplit(w, baseKm)
@@ -530,8 +596,21 @@ export function buildSession(
   // Sans doubles, le samedi est une natation endurance et les jambes sont
   // enchainees au footing du mercredi. Avec doubles, le samedi redevient
   // une séance LOWER complète doublee de la natation endurance.
-  const type: SessionType =
+  const voulu: SessionType =
     forcedType ?? (slot === 5 ? (allowDoubles ? 'LOWER' : 'SWIM') : SLOT_TYPE[slot])
+
+  /*
+   * Un type impose vient de l'editeur : l'athlete a choisi, on n'y touche pas.
+   * Les deux filtres ne s'appliquent donc qu'au plan genere.
+   *
+   * Ordre : la disponibilite d'abord. Substituer un sport sur un jour ou
+   * personne ne peut s'entrainer reviendrait a deplacer une seance impossible.
+   */
+  const type: SessionType = forcedType
+    ? forcedType
+    : availableWeekdays.length > 0 && !availableWeekdays.includes(weekday)
+      ? 'REST'
+      : typeRetenu(voulu, sports)
 
   switch (type) {
     case 'REST':
@@ -600,7 +679,14 @@ export function buildSession(
           ],
         }
       }
-      const finisher = allowDoubles ? null : buildLegFinisher(w)
+      /*
+       * Le bloc jambes est de la force enchainee au footing : il disparait
+       * avec les doubles, et aussi quand l'athlete a declare ses sports sans
+       * y mettre de force. Sans declaration du tout, il reste — un tableau
+       * vide veut dire « on ne sait pas », pas « aucune force ».
+       */
+      const faitDeLaForce = sports.length === 0 || typePraticable('LOWER', sports)
+      const finisher = allowDoubles || !faitDeLaForce ? null : buildLegFinisher(w)
       return {
         ...base,
         type: 'RUN',

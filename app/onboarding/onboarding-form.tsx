@@ -10,6 +10,7 @@ import {
   NIVEAU_LABELS,
   OBJECTIFS,
   OBJECTIF_LABELS,
+  PLANIFIABLES,
   POOL_LABELS,
   SPORTS,
   SPORT_LABELS,
@@ -190,6 +191,8 @@ export function OnboardingForm() {
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((p) => ({ ...p, [k]: v }))
 
   const faitDeLaForce = d.sports.includes('strength') || d.sports.includes('street_workout')
+  /* Au moins un sport dont le generateur sait deduire des seances. */
+  const sportPlanifiable = d.sports.some((s) => PLANIFIABLES.includes(s))
 
   /*
    * Les étapes propres à une discipline n'existent que si elle est déclarée.
@@ -216,7 +219,9 @@ export function OnboardingForm() {
       num(d.heightCm) <= 250 &&
       num(d.currentKg) >= 30 &&
       num(d.goalKg) >= 30,
-    sports: d.sports.length > 0,
+    // Le velo seul ne produirait aucune seance : on bloque ici plutot qu'au
+    // dernier ecran, une fois tout le questionnaire rempli.
+    sports: d.sports.length > 0 && sportPlanifiable,
     objectifs: d.goalMain !== null && d.goalSecond !== d.goalMain,
     dispo: d.weekdays.length >= 2 && d.weekdays.length <= 6 && num(d.sessionMinutes) >= 20,
     course:
@@ -381,11 +386,18 @@ export function OnboardingForm() {
               onChange={(v) => set('sports', v)}
             />
           </Question>
-          {d.sports.includes('cycling') && (
+          {d.sports.includes('cycling') && sportPlanifiable && (
             <p className="rounded-[11px] border border-warn/40 bg-warn/10 p-3 text-[12.5px] leading-relaxed text-text">
               Le cyclisme est enregistré dans ton profil, mais le générateur ne
               produit pas encore de séances de vélo. Elles arriveront avec le
               planificateur multi-sport.
+            </p>
+          )}
+          {d.sports.length > 0 && !sportPlanifiable && (
+            <p className="rounded-[11px] border border-bad/40 bg-bad/10 p-3 text-[12.5px] leading-relaxed text-text">
+              Avec le cyclisme seul, ton programme serait vide : aucune séance de
+              vélo n’est encore générée. Ajoute la course, la natation ou la force
+              pour recevoir un plan.
             </p>
           )}
         </section>

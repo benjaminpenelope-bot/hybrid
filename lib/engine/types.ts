@@ -195,7 +195,17 @@ export interface Profile {
   allowDoubles: boolean
   /** Volume de course de la semaine 1, en km. Ancre l'échelle du programme. */
   baseWeeklyKm?: number | null
+  /** Sports declares. Vide pour un compte anterieur au questionnaire. */
+  sports: Sport[]
+  /**
+   * Jours ou l'athlete peut s'entrainer, 0 = dimanche. Vide = inconnu, et le
+   * planificateur retombe alors sur le microcycle complet.
+   */
+  availableWeekdays: number[]
 }
+
+/** Sports proposes a l'onboarding. Miroir de l'enum `sport`. */
+export type Sport = 'running' | 'cycling' | 'swimming' | 'strength' | 'street_workout'
 
 /** Types d'objectif proposes a l'onboarding. Miroir de l'enum `goal_type`. */
 export type GoalType =

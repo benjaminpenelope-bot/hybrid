@@ -19,6 +19,7 @@ import type {
   SessionLog,
   SessionStatus,
   SessionType,
+  Sport,
   WeightEntry,
   Wellness,
 } from '../engine/types'
@@ -42,6 +43,8 @@ export interface ProfileRow {
   allow_doubles: boolean
   base_weekly_km: string | number | null
   onboarded_at: string | null
+  sports: string[] | null
+  available_weekdays: number[] | null
 }
 
 export interface SessionRow {
@@ -133,6 +136,11 @@ export function rowToProfile(row: ProfileRow): Profile {
     restWeekday: row.rest_weekday,
     allowDoubles: row.allow_doubles,
     baseWeeklyKm: num(row.base_weekly_km),
+    // Nuls pour un compte anterieur au questionnaire : le tableau vide dit
+    // « on ne sait pas », et le planificateur retombe sur son comportement
+    // historique plutot que sur un programme vide.
+    sports: (row.sports ?? []) as Sport[],
+    availableWeekdays: row.available_weekdays ?? [],
   }
 }
 

@@ -24,6 +24,14 @@ export const benchmarkClaim = z.discriminatedUnion('mode', [
 export type BenchmarkClaim = z.infer<typeof benchmarkClaim>
 
 export const SPORTS = ['running', 'cycling', 'swimming', 'strength', 'street_workout'] as const
+
+/** Sports dont le generateur sait deduire des seances. Voir `typeRetenu`. */
+export const PLANIFIABLES: readonly (typeof SPORTS)[number][] = [
+  'running',
+  'swimming',
+  'strength',
+  'street_workout',
+]
 export const NIVEAUX = ['debutant', 'intermediaire', 'avance', 'expert'] as const
 export const OBJECTIFS = [
   'marathon',
@@ -153,6 +161,22 @@ export const onboardingSchema = z
     const faitDeLaForce = v.sports.includes('strength') || v.sports.includes('street_workout')
     if (faitDeLaForce && !v.force) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['force'], message: 'Détail de force manquant.' })
+    }
+
+    /*
+     * Le generateur ne sait produire que de la course, de la natation et de
+     * la force. Le cyclisme est enregistre — il compte dans le profil et
+     * pourra etre importe — mais aucune seance ne s'en deduit. Declare seul,
+     * il livrerait un programme entierement vide : mieux vaut le dire ici
+     * que de laisser l'athlete decouvrir sept jours de repos.
+     */
+    if (!v.sports.some((s) => PLANIFIABLES.includes(s))) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['sports'],
+        message:
+          'Le cyclisme n’est pas encore programmé par l’app. Ajoute la course, la natation ou la force pour recevoir un programme.',
+      })
     }
 
     /* Un objectif secondaire identique au principal ne veut rien dire. */

@@ -14,8 +14,11 @@ import {
   runPhase,
   runSplit,
   swimTarget,
+  typePraticable,
+  typeRetenu,
   weekVolume,
 } from './program'
+import type { Sport } from './types'
 
 /** Lundi 16 mars 2026. Toutes les dates des tests en découlent. */
 const MONDAY = '2026-03-16'
@@ -226,5 +229,87 @@ describe('baseWeeklyKm', () => {
     const long = plan.find((s) => s.type === 'LONG')
     // 8 km de base : la sortie longue tourne autour de 3,5 km, pas de 6,5
     expect(long?.title).toContain('3.5 km')
+  })
+})
+
+
+describe('sports declares', () => {
+  const plan = (sports: Sport[], availableWeekdays: number[] = []) =>
+    generatePlan(MONDAY, 1, 1, {
+      restWeekday: 1,
+      sports,
+      availableWeekdays,
+      makeId: (() => {
+        let i = 0
+        return () => `p${++i}`
+      })(),
+    })
+
+  it('ne programme aucune nage a qui ne nage pas', () => {
+    const types = plan(['running', 'strength']).map((s) => s.type)
+    expect(types).not.toContain('SWIM')
+  })
+
+  it('remplace la nage par de la course plutot que par de la force', () => {
+    // Rester dans la famille endurance preserve l'equilibre du microcycle.
+    expect(typeRetenu('SWIM', ['running', 'strength'])).toBe('RUN')
+  })
+
+  it('met au repos ce qu’aucun sport declare ne permet', () => {
+    // Un nageur seul ne peut pas faire les seances de force du microcycle.
+    expect(typeRetenu('UPPER', ['swimming'])).toBe('SWIM')
+    expect(typeRetenu('LONG', ['strength'])).toBe('LOWER')
+  })
+
+  it('ne touche a rien quand aucun sport n’est declare', () => {
+    // Tableau vide = « on ne sait pas ». Vider le programme des comptes
+    // anterieurs au questionnaire serait pire que de le laisser tel quel.
+    expect(typeRetenu('SWIM', [])).toBe('SWIM')
+    expect(plan([]).filter((s) => s.type === 'SWIM').length).toBeGreaterThan(0)
+  })
+
+  it('retire le bloc jambes a qui ne declare aucune force', () => {
+    const footings = plan(['running', 'swimming']).filter((s) => s.type === 'RUN')
+    expect(footings.length).toBeGreaterThan(0)
+    expect(footings.every((s) => s.finisher === null)).toBe(true)
+  })
+
+  it('garde le bloc jambes quand la force est declaree', () => {
+    const footings = plan(['running', 'street_workout']).filter((s) => s.type === 'RUN')
+    expect(footings.some((s) => s.finisher !== null)).toBe(true)
+  })
+
+  it('le cyclisme ne remplace jamais rien : aucune seance ne s’en deduit', () => {
+    expect(typePraticable('RUN', ['cycling'])).toBe(false)
+    expect(typeRetenu('RUN', ['cycling'])).toBe('REST')
+  })
+})
+
+describe('jours disponibles', () => {
+  const plan = (availableWeekdays: number[]) =>
+    generatePlan(MONDAY, 1, 1, {
+      restWeekday: 1,
+      availableWeekdays,
+      sports: ['running', 'swimming', 'street_workout'],
+      makeId: (() => {
+        let i = 0
+        return () => `d${++i}`
+      })(),
+    })
+
+  it('ne programme rien un jour ou l’athlete n’est pas disponible', () => {
+    // Mardi, jeudi, samedi.
+    const dispo = [2, 4, 6]
+    const seances = plan(dispo).filter((s) => s.type !== 'REST')
+    expect(seances.every((s) => dispo.includes(weekday(s.date)))).toBe(true)
+  })
+
+  it('produit autant de seances que de jours declares, au plus', () => {
+    expect(plan([2, 4, 6]).filter((s) => s.type !== 'REST')).toHaveLength(3)
+  })
+
+  it('conserve la semaine complete quand la disponibilite est inconnue', () => {
+    const s = generatePlan(MONDAY, 1, 1, { restWeekday: 1, makeId: () => 'x' })
+    expect(s.filter((x) => x.type !== 'REST').length).toBe(6)
   })
 })

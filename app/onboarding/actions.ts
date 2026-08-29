@@ -200,15 +200,18 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
   if (cleanupError) return { ok: false, message: cleanupError.message }
 
   /*
-   * Le generateur ne sait encore produire qu'un microcycle course / natation /
-   * force. Les sports declares et les jours disponibles sont enregistres mais
-   * ne l'influencent pas encore : c'est le planificateur multi-sport, etape
-   * suivante du plan, qui s'en servira.
+   * Le microcycle reste celui de la course / natation / force, mais il est
+   * desormais filtre : les jours non disponibles deviennent du repos, et un
+   * type de seance dont le sport n'a pas ete declare est remplace par un
+   * sport pratique — ou retire. La periodisation propre a chaque objectif
+   * reste a faire.
    */
   const plan = generatePlan(today, PLAN_WEEKS, 1, {
     restWeekday,
     allowDoubles: disponibilites.allowDoubles,
     raceDate: objectifs.principal.date,
+    sports,
+    availableWeekdays: disponibilites.availableWeekdays,
     ...(baseKm !== null ? { baseKm } : {}),
   })
 

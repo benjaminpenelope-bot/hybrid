@@ -124,6 +124,8 @@ export function seedState(today: ISODate, makeId: () => string = seq): AthleteSt
       birthDate: null,
       programStart: today,
       raceDate: null,
+      sports: ['running', 'swimming', 'street_workout'],
+      availableWeekdays: [0, 2, 3, 4, 5, 6],
     },
     sessions: [
       ...seedHistory(today, makeId),
@@ -183,6 +185,8 @@ export function emptyState(today: ISODate): AthleteState {
       raceDate: null,
       restWeekday: 1,
       allowDoubles: false,
+      sports: [],
+      availableWeekdays: [],
     },
     sessions: [],
     weights: [],
