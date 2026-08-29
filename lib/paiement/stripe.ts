@@ -54,3 +54,32 @@ export function statutDepuisStripe(s: Stripe.Subscription.Status): 'actif' | 'an
       return 'expire'
   }
 }
+
+/**
+ * Traduit une erreur Stripe en une phrase pour l'athlète.
+ *
+ * Une erreur de configuration n'est pas une panne passagère. Les confondre
+ * fait chercher au mauvais endroit : « le paiement est momentanément
+ * indisponible » invite à réessayer plus tard, alors qu'un tarif absent ou une
+ * clé du mauvais monde ne se répareront jamais tout seuls. Le détail exact
+ * part dans les journaux du serveur, jamais vers le client — un message
+ * d'erreur d'API peut contenir des morceaux de la requête.
+ */
+export function messageStripe(erreur: unknown): string {
+  const type = (erreur as { type?: string } | null)?.type
+  switch (type) {
+    case 'StripeAuthenticationError':
+    case 'StripePermissionError':
+      return "Le paiement n'est pas correctement configuré sur ce serveur. On est prévenus."
+    case 'StripeInvalidRequestError':
+      // Tarif inexistant, cle de test face a des objets live, produit
+      // supprime : rien que l'athlete puisse corriger.
+      return "L'offre n'est pas disponible pour le moment. On est prévenus."
+    case 'StripeConnectionError':
+    case 'StripeAPIError':
+    case 'StripeRateLimitError':
+      return 'Le paiement est momentanément indisponible. Réessaie dans un instant.'
+    default:
+      return 'Le paiement est momentanément indisponible. Réessaie dans un instant.'
+  }
+}

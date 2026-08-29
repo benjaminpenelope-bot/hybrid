@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { JOURS_ESSAI, lireAbonnement } from '@/lib/coach/abonnement'
-import { configStripe, stripeClient, type Periodicite } from '@/lib/paiement/stripe'
+import { configStripe, messageStripe, stripeClient, type Periodicite } from '@/lib/paiement/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { currentUserId } from '@/lib/supabase/server'
 
@@ -108,7 +108,7 @@ export async function ouvrirPaiement(
     return { ok: true, url: session.url }
   } catch (e) {
     console.error('[stripe] ouverture du paiement impossible', e)
-    return { ok: false, message: 'Le paiement est momentanément indisponible.' }
+    return { ok: false, message: messageStripe(e) }
   }
 }
 
@@ -141,6 +141,6 @@ export async function ouvrirPortail(): Promise<{ ok: boolean; url?: string; mess
     return { ok: true, url: portail.url }
   } catch (e) {
     console.error('[stripe] ouverture du portail impossible', e)
-    return { ok: false, message: 'La gestion de l’abonnement est momentanément indisponible.' }
+    return { ok: false, message: messageStripe(e) }
   }
 }
