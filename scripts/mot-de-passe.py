@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Pose le mot de passe d'un compte Polytrain, sans passer par un e-mail.
+Pose le mot de passe d'un compte Hybrid, sans passer par un e-mail.
 
 Sert à contourner la limite d'envoi du SMTP mutualisé de Supabase, qui
 plafonne les liens magiques à quelques-uns par heure. Le mot de passe permet

@@ -1,4 +1,4 @@
-export const metadata = { title: 'Hors ligne · Polytrain' }
+export const metadata = { title: 'Hors ligne · Hybrid' }
 
 export default function Page() {
   return (

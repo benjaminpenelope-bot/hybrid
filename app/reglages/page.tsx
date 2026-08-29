@@ -12,7 +12,7 @@ import { MotDePasse } from './mot-de-passe'
 import { StravaCard } from './strava-card'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Réglages · Polytrain' }
+export const metadata = { title: 'Réglages · Hybrid' }
 
 /** Messages d'erreur renvoyés par les routes OAuth, traduits pour l'athlète. */
 const ERREURS: Record<string, string> = {
@@ -106,7 +106,7 @@ export default async function Page({
         <h2 className="eyebrow mb-2.5">Abonnement</h2>
         <div className="card">
           <div className="flex items-baseline justify-between gap-3">
-            <h3 className="text-[14px]">{plan === 'pro' ? 'POLYTRAIN PRO' : 'POLYTRAIN'}</h3>
+            <h3 className="text-[14px]">{plan === 'pro' ? 'HYBRID PRO' : 'HYBRID'}</h3>
             <span className="num shrink-0 text-[12.5px] text-mut">
               {plan === 'pro' ? 'actif' : 'gratuit'}
             </span>
@@ -122,7 +122,7 @@ export default async function Page({
             href="/pro"
             className="mt-3 inline-block rounded-[10px] border border-line2 bg-bg2 px-3 py-2 text-[12.5px] text-text"
           >
-            {plan === 'pro' ? 'Voir mon abonnement' : 'Découvrir POLYTRAIN PRO'}
+            {plan === 'pro' ? 'Voir mon abonnement' : 'Découvrir HYBRID PRO'}
           </Link>
         </div>
       </section>

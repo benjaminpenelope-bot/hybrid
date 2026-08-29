@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Polytrain',
-    short_name: 'Polytrain',
+    name: 'Hybrid',
+    short_name: 'Hybrid',
     description:
       'Entraînement hybride : course, natation, street workout et suivi physique, sur des données mesurées.',
     start_url: '/aujourdhui',

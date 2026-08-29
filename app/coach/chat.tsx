@@ -292,7 +292,7 @@ export function CoachChat({
                 href="/pro"
                 className="mt-3 inline-block rounded-[10px] border border-brand bg-brand/10 px-3 py-2 text-[12.5px] text-text"
               >
-                Voir POLYTRAIN PRO
+                Voir HYBRID PRO
               </Link>
             </>
           )}

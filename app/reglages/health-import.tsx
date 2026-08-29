@@ -76,7 +76,7 @@ export function HealthImport() {
     if (pesees.length === 0 && seances.length === 0) {
       setEtape('attente')
       setErreur(
-        "Aucune pesée ni séance suivie dans ce fichier. Polytrain ne lit que la masse corporelle, la course, la natation et le renforcement.",
+        "Aucune pesée ni séance suivie dans ce fichier. Hybrid ne lit que la masse corporelle, la course, la natation et le renforcement.",
       )
       return
     }

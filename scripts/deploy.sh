@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Déploiement de Polytrain sur Vercel.
+# Déploiement de Hybrid sur Vercel.
 #
 # Pousse les variables d'environnement de .env.local vers le projet lié, puis
 # déploie en production. Relançable : chaque variable est supprimée avant

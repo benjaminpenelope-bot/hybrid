@@ -18,7 +18,7 @@ import { currentUserId } from '@/lib/supabase/server'
 import { PerfTabs } from './perf-tabs'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Perfs · Polytrain' }
+export const metadata = { title: 'Perfs · Hybrid' }
 
 export default async function Page() {
   const userId = await currentUserId()

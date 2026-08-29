@@ -19,7 +19,7 @@ export function ConfigurationRequise() {
 
   return (
     <main className="wrap flex min-h-screen flex-col justify-center py-10">
-      <h1 className="dsp text-[26px]">Polytrain</h1>
+      <h1 className="dsp text-[26px]">Hybrid</h1>
       <p className="mt-2 text-[13.5px] leading-relaxed text-mut">
         Le moteur et les écrans sont en place, mais aucun projet Supabase n&apos;est branché.
         L&apos;app ne fabriquera pas de fausses données pour compenser.

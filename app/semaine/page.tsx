@@ -6,7 +6,7 @@ import { currentUserId } from '@/lib/supabase/server'
 import { WeekView } from './week-view'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Semaine · Polytrain' }
+export const metadata = { title: 'Semaine · Hybrid' }
 
 export default async function Page() {
   const userId = await currentUserId()

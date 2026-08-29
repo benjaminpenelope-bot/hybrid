@@ -65,7 +65,7 @@ export async function exporterCompte(userId: string): Promise<ExportCompte> {
 
 /** Nom du fichier remis à l'athlète. Daté, pour que deux exports ne se confondent pas. */
 export function nomFichierExport(date = new Date()): string {
-  return `polytrain-export-${date.toISOString().slice(0, 10)}.json`
+  return `hybrid-export-${date.toISOString().slice(0, 10)}.json`
 }
 
 /**

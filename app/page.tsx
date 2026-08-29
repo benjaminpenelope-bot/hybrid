@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { LogoMark } from '@/components/logo'
 
 export const metadata: Metadata = {
-  title: 'POLYTRAIN · Un entraîneur. Tous tes entraînements.',
+  title: 'HYBRID · Un entraîneur. Tous tes entraînements.',
   description:
     "L'entraîneur intelligent qui adapte ton programme à ton objectif, tes sports, ta charge et ta récupération.",
 }
@@ -23,7 +23,7 @@ const sports = [
 
 const steps = [
   ['01', 'Définis ton objectif', 'Marathon, HYROX, force, muscle ou condition physique.'],
-  ['02', 'POLYTRAIN construit ton programme', 'Un programme cohérent avec tes sports, ton niveau et ton agenda.'],
+  ['02', 'HYBRID construit ton programme', 'Un programme cohérent avec tes sports, ton niveau et ton agenda.'],
   ['03', 'Entraîne-toi', 'Tu sais quoi faire, pourquoi tu le fais, et à quelle intensité.'],
   ['04', 'L’entraîneur adapte ton programme', 'Fatigue, charge, récupération et progression modifient la suite.'],
 ] as const
@@ -87,7 +87,7 @@ export default function LandingPage() {
               L’entraîneur intelligent qui adapte ton entraînement à ta vraie vie.
             </p>
             <p className="mt-4 max-w-[620px] text-[14px] leading-7 text-mut sm:text-[15px]">
-              POLYTRAIN ne se contente pas d’enregistrer tes séances. Il comprend ton objectif,
+              HYBRID ne se contente pas d’enregistrer tes séances. Il comprend ton objectif,
               tes entraînements, ta charge et ton état actuel pour te dire quoi faire aujourd’hui.
             </p>
 
@@ -102,7 +102,7 @@ export default function LandingPage() {
                 href="#produit"
                 className="inline-flex min-h-[52px] items-center justify-center rounded-full border border-white/12 bg-white/[0.04] px-7 font-display text-[15px] font-bold uppercase tracking-[0.09em] text-text backdrop-blur-xl transition-colors hover:bg-white/[0.08]"
               >
-                Découvrir POLYTRAIN
+                Découvrir HYBRID
               </a>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function LandingPage() {
             <h2 className="dsp mt-4 text-[48px] leading-[0.95] sm:text-[68px]">
               Ton programme ne sait pas que tu as mal dormi.
               <br />
-              <span className="text-brand">POLYTRAIN, oui.</span>
+              <span className="text-brand">HYBRID, oui.</span>
             </h2>
           </div>
           <AdaptationFlow />
@@ -148,7 +148,7 @@ export default function LandingPage() {
       <section className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
         <SectionHeader eyebrow="Les 5 sports" title="Tout ton entraînement. Au même endroit." />
         <p className="mt-4 max-w-[720px] text-[15px] leading-7 text-mut">
-          Un marathonien peut aussi faire de la musculation et de la natation. POLYTRAIN construit une
+          Un marathonien peut aussi faire de la musculation et de la natation. HYBRID construit une
           stratégie globale au lieu de traiter chaque discipline séparément. Le vélo est suivi dans
           ton profil ; ses séances arriveront avec le planificateur multi-sport.
         </p>
@@ -197,7 +197,7 @@ export default function LandingPage() {
 
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
           <PricingCard
-            name="POLYTRAIN"
+            name="HYBRID"
             price="0 €"
             periode="pour toujours"
             resume="De quoi suivre ton entraînement et voir où tu en es."
@@ -211,7 +211,7 @@ export default function LandingPage() {
             cta="Commencer gratuitement"
           />
           <PricingCard
-            name="POLYTRAIN PRO"
+            name="HYBRID PRO"
             price="9,99 €"
             periode="par mois, ou 79,99 € par an"
             resume="L'entraîneur complet, qui construit et adapte ton programme."
@@ -229,7 +229,7 @@ export default function LandingPage() {
         </div>
 
         <p className="mt-6 text-[14px] leading-7 text-mut">
-          <b className="text-text">14 jours d&rsquo;essai gratuit de POLYTRAIN PRO, sans carte bancaire.</b>{' '}
+          <b className="text-text">14 jours d&rsquo;essai gratuit de HYBRID PRO, sans carte bancaire.</b>{' '}
           À la fin de l&rsquo;essai, tu repasses automatiquement sur l&rsquo;offre gratuite si tu ne
           t&rsquo;abonnes pas. Rien ne se déclenche sans que tu l&rsquo;aies choisi.
         </p>
@@ -266,9 +266,9 @@ export default function LandingPage() {
 function Header() {
   return (
     <header className="relative z-20 mx-auto flex h-20 w-full max-w-[1220px] items-center justify-between px-5 sm:px-8 lg:px-10">
-      <Link href="/" className="flex items-center gap-2.5 rounded-full bg-black/20 pr-3" aria-label="POLYTRAIN">
+      <Link href="/" className="flex items-center gap-2.5 rounded-full bg-black/20 pr-3" aria-label="HYBRID">
         <LogoMark size={30} />
-        <span className="dsp text-[22px] tracking-[0.06em]">POLYTRAIN</span>
+        <span className="dsp text-[22px] tracking-[0.06em]">HYBRID</span>
       </Link>
       <nav className="hidden items-center gap-2 rounded-full border border-[#924dde33] bg-black/40 p-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-mut backdrop-blur-xl md:flex">
         <a href="#produit" className="rounded-full px-5 py-2.5 transition-colors hover:bg-brand hover:text-white">
@@ -373,7 +373,7 @@ function AdaptationFlow() {
         <FlowCard title="Nouvelle séance" main="Sortie longue · 14 km" sub="Intensité réduite" accent />
       </div>
       <div className="mt-5 rounded-[18px] border border-[#924dde40] bg-brand/10 p-4">
-        <p className="eyebrow text-[9.5px] text-brand">Entraîneur POLYTRAIN</p>
+        <p className="eyebrow text-[9.5px] text-brand">Entraîneur HYBRID</p>
         <p className="mt-2 text-[13px] leading-6 text-mut">
           Objectif, programme, entraînement, données, adaptation, progression : la boucle reste
           vivante à chaque séance.

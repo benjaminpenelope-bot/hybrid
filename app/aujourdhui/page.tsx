@@ -69,7 +69,7 @@ export default async function Page() {
         <div className="flex items-center gap-2.5">
           <LogoMark size={26} />
           <div>
-          <h1 className="dsp text-[22px] tracking-[0.06em]">Polytrain</h1>
+          <h1 className="dsp text-[22px] tracking-[0.06em]">Hybrid</h1>
           <p className="mt-0.5 text-xs text-dim">
             {formatDate(today)} · {state.profile.name}
           </p>

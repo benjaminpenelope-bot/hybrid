@@ -6,7 +6,7 @@ import { ouvrirPaiement, ouvrirPortail } from './actions'
 import type { Periodicite } from '@/lib/paiement/stripe'
 
 /**
- * Départ vers Stripe. Aucune donnée bancaire ne transite par POLYTRAIN : la
+ * Départ vers Stripe. Aucune donnée bancaire ne transite par HYBRID : la
  * saisie se fait chez Stripe, sur ses pages.
  */
 export function PaiementBoutons({ prix }: { prix: { mensuel: string; annuel: string } }) {
@@ -32,7 +32,7 @@ export function PaiementBoutons({ prix }: { prix: { mensuel: string; annuel: str
         </Button>
       </div>
       <p className="mt-2 text-[11.5px] leading-relaxed text-mut">
-        Le paiement se fait chez Stripe. Aucune donnée bancaire ne passe par POLYTRAIN.
+        Le paiement se fait chez Stripe. Aucune donnée bancaire ne passe par HYBRID.
       </p>
       {erreur && (
         <p className="mt-3 rounded-[11px] border border-bad/40 bg-bad/10 p-3 text-[12.5px] leading-relaxed text-text">
