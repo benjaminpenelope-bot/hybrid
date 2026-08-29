@@ -83,3 +83,18 @@ export function messageStripe(erreur: unknown): string {
       return 'Le paiement est momentanément indisponible. Réessaie dans un instant.'
   }
 }
+
+/**
+ * Adresse publique du site, pour les retours depuis Stripe.
+ *
+ * `??` ne rattrape que `null` et `undefined`, pas la chaîne vide — et une
+ * variable d'environnement posée sans valeur est vide, pas absente. On
+ * obtiendrait alors `"/pro"` en guise d'URL de retour : Stripe la refuse, et
+ * le paiement échouerait pour une raison qui n'a rien à voir avec le
+ * paiement. On teste donc le contenu, pas la présence.
+ */
+export function adresseDuSite(): string {
+  const brut = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (!brut) return 'http://localhost:3400'
+  return brut.replace(/\/+$/, '')
+}

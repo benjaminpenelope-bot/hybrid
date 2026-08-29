@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { messageStripe, statutDepuisStripe } from './stripe'
+import { adresseDuSite, messageStripe, statutDepuisStripe } from './stripe'
 
 describe('traduction des statuts Stripe', () => {
   it('donne accès pendant un abonnement actif ou en essai Stripe', () => {
@@ -40,5 +40,24 @@ describe('traduction des erreurs', () => {
   it('reste prudent sur une erreur inconnue', () => {
     expect(messageStripe(new Error('bruit'))).toContain('Réessaie')
     expect(messageStripe(null)).toContain('Réessaie')
+  })
+})
+
+describe('adresse du site', () => {
+  const original = process.env.NEXT_PUBLIC_SITE_URL
+
+  it('rattrape une variable posée mais vide', () => {
+    // `??` ne rattrape que null et undefined : une variable vide donnait
+    // « /pro » comme URL de retour, que Stripe refuse.
+    process.env.NEXT_PUBLIC_SITE_URL = '   '
+    expect(adresseDuSite()).toBe('http://localhost:3400')
+    process.env.NEXT_PUBLIC_SITE_URL = original
+  })
+
+  it('retire la barre oblique finale', () => {
+    // Sinon l'URL de retour contient « //pro ».
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://exemple.fr/'
+    expect(adresseDuSite()).toBe('https://exemple.fr')
+    process.env.NEXT_PUBLIC_SITE_URL = original
   })
 })

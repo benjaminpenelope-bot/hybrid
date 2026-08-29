@@ -2,7 +2,13 @@
 
 import { revalidatePath } from 'next/cache'
 import { JOURS_ESSAI, lireAbonnement } from '@/lib/coach/abonnement'
-import { configStripe, messageStripe, stripeClient, type Periodicite } from '@/lib/paiement/stripe'
+import {
+  adresseDuSite,
+  configStripe,
+  messageStripe,
+  stripeClient,
+  type Periodicite,
+} from '@/lib/paiement/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { currentUserId } from '@/lib/supabase/server'
 
@@ -69,7 +75,7 @@ export async function ouvrirPaiement(
   const config = configStripe()
   if (!config) return { ok: false, message: 'Le paiement n’est pas encore ouvert.' }
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3400'
+  const site = adresseDuSite()
 
   /*
    * S'abonner pendant l'essai ne doit pas faire perdre les jours restants.
@@ -127,7 +133,7 @@ export async function ouvrirPortail(): Promise<{ ok: boolean; url?: string; mess
     return { ok: false, message: 'Aucun abonnement payant à gérer sur ce compte.' }
   }
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3400'
+  const site = adresseDuSite()
   try {
     const stripe = stripeClient()
     // Le portail s'ouvre pour un client, pas pour un abonnement : on relit
