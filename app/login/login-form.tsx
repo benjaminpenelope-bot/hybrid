@@ -15,6 +15,18 @@ import {
 
 const INITIAL: LoginState = { status: 'idle' }
 
+/**
+ * Connexion par Apple et Google.
+ *
+ * Masquée tant que les fournisseurs ne sont pas activés côté Supabase. Un
+ * bouton qui échoue à chaque clic coûte plus cher qu'un bouton absent : la
+ * personne croit que l'application est cassée, pas qu'une option lui manque.
+ *
+ * Le code reste en place. Une fois Apple et Google configurés dans Supabase,
+ * il suffit de repasser cette constante à `true`.
+ */
+const OAUTH_ACTIF = false
+
 /** Trois façons d'entrer, une seule affichée à la fois. */
 type Mode = 'mot-de-passe' | 'inscription' | 'lien' | 'oubli'
 
@@ -273,23 +285,27 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
         </form>
       )}
 
-      <div className="my-5 flex items-center gap-3">
-        <span className="h-px flex-1 bg-line" />
-        <span className="eyebrow text-[9.5px]">ou</span>
-        <span className="h-px flex-1 bg-line" />
-      </div>
+      {OAUTH_ACTIF && (
+        <>
+          <div className="my-5 flex items-center gap-3">
+            <span className="h-px flex-1 bg-line" />
+            <span className="eyebrow text-[9.5px]">ou</span>
+            <span className="h-px flex-1 bg-line" />
+          </div>
 
-      <div className="flex flex-col gap-2">
-        <Button variant="ghost" onClick={() => signInWith('apple')} disabled={busy !== null}>
-          Continuer avec Apple
-        </Button>
-        <Button variant="ghost" onClick={() => signInWith('google')} disabled={busy !== null}>
-          Continuer avec Google
-        </Button>
-      </div>
+          <div className="flex flex-col gap-2">
+            <Button variant="ghost" onClick={() => signInWith('apple')} disabled={busy !== null}>
+              Continuer avec Apple
+            </Button>
+            <Button variant="ghost" onClick={() => signInWith('google')} disabled={busy !== null}>
+              Continuer avec Google
+            </Button>
+          </div>
 
-      {oauthError && (
-        <p className="mt-3 text-[12.5px] leading-relaxed text-bad">{oauthError}</p>
+          {oauthError && (
+            <p className="mt-3 text-[12.5px] leading-relaxed text-bad">{oauthError}</p>
+          )}
+        </>
       )}
 
       <p className="mt-6 text-[11.5px] leading-relaxed text-dim">
