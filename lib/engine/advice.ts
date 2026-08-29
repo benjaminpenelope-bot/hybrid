@@ -108,7 +108,7 @@ export function whatProgresses(state: AthleteState, today: ISODate): Insight | n
     return {
       title: 'La régularité.',
       text: `${streak} jours d'activité consécutifs, avec une alternance ${[...kinds]
-        .map((k) => ({ run: 'course', swim: 'piscine', strength: 'barre', rest: 'repos' })[k])
+        .map((k) => ({ run: 'course', swim: 'piscine', bike: 'vélo', strength: 'barre', rest: 'repos' })[k])
         .join(' / ')} déjà cohérente. C'est la base qui manque à la plupart des gens et tu l'as déjà.`,
     }
   }

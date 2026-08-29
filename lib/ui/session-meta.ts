@@ -5,6 +5,8 @@ export const SESSION_META: Record<SessionType, { label: string; icon: string; co
   RUN: { label: 'Running', icon: '🏃', color: 'var(--run)' },
   LONG: { label: 'Sortie longue', icon: '🏃', color: 'var(--run)' },
   SWIM: { label: 'Natation', icon: '🏊', color: 'var(--swim)' },
+  BIKE: { label: 'Vélo', icon: '🚴', color: 'var(--bike)' },
+  RIDE: { label: 'Sortie longue vélo', icon: '🚴', color: 'var(--bike)' },
   UPPER: { label: 'Street haut', icon: '🤸', color: 'var(--street)' },
   LOWER: { label: 'Street bas', icon: '🦵', color: 'var(--legs)' },
   REST: { label: 'Récupération', icon: '😴', color: 'var(--rest)' },

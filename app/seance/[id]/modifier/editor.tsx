@@ -12,7 +12,7 @@ import { SESSION_META } from '@/lib/ui/session-meta'
 import type { EditableExercise } from '@/lib/validation/edit-session'
 import { updateSession } from '../../actions'
 
-const TYPES: SessionType[] = ['RUN', 'LONG', 'SWIM', 'UPPER', 'LOWER', 'REST']
+const TYPES: SessionType[] = ['RUN', 'LONG', 'BIKE', 'RIDE', 'SWIM', 'UPPER', 'LOWER', 'REST']
 
 const EMPTY_EXERCISE: EditableExercise = {
   n: 'Nouvel exercice',

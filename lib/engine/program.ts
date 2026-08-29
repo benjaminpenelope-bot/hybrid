@@ -567,6 +567,8 @@ export const KIND_OF: Record<SessionType, SessionKind> = {
   RUN: 'run',
   LONG: 'run',
   SWIM: 'swim',
+  BIKE: 'bike',
+  RIDE: 'bike',
   UPPER: 'strength',
   LOWER: 'strength',
   REST: 'rest',
@@ -578,8 +580,12 @@ export const SLOT_OF: Record<SessionType, Slot> = {
   UPPER: 1,
   RUN: 2,
   SWIM: 3,
+  BIKE: 4,
   LOWER: 5,
   LONG: 6,
+  // Les deux sorties longues partagent le meme emplacement : on n'en place
+  // jamais deux la meme semaine.
+  RIDE: 6,
 }
 
 export function slotFor(weekday: number, restWeekday: number): Slot {
@@ -711,6 +717,96 @@ export function estFootingSouple(slot: Slot, micro: Record<Slot, SessionType>): 
   return plats.length > 0 && plats[plats.length - 1] === slot
 }
 
+/**
+ * Repartition telle qu'elle sera reellement realisee, une fois les sports
+ * declares pris en compte.
+ *
+ * Les roles d'une sortie — tempo, endurance, recuperation — se lisent sur la
+ * semaine effective, pas sur le microcycle theorique. Un cycliste n'a aucun
+ * emplacement velo dans le microcycle d'origine : ils naissent tous de la
+ * substitution. Calculer les roles avant elle ne trouvait donc jamais rien,
+ * et rendait cinq fois la meme sortie.
+ */
+export function microcycleEffectif(
+  micro: Record<Slot, SessionType>,
+  sports: Sport[],
+  allowDoubles = false,
+): Record<Slot, SessionType> {
+  const out = {} as Record<Slot, SessionType>
+  for (const slot of [0, 1, 2, 3, 4, 5, 6] as Slot[]) {
+    const voulu =
+      slot === 5 && micro[slot] === 'SWIM' && allowDoubles ? 'LOWER' : micro[slot]
+    out[slot] = typeRetenu(voulu, sports)
+  }
+  return out
+}
+
+/** Emplacements velo d'une repartition, sortie longue comprise. */
+function slotsDeVelo(micro: Record<Slot, SessionType>): Slot[] {
+  return ([0, 1, 2, 3, 4, 5, 6] as Slot[]).filter((s) => micro[s] === 'BIKE' || micro[s] === 'RIDE')
+}
+
+/**
+ * Role d'une sortie velo dans la semaine.
+ *
+ * Sans ca, chaque emplacement rendait la meme sortie : un cycliste recevait
+ * cinq fois soixante-dix minutes d'endurance a la suite. Ce n'est pas un
+ * programme, c'est une boucle — et une semaine sans variation d'intensite ne
+ * fait progresser personne.
+ *
+ * La premiere sortie suit le jour de repos, donc les jambes sont fraiches :
+ * c'est la seule qui porte de l'intensite. La derniere precede la sortie
+ * longue, on l'allege. Le reste est de l'endurance, ce qui garde la semaine
+ * majoritairement facile.
+ */
+export type RoleVelo = 'tempo' | 'endurance' | 'recuperation'
+
+export function roleDuVelo(slot: Slot, micro: Record<Slot, SessionType>): RoleVelo {
+  const plats = slotsDeVelo(micro).filter((x) => micro[x] === 'BIKE')
+  if (plats.length === 0) return 'endurance'
+  if (slot === plats[0]) return 'tempo'
+  // Une seance allegee n'a de sens que s'il reste des sorties a alleger.
+  if (plats.length >= 3 && slot === plats[plats.length - 1]) return 'recuperation'
+  return 'endurance'
+}
+
+/** Duree relative de chaque role. L'endurance est la reference. */
+const DUREE_ROLE: Record<RoleVelo, number> = {
+  tempo: 0.75,
+  endurance: 1,
+  recuperation: 0.6,
+}
+
+/** Duree en heures et minutes. « 1.8 h » ne se lit pas, « 1 h 45 » si. */
+export function dureeLisible(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, '0')}`
+}
+
+/** Duree de la sortie velo d'endurance en semaine 1, en minutes. */
+export const BIKE_MIN_W1 = 60
+
+/**
+ * Duree d'une sortie velo, en minutes.
+ *
+ * Le velo se dose en temps, pas en kilometres : une heure de plat et une
+ * heure de col ne font pas la meme distance mais la meme charge, et c'est la
+ * charge qui compte.
+ *
+ * La progression suit exactement celle de la course, semaine de decharge
+ * comprise. C'est deliberе : si la course deloadait sans que le velo suive,
+ * la semaine legere n'en serait plus une.
+ */
+export function bikeMinutes(w: number, base: number = BIKE_MIN_W1): number {
+  let v = base * Math.pow(RUN_GROWTH, w - 1)
+  if (w % DELOAD_EVERY === 0) v *= 0.7
+  // Plafond : au-dela, une sortie de semaine releve de la preparation
+  // specifique, pas de l'entretien.
+  return Math.round(Math.min(v, 150) / 5) * 5
+}
+
 export interface RunSplit {
   /** Footing souple, 30 % du volume. */
   easy: number
@@ -775,6 +871,8 @@ const SPORTS_DU_TYPE: Record<SessionType, Sport[]> = {
   RUN: ['running'],
   LONG: ['running'],
   SWIM: ['swimming'],
+  BIKE: ['cycling'],
+  RIDE: ['cycling'],
   UPPER: ['strength', 'street_workout'],
   LOWER: ['strength', 'street_workout'],
   REST: [],
@@ -787,11 +885,13 @@ const SPORTS_DU_TYPE: Record<SessionType, Sport[]> = {
  * substitution.
  */
 const REMPLACANTS: Record<SessionType, SessionType[]> = {
-  SWIM: ['RUN', 'UPPER'],
-  RUN: ['SWIM', 'UPPER'],
-  LONG: ['SWIM', 'LOWER'],
-  UPPER: ['LOWER', 'RUN', 'SWIM'],
-  LOWER: ['UPPER', 'RUN', 'SWIM'],
+  SWIM: ['BIKE', 'RUN', 'UPPER'],
+  RUN: ['BIKE', 'SWIM', 'UPPER'],
+  LONG: ['RIDE', 'SWIM', 'LOWER'],
+  BIKE: ['RUN', 'SWIM', 'UPPER'],
+  RIDE: ['LONG', 'SWIM', 'LOWER'],
+  UPPER: ['LOWER', 'RUN', 'BIKE', 'SWIM'],
+  LOWER: ['UPPER', 'RUN', 'BIKE', 'SWIM'],
   REST: [],
 }
 
@@ -840,6 +940,9 @@ export function buildSession(
   } = opts
   const w = Math.max(1, week)
   const micro = microcycleDe(goal)
+  // Les roles se lisent sur la semaine reellement realisee, pas sur le
+  // microcycle theorique : les emplacements velo naissent de la substitution.
+  const effectif = microcycleEffectif(micro, sports, allowDoubles)
   // Prefixe d'un espace : vide, il ne laisse aucune trace dans le texte.
   const note = noteDeDosage(goal)
   const dosage = note ? ` ${note}` : ''
@@ -920,7 +1023,7 @@ export function buildSession(
 
     case 'RUN': {
       const km = kmDesCourses(w, baseKm, micro).get(slot) ?? runSplit(w, baseKm).fundamental
-      const isEasy = estFootingSouple(slot, micro)
+      const isEasy = estFootingSouple(slot, effectif)
       if (isEasy) {
         return {
           ...base,
@@ -1052,6 +1155,107 @@ export function buildSession(
               }
             : null,
       }
+
+    case 'BIKE': {
+      const role = roleDuVelo(slot, effectif)
+      const min = Math.round((bikeMinutes(w) * DUREE_ROLE[role]) / 5) * 5
+
+      if (role === 'tempo') {
+        // Placee juste apres le repos : c'est le seul jour ou les jambes
+        // encaissent de l'intensite sans compromettre le reste de la semaine.
+        const bloc = Math.max(8, Math.round((min - 25) / 2 / 5) * 5)
+        return {
+          ...base,
+          type: 'BIKE',
+          kind: 'bike',
+          title: `Vélo tempo — ${dureeLisible(min)}`,
+          duration: min,
+          intensity: 4,
+          goal: `Échauffement, puis 2 × ${bloc} min soutenus, puis retour au calme.`,
+          why: `Phase ${phase.label}. Une seule séance dure dans la semaine, le lendemain du repos. Le reste doit rester facile, sinon rien n'est facile.`,
+          target:
+            'Sur les blocs : respiration ample mais conversation impossible. Tu dois finir en te disant que tu aurais pu tenir cinq minutes de plus.',
+          cues: [
+            '15 min d’échauffement progressif avant le premier bloc',
+            'Cadence haute sur les blocs, jamais en force',
+            '10 min de retour au calme, vraiment lentes',
+          ],
+          exercises: [
+            { n: 'Échauffement', sets: 1, reps: '15 min', rest: 0, rir: 4, cue: 'Progressif.' },
+            { n: 'Bloc tempo', sets: 2, reps: `${bloc} min`, rest: 300, rir: 2, cue: 'Allure soutenue et régulière.' },
+            { n: 'Retour au calme', sets: 1, reps: '10 min', rest: 0, rir: 5, cue: 'Très lent.' },
+          ],
+        }
+      }
+
+      const recup = role === 'recuperation'
+      return {
+        ...base,
+        type: 'BIKE',
+        kind: 'bike',
+        title: `${recup ? 'Vélo récupération' : 'Sortie vélo'} — ${dureeLisible(min)}`,
+        duration: min,
+        intensity: recup ? 1 : 2,
+        goal: recup
+          ? `${min} min très souples, jambes lourdes de la veille.`
+          : `${min} min en endurance, souffle libre.`,
+        why: recup
+          ? `Phase ${phase.label}. Cette sortie ne cherche rien : elle fait circuler le sang avant la sortie longue.`
+          : `Phase ${phase.label}. Le vélo apporte du volume aérobie sans l'impact de la course : c'est le meilleur endroit pour ajouter de la charge quand les jambes encaissent déjà beaucoup.`,
+        target: recup
+          ? 'Si tu te demandes si c’est trop facile, c’est que c’est bien dosé.'
+          : 'Tu dois pouvoir tenir une conversation. Si tu es essoufflé, tu roules trop fort pour cette séance.',
+        cues: recup
+          ? ['Petit braquet, cadence libre', 'Aucune bosse en force', 'Écourte sans hésiter si les jambes ne suivent pas']
+          : [
+              'Cadence autour de 85–95 tours par minute, jamais en force',
+              'Reste assis dans les bosses, quitte à ralentir',
+              'Bois toutes les 20 min, même sans soif',
+            ],
+        exercises: [
+          {
+            n: recup ? 'Récupération active' : 'Endurance continue',
+            sets: 1,
+            reps: `${min} min`,
+            rest: 0,
+            rir: recup ? 5 : 4,
+            cue: recup ? 'Vraiment lent.' : 'Régulier du début à la fin.',
+          },
+        ],
+      }
+    }
+
+    case 'RIDE': {
+      // La sortie longue vaut une fois et demie l'endurance de semaine, comme
+      // la sortie longue de course vaut environ le double d'un footing.
+      const min = Math.round((bikeMinutes(w) * 1.5) / 5) * 5
+      return {
+        ...base,
+        type: 'RIDE',
+        kind: 'bike',
+        title: `Sortie longue vélo — ${dureeLisible(min)}`,
+        duration: min,
+        intensity: 3,
+        goal: `${min} min en continu, allure d'endurance.`,
+        why: `Phase ${phase.label}. C'est la sortie qui construit le fond : la durée compte, l'allure non.`,
+        target: "Pars plus doucement que ce qui te semble confortable. L'objectif est de finir aussi frais qu'au départ.",
+        cues: [
+          'Mange toutes les 45 min à partir de la première heure',
+          'Change de position sur le vélo régulièrement',
+          "Si tu dois écourter, écourte — la séance reste utile",
+        ],
+        exercises: [
+          {
+            n: 'Sortie longue',
+            sets: 1,
+            reps: `${min} min`,
+            rest: 0,
+            rir: 4,
+            cue: 'Endurance stricte, aucune accélération.',
+          },
+        ],
+      }
+    }
 
     default: {
       const long = kmDesCourses(w, baseKm, micro).get(slot) ?? runSplit(w, baseKm).long

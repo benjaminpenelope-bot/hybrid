@@ -19,6 +19,7 @@ import {
   estFootingSouple,
   kmDesCourses,
   microcycleDe,
+  bikeMinutes,
   swimTarget,
   typePraticable,
   typeRetenu,
@@ -285,9 +286,24 @@ describe('sports declares', () => {
     expect(footings.some((s) => s.finisher !== null)).toBe(true)
   })
 
-  it('le cyclisme ne remplace jamais rien : aucune seance ne s’en deduit', () => {
-    expect(typePraticable('RUN', ['cycling'])).toBe(false)
-    expect(typeRetenu('RUN', ['cycling'])).toBe('REST')
+  it('donne un vrai programme a qui ne declare que le velo', () => {
+    // C'est le defaut corrige : le cyclisme etait declarable au profil mais
+    // aucune seance ne s'en deduisait, si bien qu'un cycliste recevait sept
+    // jours de repos.
+    const types = plan(['cycling']).map((s) => s.type)
+    expect(types.filter((t) => t === 'BIKE' || t === 'RIDE').length).toBeGreaterThan(0)
+    expect(types.filter((t) => t !== 'REST').length).toBeGreaterThan(3)
+  })
+
+  it('remplace la course par du velo avant de tomber au repos', () => {
+    // Meme famille : l'endurance se reporte sur l'endurance.
+    expect(typeRetenu('RUN', ['cycling'])).toBe('BIKE')
+    expect(typeRetenu('LONG', ['cycling'])).toBe('RIDE')
+  })
+
+  it('exige toujours le sport declare pour le type demande', () => {
+    expect(typePraticable('BIKE', ['running'])).toBe(false)
+    expect(typePraticable('BIKE', ['cycling'])).toBe(true)
   })
 })
 
@@ -467,5 +483,37 @@ describe('dosage de la force selon l’objectif', () => {
   it('garde une fourchette cohérente près du plancher', () => {
     // Le bas ne descend pas sous 3, et le haut reste au-dessus du bas.
     expect(decalerReps('4–5', -5)).toBe('3–4')
+  })
+})
+
+
+describe('volume vélo', () => {
+  it('se dose en minutes, pas en kilomètres', () => {
+    // Une heure de plat et une heure de col ne font pas la meme distance
+    // mais la meme charge.
+    expect(bikeMinutes(1)).toBe(60)
+    expect(bikeMinutes(3)).toBeGreaterThan(bikeMinutes(1))
+  })
+
+  it('décharge la même semaine que la course', () => {
+    // Si la course deloadait sans que le velo suive, la semaine legere n'en
+    // serait plus une.
+    expect(bikeMinutes(4)).toBeLessThan(bikeMinutes(3))
+    expect(isDeloadWeek(4)).toBe(true)
+  })
+
+  it('plafonne la sortie de semaine', () => {
+    expect(bikeMinutes(60)).toBeLessThanOrEqual(150)
+  })
+
+  it('fait la sortie longue plus longue que celle de semaine', () => {
+    const p = generatePlan(MONDAY, 1, 4, {
+      restWeekday: 1,
+      sports: ['cycling'],
+      makeId: (() => { let i = 0; return () => `v${++i}` })(),
+    })
+    const semaine = p.find((s) => s.type === 'BIKE')
+    const longue = p.find((s) => s.type === 'RIDE')
+    expect(longue!.duration).toBeGreaterThan(semaine!.duration)
   })
 })

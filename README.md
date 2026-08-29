@@ -13,7 +13,7 @@ Next.js 14 (App Router, TypeScript strict) + Supabase + Tailwind.
 | Étape | Contenu | État |
 |---|---|---|
 | 1 | Schéma Supabase, RLS, seed | fait |
-| 2 | `lib/engine/` complet + tests Vitest | fait — 361 tests verts |
+| 2 | `lib/engine/` complet + tests Vitest | fait — 367 tests verts |
 | 3 | Auth et onboarding | fait |
 | 4 | Accueil, séance du jour, mode séance, résumé | fait |
 | 5 | Semaine, éditeur, adaptation automatique | fait |
@@ -33,8 +33,8 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 
 | Sujet | État |
 |---|---|
-| Planificateur multi-sport | la répartition de la semaine **et** la prescription de force dépendent de l'objectif, des sports déclarés et des jours disponibles. Reste le vélo |
-| Séances de vélo | aucune. Le cyclisme est enregistré au profil, jamais programmé, et l'onboarding refuse le vélo seul |
+| Planificateur multi-sport | **fait**. Répartition de la semaine, prescription de force et sports substitués dépendent de l'objectif, des sports déclarés et des jours disponibles |
+| Séances de vélo | **faites**. Tempo, endurance, récupération et sortie longue, dosées en minutes. Le vélo entre par la substitution de sport : un cycliste reçoit un vrai programme, un coureur qui roule aussi voit ses créneaux de nage devenir des sorties vélo |
 | Ateliers HYROX (traîneau, rameur, ski erg) | non mesurables : aucun écran ne permet de les enregistrer |
 | Coach en ligne | **en service**, exercé en production. Repli local automatique en cas de panne, de refus ou de plafond atteint |
 | Limite d'usage du coach | **posée** — 3/jour et 20/mois en gratuit, 15/jour et 60/mois en payant, réglables par variables d'environnement (`COACH_LIMITE_*`). Plafond atteint : le coach répond en local, il ne tombe pas |
@@ -54,7 +54,7 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 npm install
 cp .env.example .env.local   # puis renseigner les clés
 npm run dev                  # http://localhost:3400
-npm test                     # 361 tests
+npm test                     # 367 tests
 npm run typecheck
 ```
 
@@ -330,7 +330,7 @@ Le prototype ne servait qu'un athlète, dont la base était connue ; l'app en se
 npm test
 ```
 
-361 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
+367 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
 limites exigés : historique vide, une seule séance, benchmarks absents, semaine de deload,
 première semaine de données (pas de faux rouge sur le ratio de charge).
 

@@ -40,6 +40,7 @@ interface LigneSeance {
 const TYPE_PAR_DISCIPLINE: Record<SessionKind, string> = {
   run: 'RUN',
   swim: 'SWIM',
+  bike: 'BIKE',
   strength: 'UPPER',
   rest: 'REST',
 }

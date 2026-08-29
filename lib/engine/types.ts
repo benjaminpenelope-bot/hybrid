@@ -7,8 +7,9 @@
 /** Date au format YYYY-MM-DD. */
 export type ISODate = string
 
-export type SessionType = 'RUN' | 'LONG' | 'SWIM' | 'UPPER' | 'LOWER' | 'REST'
-export type SessionKind = 'run' | 'swim' | 'strength' | 'rest'
+/** `RIDE` est a `BIKE` ce que `LONG` est a `RUN` : la sortie longue. */
+export type SessionType = 'RUN' | 'LONG' | 'SWIM' | 'BIKE' | 'RIDE' | 'UPPER' | 'LOWER' | 'REST'
+export type SessionKind = 'run' | 'swim' | 'bike' | 'strength' | 'rest'
 export type SessionStatus = 'planned' | 'done' | 'skipped'
 
 export type BenchmarkKey =

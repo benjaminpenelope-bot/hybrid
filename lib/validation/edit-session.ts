@@ -22,7 +22,7 @@ export const exerciseSchema = z.object({
 
 export const editSessionSchema = z.object({
   sessionId: z.string().uuid(),
-  type: z.enum(['RUN', 'LONG', 'SWIM', 'UPPER', 'LOWER', 'REST']),
+  type: z.enum(['RUN', 'LONG', 'SWIM', 'BIKE', 'RIDE', 'UPPER', 'LOWER', 'REST']),
   title: z.string().trim().min(1, 'La séance a besoin d’un titre.').max(120),
   goal: z.string().trim().max(600).nullable(),
   why: z.string().trim().max(900).nullable(),

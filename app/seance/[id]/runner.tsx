@@ -166,7 +166,14 @@ export function SessionRunner({ session }: { session: Session }) {
 
   const livePace = km > 0 && minutes > 0 ? `${pace(minutes, km)}/km` : '—'
   const canFinish = rpe !== null && fatigue !== null
-  const runReady = km > 0 && minutes > 0 && (!session.finisher || finisherDone !== null)
+  const estVelo = session.kind === 'bike'
+  /*
+   * A velo, la distance est facultative : sur home-trainer il n'y en a pas,
+   * et l'exiger obligerait a inventer un chiffre. La duree suffit — c'est
+   * elle qui porte la charge.
+   */
+  const runReady =
+    minutes > 0 && (estVelo || km > 0) && (!session.finisher || finisherDone !== null)
   const swimReady = swimMinutes > 0 && continuous > 0 && stroke !== null
 
   return (
@@ -261,7 +268,7 @@ export function SessionRunner({ session }: { session: Session }) {
       )}
 
       {/* ── Course ── */}
-      {phase === 'log' && session.kind === 'run' && (
+      {phase === 'log' && (session.kind === 'run' || estVelo) && (
         <section>
           {session.target && (
             <div className="card mb-3">
@@ -271,12 +278,28 @@ export function SessionRunner({ session }: { session: Session }) {
           )}
 
           <div className="card">
-            <NumPad label="Distance" value={km} onChange={setKm} unit="km" step={0.5} />
+            <NumPad
+              label="Distance"
+              value={km}
+              onChange={setKm}
+              unit="km"
+              step={estVelo ? 1 : 0.5}
+              {...(estVelo
+                ? { hint: 'Facultatif : laisse à 0 sur home-trainer, la durée suffit.' }
+                : {})}
+            />
             <NumPad label="Durée" value={minutes} onChange={setMinutes} unit="min" />
 
+            {/* L'allure au kilometre ne veut rien dire a velo : on montre la vitesse. */}
             <div className="mb-4 flex items-center justify-between rounded-[11px] border border-line bg-bg2 px-3 py-3">
-              <span className="eyebrow">Allure</span>
-              <span className="num text-[22px]">{livePace}</span>
+              <span className="eyebrow">{estVelo ? 'Vitesse moyenne' : 'Allure'}</span>
+              <span className="num text-[22px]">
+                {estVelo
+                  ? km > 0 && minutes > 0
+                    ? `${((km / minutes) * 60).toFixed(1)} km/h`
+                    : '—'
+                  : livePace}
+              </span>
             </div>
 
             <NumPad

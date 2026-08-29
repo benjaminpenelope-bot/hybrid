@@ -57,12 +57,10 @@ describe('détail par discipline', () => {
     expect(onboardingSchema.safeParse(reponses({ sports: ['running', 'cycling'] })).success).toBe(true)
   })
 
-  it('refuse le cyclisme seul, faute de pouvoir en deduire une seance', () => {
-    // Accepter livrerait sept jours de repos. Le dire ici vaut mieux que de
-    // laisser l'athlete decouvrir un programme vide.
-    const r = onboardingSchema.safeParse(reponses({ sports: ['cycling'], running: null }))
-    expect(r.success).toBe(false)
-    expect(r.error?.issues.some((i) => i.path.includes('sports'))).toBe(true)
+  it('accepte le cyclisme seul, maintenant que des séances en découlent', () => {
+    // Le refus qui vivait ici n'avait de sens que tant que le generateur ne
+    // savait produire aucune sortie velo.
+    expect(onboardingSchema.safeParse(reponses({ sports: ['cycling'], running: null })).success).toBe(true)
   })
 })
 

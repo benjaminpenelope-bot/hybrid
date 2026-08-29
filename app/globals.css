@@ -17,6 +17,14 @@
   --swim: #2f97ae;
   --street: #7c6be3;
   --legs: #c2547a;
+  /*
+   * Le velo. Un vert olive, choisi par elimination : l'orange est a la
+   * course, le turquoise a la nage, le violet au street, le rose aux jambes.
+   * Restaient l'ambre et le vert francs, deja pris par --warn et --ok, qui
+   * signalent une alerte : les reprendre pour une discipline rendrait un
+   * bandeau d'avertissement indistinguable d'une sortie velo.
+   */
+  --bike: #8fa63f;
   --rest: #565d67;
   --ok: #5bbf7b;
   --warn: #e0a73c;

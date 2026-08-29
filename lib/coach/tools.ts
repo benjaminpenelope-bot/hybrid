@@ -24,7 +24,7 @@ export const postponeSessionSchema = z.object({
 
 export const logSessionSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  type: z.enum(['RUN', 'LONG', 'SWIM', 'UPPER', 'LOWER']),
+  type: z.enum(['RUN', 'LONG', 'SWIM', 'BIKE', 'RIDE', 'UPPER', 'LOWER']),
   km: z.number().min(0).max(200).optional(),
   minutes: z.number().min(0).max(600),
   distance_m: z.number().min(0).max(5000).optional(),
