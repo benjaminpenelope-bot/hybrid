@@ -4,6 +4,7 @@ import { stravaConfigured } from '@/lib/strava/client'
 import { chiffrementDisponible } from '@/lib/strava/crypto'
 import { createClient, currentUserId } from '@/lib/supabase/server'
 import { HealthImport } from './health-import'
+import { MesDonnees } from './mes-donnees'
 import { MotDePasse } from './mot-de-passe'
 import { StravaCard } from './strava-card'
 
@@ -94,6 +95,11 @@ export default async function Page({
           valable dans les deux cas plutôt que d'affirmer à côté.
         */}
         <MotDePasse invite={searchParams.mdp === '1'} />
+      </section>
+
+      <section className="mt-6">
+        <h2 className="eyebrow mb-2.5">Données personnelles</h2>
+        <MesDonnees />
       </section>
     </main>
   )
