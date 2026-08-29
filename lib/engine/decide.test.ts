@@ -132,7 +132,7 @@ describe('récupération', () => {
     const s = etat([seance(TODAY)])
     const v = decide(s, TODAY)
     expect(v.action).toBe('maintenir')
-    expect(v.preuves.some((p) => p.valeur === 'non mesurée')).toBe(true)
+    expect(v.preuves.some((p) => p.quoi === 'Récupération')).toBe(true)
   })
 })
 
@@ -189,5 +189,35 @@ describe('forme du verdict', () => {
   it('est déterministe : deux appels rendent le même verdict', () => {
     const s = etat([...historique(7, 45, 6), seance(TODAY)])
     expect(decide(s, TODAY)).toEqual(decide(s, TODAY))
+  })
+})
+
+describe('fraîcheur du ressenti', () => {
+  it('ignore un relevé de la veille pour décider du jour', () => {
+    // computeRecovery se contente du dernier releve connu, sans limite d age.
+    // Dire « tu recuperes bien aujourd hui » a partir d hier presenterait une
+    // absence de mesure comme une mesure.
+    const s = etat(
+      [faite(addDays(TODAY, -1), 45, 6), seance(TODAY)],
+      [forme(addDays(TODAY, -1), { sleep: 3, fatigue: 10, motivation: 1 })],
+    )
+    const v = decide(s, TODAY)
+    expect(v.action).toBe('maintenir')
+    expect(v.preuves.some((p) => p.quoi === 'Récupération')).toBe(true)
+  })
+
+  it('tient compte du relevé quand il est du jour', () => {
+    const s = etat(
+      [faite(addDays(TODAY, -1), 45, 6), seance(TODAY)],
+      [forme(TODAY, { sleep: 3, fatigue: 10, motivation: 1 })],
+    )
+    expect(decide(s, TODAY).action).toBe('repos')
+  })
+
+  it('laisse les règles de charge fonctionner sans aucun ressenti', () => {
+    // La charge se calcule depuis l historique : elle est toujours a jour,
+    // meme quand l athlete n a rien declare.
+    const s = etat([...historique(7, 45, 6), seance(TODAY)])
+    expect(decide(s, TODAY).action).toBe('deplacer')
   })
 })

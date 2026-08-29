@@ -1,6 +1,7 @@
 import { addDays } from './date'
 import { acuteChronic, consecutiveDays } from './load'
 import { computeRecovery } from './recovery'
+import { wellnessOn } from './state'
 import type { AthleteState, ISODate, Session } from './types'
 
 /**
@@ -94,17 +95,25 @@ function douleurRecente(state: AthleteState, today: ISODate): Session | null {
 }
 
 /**
- * L'athlète a-t-il réellement dit comment il se sent ?
+ * L'athlète a-t-il dit comment il se sent AUJOURD'HUI ?
  *
- * `Recovery.measured` ne suffit pas ici : le score inclut le ratio de charge et
- * les jours consécutifs, qui deviennent mesurables par le seul historique
- * d'entraînement. S'appuyer dessus pour progresser reviendrait à compter deux
- * fois la même preuve — une charge basse rendrait la récupération verte, et on
- * invoquerait les deux. Progresser exige donc un ressenti déclaré : sommeil ou
- * fatigue saisis.
+ * Deux pièges évités ici, et il a fallu les deux.
+ *
+ * Le premier : `Recovery.measured` ne veut pas dire « il a parlé ». Le score
+ * inclut le ratio de charge et les jours consécutifs, que le seul historique
+ * rend mesurables. S'en servir pour progresser compterait deux fois la même
+ * preuve — une charge basse rendrait la récupération verte, et on invoquerait
+ * les deux.
+ *
+ * Le second : `computeRecovery` s'appuie sur le dernier relevé connu, sans
+ * limite d'ancienneté. Affiché, un score un peu vieux reste informatif. Pour
+ * décider de la séance du jour, non : dire « tu récupères bien aujourd'hui »
+ * à partir d'un sommeil vieux de deux jours, c'est présenter une absence de
+ * mesure comme une mesure. Un ressenti périmé vaut donc un ressenti absent.
  */
-function ressentiDeclare(rec: { parts: { k: string; v: number | null }[] }): boolean {
-  return rec.parts.some((p) => (p.k === 'Sommeil' || p.k === 'Fatigue ressentie') && p.v !== null)
+function ressentiDuJour(state: AthleteState, today: ISODate): boolean {
+  const w = wellnessOn(state, today)
+  return w !== null && (w.sleep !== null || w.fatigue !== null)
 }
 
 /** Le lendemain est-il un jour de repos ? Détermine si un report est possible. */
@@ -197,7 +206,9 @@ export function decide(state: AthleteState, today: ISODate): Verdict {
    * Uniquement si elle est mesurée. Un score neutre fabriqué à partir de rien
    * ne justifie aucune décision — c'est la règle centrale du produit.
    */
-  if (rec.measured && rec.zone === 'RED') {
+  const ressenti = ressentiDuJour(state, today)
+
+  if (ressenti && rec.zone === 'RED') {
     preuves.push({
       quoi: 'Score de récupération',
       valeur: `${rec.score} sur 100`,
@@ -219,7 +230,7 @@ export function decide(state: AthleteState, today: ISODate): Verdict {
     return { action: 'alleger', ampleur: ALLEGER, sessionId: seance.id, versDate: null, preuves, confirmationRequise: false }
   }
 
-  if (rec.measured && rec.zone === 'YELLOW') {
+  if (ressenti && rec.zone === 'YELLOW') {
     preuves.push({
       quoi: 'Score de récupération',
       valeur: `${rec.score} sur 100`,
@@ -233,7 +244,7 @@ export function decide(state: AthleteState, today: ISODate): Verdict {
    * charge réellement basse. Une seule des deux ne suffit pas — une charge
    * basse peut venir d'une semaine de maladie.
    */
-  if (ressentiDeclare(rec) && rec.zone === 'GREEN' && reliable && acwr < ACWR_BAS) {
+  if (ressenti && rec.zone === 'GREEN' && reliable && acwr < ACWR_BAS) {
     preuves.push({
       quoi: 'Score de récupération',
       valeur: `${rec.score} sur 100`,
@@ -250,7 +261,7 @@ export function decide(state: AthleteState, today: ISODate): Verdict {
   /* ── 7. Rien ne s'oppose au plan ──────────────────────────
    * On dit pourquoi on ne change rien, ce qui vaut mieux qu'un silence.
    */
-  if (rec.measured) {
+  if (ressenti) {
     preuves.push({
       quoi: 'Score de récupération',
       valeur: `${rec.score} sur 100`,
@@ -259,9 +270,9 @@ export function decide(state: AthleteState, today: ISODate): Verdict {
   } else {
     preuves.push({
       quoi: 'Récupération',
-      valeur: 'non mesurée',
+      valeur: 'non mesurée aujourd’hui',
       effet:
-        'Sans sommeil ni fatigue saisis, aucune conclusion n’est tirée : la séance prévue s’applique telle quelle.',
+        'Sans sommeil ni fatigue saisis pour la journée, aucune conclusion n’est tirée : la séance prévue s’applique telle quelle. Un relevé d’avant-hier ne dit rien de ce matin.',
     })
   }
 
