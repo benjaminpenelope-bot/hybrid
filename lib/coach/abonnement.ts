@@ -17,6 +17,8 @@ export interface Abonnement {
   /** Fin de la période couverte, ISO. */
   periodeFin: string
   essaiUtilise: boolean
+  /** Identifiant chez le fournisseur. Nul pour un essai sans carte. */
+  externalId: string | null
 }
 
 /** Durée de l'essai, sans carte bancaire. */
@@ -56,13 +58,14 @@ interface LigneAbonnement {
   source: SourceAbonnement
   periode_fin: string
   essai_utilise: boolean
+  external_id: string | null
 }
 
 export async function lireAbonnement(userId: string): Promise<Abonnement | null> {
   const db = createAdminClient()
   const { data, error } = await db
     .from('subscriptions')
-    .select('status, source, periode_fin, essai_utilise')
+    .select('status, source, periode_fin, essai_utilise, external_id')
     .eq('user_id', userId)
     .maybeSingle<LigneAbonnement>()
 
@@ -77,6 +80,7 @@ export async function lireAbonnement(userId: string): Promise<Abonnement | null>
     source: data.source,
     periodeFin: data.periode_fin,
     essaiUtilise: data.essai_utilise,
+    externalId: data.external_id,
   }
 }
 

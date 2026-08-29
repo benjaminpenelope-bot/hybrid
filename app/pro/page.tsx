@@ -7,8 +7,10 @@ import {
   PRIX,
 } from '@/lib/coach/abonnement'
 import { LIMITES, MODELES, planDe } from '@/lib/coach/quota'
+import { paiementOuvert } from '@/lib/paiement/stripe'
 import { currentUserId } from '@/lib/supabase/server'
 import { EssaiBouton } from './essai-bouton'
+import { PaiementBoutons, PortailBouton } from './paiement-boutons'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'HYBRID PRO · Hybrid' }
@@ -39,9 +41,15 @@ function comparaison() {
   ]
 }
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { paiement?: string }
+}) {
   const userId = await currentUserId()
   if (!userId) redirect('/login?suite=/pro')
+
+  const ouvert = paiementOuvert()
 
   const [plan, abonnement, essai] = await Promise.all([
     planDe(userId),
@@ -53,6 +61,23 @@ export default async function Page() {
   return (
     <main className="wrap py-[18px]">
       <h1 className="dsp text-[22px]">HYBRID PRO</h1>
+
+      {/*
+        Le retour de Stripe ne prouve rien : c'est le webhook signe qui decide
+        de l'acces. On confirme donc la reception, pas l'activation, et on dit
+        que la bascule peut prendre un instant.
+      */}
+      {searchParams.paiement === 'ok' && (
+        <p className="mb-4 mt-3 rounded-[11px] border border-ok/40 bg-ok/10 p-3 text-[12.5px] leading-relaxed text-text">
+          Paiement reçu, merci. L&apos;activation se fait dans la foulée — recharge cette page si
+          ton abonnement n&apos;apparaît pas encore.
+        </p>
+      )}
+      {searchParams.paiement === 'annule' && (
+        <p className="mb-4 mt-3 rounded-[11px] border border-line2 bg-bg2 p-3 text-[12.5px] leading-relaxed text-mut">
+          Paiement abandonné. Rien ne t&apos;a été prélevé.
+        </p>
+      )}
 
       {plan === 'pro' ? (
         <p className="mb-5 mt-2 rounded-[11px] border border-ok/40 bg-ok/10 p-3 text-[12.5px] leading-relaxed text-text">
@@ -97,6 +122,18 @@ export default async function Page() {
         <p className="mt-1 text-[12.5px] text-mut">
           ou {PRIX.annuel} à l&apos;année, soit deux mois offerts.
         </p>
+
+        {ouvert && plan !== 'pro' && (
+          <div className="mt-4 border-t border-line pt-4">
+            <PaiementBoutons prix={{ mensuel: PRIX.mensuel, annuel: PRIX.annuel }} />
+          </div>
+        )}
+
+        {ouvert && plan === 'pro' && abonnement?.source === 'stripe' && (
+          <div className="mt-4 border-t border-line pt-4">
+            <PortailBouton />
+          </div>
+        )}
       </section>
 
       {plan !== 'pro' && (
@@ -114,10 +151,10 @@ export default async function Page() {
         qui ne mene nulle part : une promesse non tenue en vitrine coute plus
         cher qu'une absence annoncee.
       */}
-      {plan !== 'pro' && !essai && (
+      {!ouvert && plan !== 'pro' && (
         <p className="mt-4 text-[12.5px] leading-relaxed text-mut">
-          L&apos;abonnement payant n&apos;est pas encore ouvert. Ton essai terminé, tu restes sur
-          l&apos;offre gratuite jusqu&apos;à l&apos;ouverture — sans rien à faire.
+          L&apos;abonnement payant n&apos;est pas encore ouvert sur ce serveur. Ton essai terminé,
+          tu restes sur l&apos;offre gratuite — sans rien à faire, et sans rien à payer.
         </p>
       )}
 

@@ -13,7 +13,7 @@ Next.js 14 (App Router, TypeScript strict) + Supabase + Tailwind.
 | Étape | Contenu | État |
 |---|---|---|
 | 1 | Schéma Supabase, RLS, seed | fait |
-| 2 | `lib/engine/` complet + tests Vitest | fait — 346 tests verts |
+| 2 | `lib/engine/` complet + tests Vitest | fait — 349 tests verts |
 | 3 | Auth et onboarding | fait |
 | 4 | Accueil, séance du jour, mode séance, résumé | fait |
 | 5 | Semaine, éditeur, adaptation automatique | fait |
@@ -42,7 +42,8 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 | Envoi d'e-mails | SMTP Supabase partagé, plafonné autour de 4 inscriptions par heure. Bloquant pour un vrai lancement |
 | Suppression de compte et export RGPD | absents. Obligatoires pour un SaaS |
 | Abonnements | **table posée**, agnostique du fournisseur (Stripe, achat intégré Apple, geste manuel). `planDe()` la lit. L'essai de 14 jours sans carte fonctionne ; le paiement n'est pas branché et la page le dit |
-| Paiement | non branché. Ni Stripe ni achat intégré iOS. C'est la seule chose qui manque pour encaisser |
+| Paiement | **code écrit** — page de paiement, portail de résiliation, webhook signé. Il manque les clés : `STRIPE_SECRET_KEY`, les deux `price_...` et `STRIPE_WEBHOOK_SECRET`. Sans elles la page annonce que le paiement n'est pas ouvert |
+| Achat intégré iOS | non branché. Apple prélève 15 à 30 % ; la table `subscriptions` est déjà agnostique, il ne restera qu'à écrire la vérification de reçu |
 
 ---
 
@@ -52,7 +53,7 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 npm install
 cp .env.example .env.local   # puis renseigner les clés
 npm run dev                  # http://localhost:3400
-npm test                     # 346 tests
+npm test                     # 349 tests
 npm run typecheck
 ```
 
@@ -328,7 +329,7 @@ Le prototype ne servait qu'un athlète, dont la base était connue ; l'app en se
 npm test
 ```
 
-346 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
+349 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
 limites exigés : historique vide, une seule séance, benchmarks absents, semaine de deload,
 première semaine de données (pas de faux rouge sur le ratio de charge).
 

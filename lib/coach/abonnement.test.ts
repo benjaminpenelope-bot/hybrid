@@ -9,6 +9,7 @@ function abo(over: Partial<Abonnement> = {}): Abonnement {
     source: 'stripe',
     periodeFin: '2026-09-29T12:00:00Z',
     essaiUtilise: false,
+    externalId: null,
     ...over,
   }
 }
