@@ -15,6 +15,7 @@ import {
   WeeklyLoadChart,
   WeightChart,
 } from '@/components/weekly-charts'
+import { etatProfil } from '@/lib/db/profil-complet'
 import { loadState } from '@/lib/db/queries'
 import { computeAlerts } from '@/lib/engine/alerts'
 import { weightTrend } from '@/lib/engine/body'
@@ -36,6 +37,10 @@ export default async function Page() {
 
   const userId = await currentUserId()
   if (!userId) redirect('/login')
+
+  // Un profil incomplet ne peut pas alimenter le coach : on le complete avant.
+  const { complet } = await etatProfil(userId)
+  if (!complet) redirect('/onboarding')
 
   const state = await loadState(userId)
   if (!state || state.sessions.length === 0) redirect('/onboarding')
