@@ -39,7 +39,7 @@ export async function syncStrava(): Promise<ActionResult> {
   try {
     const resume = await importActivities(userId, await fetchActivities(token, depuis))
     revalidatePath('/reglages')
-    revalidatePath('/')
+    revalidatePath('/aujourdhui')
     revalidatePath('/semaine')
     return { ok: true, resume }
   } catch (error) {

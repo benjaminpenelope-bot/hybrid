@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const state = await loadState(userId)
   const session = state?.sessions.find((s) => s.id === params.id)
-  if (!session) redirect('/')
+  if (!session) redirect('/aujourdhui')
 
   // Une séance validée avec ses détails s'ouvre sur son résumé. Une séance
   // marquée « fait » sans détail reste ouverte : il manque encore les chiffres.

@@ -14,7 +14,7 @@ export default function LoginPage({
 }) {
   if (!hasSupabaseEnv()) return <ConfigurationRequise />
 
-  const suite = searchParams.suite?.startsWith('/') ? searchParams.suite : '/'
+  const suite = searchParams.suite?.startsWith('/') ? searchParams.suite : '/aujourdhui'
 
   return (
     <main className="wrap wrap-etroit flex min-h-screen flex-col justify-center py-10">

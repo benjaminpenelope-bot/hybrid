@@ -16,7 +16,7 @@ export default async function OnboardingPage() {
     .eq('id', userId)
     .maybeSingle()
 
-  if (profile?.onboarded_at) redirect('/')
+  if (profile?.onboarded_at) redirect('/aujourdhui')
 
   return (
     <main className="wrap wrap-etroit py-8">

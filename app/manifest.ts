@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Hybrid',
     description:
       'Entraînement hybride : course, natation, street workout et suivi physique, sur des données mesurées.',
-    start_url: '/',
+    start_url: '/aujourdhui',
     display: 'standalone',
     // Pas de verrou d'orientation : l'app sert aussi sur laptop.
     orientation: 'any',

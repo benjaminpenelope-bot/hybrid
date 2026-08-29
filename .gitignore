@@ -14,3 +14,6 @@ next-env.d.ts
 # Le service worker est écrit à la main (public/sw.js) et doit être versionné.
 # Seuls les fichiers générés par un outil de build sont ignorés ici.
 public/workbox-*.js
+
+# Sorties de graphify : régénérables avec /graphify, et 2 Mo de JSON + HTML.
+graphify-out/

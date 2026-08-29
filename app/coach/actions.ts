@@ -61,7 +61,7 @@ export async function applyProposal(name: string, input: unknown): Promise<Coach
   if (!state) return { ok: false, message: 'Données introuvables.' }
 
   const done = (): CoachResult => {
-    revalidatePath('/')
+    revalidatePath('/aujourdhui')
     revalidatePath('/semaine')
     revalidatePath('/coach')
     return { ok: true }

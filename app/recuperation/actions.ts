@@ -51,6 +51,6 @@ export async function saveWellness(input: WellnessInput): Promise<SaveResult> {
   if (error) return { ok: false, message: error.message }
 
   revalidatePath('/recuperation')
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   return { ok: true }
 }

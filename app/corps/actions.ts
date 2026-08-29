@@ -36,7 +36,7 @@ export async function saveWeight(kg: number): Promise<SaveResult> {
   if (error) return { ok: false, message: error.message }
 
   revalidatePath('/corps')
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   return { ok: true }
 }
 

@@ -18,7 +18,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   const state = await loadState(userId)
   const session = state?.sessions.find((s) => s.id === params.id)
-  if (!state || !session) redirect('/')
+  if (!state || !session) redirect('/aujourdhui')
 
   const today = todayISO()
   const summary = summarize(state, session)
@@ -136,7 +136,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       )}
 
       <Link
-        href="/"
+        href="/aujourdhui"
         className="mt-6 flex w-full items-center justify-center rounded-[13px] bg-text p-[15px] font-display text-base font-bold uppercase tracking-[0.09em] text-bg"
       >
         Retour à l&apos;accueil

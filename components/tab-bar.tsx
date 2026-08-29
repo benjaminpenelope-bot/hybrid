@@ -6,7 +6,7 @@ import type { Route } from 'next'
 import { LogoMark } from '@/components/logo'
 
 const TABS = [
-  { href: '/', icon: '🏠', label: 'Accueil' },
+  { href: '/aujourdhui', icon: '🏠', label: 'Accueil' },
   { href: '/semaine', icon: '🗓', label: 'Semaine' },
   { href: '/perfs', icon: '📈', label: 'Perfs' },
   { href: '/corps', icon: '🧍', label: 'Corps' },
@@ -25,7 +25,7 @@ const SECONDAIRES = [
 ] as const
 
 /** Écrans plein cadre : connexion, onboarding, séance en cours. */
-const SANS_ONGLETS = ['/login', '/auth', '/onboarding', '/seance']
+const SANS_ONGLETS = ['/', '/login', '/auth', '/onboarding', '/seance']
 
 export function sansOnglets(pathname: string): boolean {
   return SANS_ONGLETS.some((r) => pathname === r || pathname.startsWith(`${r}/`))

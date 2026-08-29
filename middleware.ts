@@ -12,7 +12,7 @@ import { hasSupabaseEnv } from '@/lib/supabase/env'
 // les rediriger vers /login renverrait du HTML à un client qui attend des données.
 // L'écran hors ligne doit rester atteignable sans session : c'est justement ce
 // que le service worker sert quand plus rien ne répond.
-const PUBLIC_ROUTES = ['/login', '/auth', '/api', '/hors-ligne']
+const PUBLIC_ROUTES = ['/', '/login', '/auth', '/api', '/hors-ligne']
 
 export async function middleware(request: NextRequest) {
   // Sans projet branché, l'app affiche l'écran de configuration : rien à garder.
@@ -57,7 +57,7 @@ export async function middleware(request: NextRequest) {
 
   if (user && pathname === '/login') {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = '/aujourdhui'
     url.search = ''
     return NextResponse.redirect(url)
   }

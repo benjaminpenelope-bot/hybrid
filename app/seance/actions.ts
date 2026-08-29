@@ -169,7 +169,7 @@ export async function finishSession(input: FinishSessionInput): Promise<FinishRe
     if (error) return { ok: false, message: error.message }
   }
 
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   redirect(`/seance/${session.id}/resume`)
 }
 
@@ -218,7 +218,7 @@ export async function updateSession(input: EditSessionInput): Promise<FinishResu
     .eq('user_id', user.id)
   if (error) return { ok: false, message: error.message }
 
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   revalidatePath('/semaine')
   redirect('/semaine')
 }

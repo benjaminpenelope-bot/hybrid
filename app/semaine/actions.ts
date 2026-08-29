@@ -49,7 +49,7 @@ export async function markDone(sessionId: string): Promise<ActionResult> {
   if (error) return { ok: false, message: error.message }
 
   revalidatePath('/semaine')
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   return { ok: true }
 }
 
@@ -68,7 +68,7 @@ export async function skipSession(sessionId: string): Promise<ActionResult> {
   if (error) return { ok: false, message: error.message }
 
   revalidatePath('/semaine')
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   return { ok: true }
 }
 
@@ -106,7 +106,7 @@ export async function postponeSession(sessionId: string): Promise<ActionResult> 
   }
 
   revalidatePath('/semaine')
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   return { ok: true }
 }
 
@@ -139,7 +139,7 @@ export async function replanSession(sessionId: string): Promise<ActionResult> {
   if (error) return { ok: false, message: error.message }
 
   revalidatePath('/semaine')
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   return { ok: true }
 }
 
@@ -178,7 +178,7 @@ export async function moveSessionToDate(
   }
 
   revalidatePath('/semaine')
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   return {
     ok: true,
     message: resultat.reposEchange ? 'Le jour de repos a suivi.' : undefined,
@@ -243,7 +243,7 @@ export async function addPastSession(input: unknown): Promise<ActionResult> {
   if (error) return { ok: false, message: error.message }
 
   revalidatePath('/semaine')
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   revalidatePath('/perfs')
   return { ok: true }
 }

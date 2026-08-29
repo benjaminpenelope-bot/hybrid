@@ -177,7 +177,7 @@ export function SessionRunner({ session }: { session: Session }) {
           </span>
           <h1 className="dsp mt-1 text-[22px] leading-tight">{session.title}</h1>
         </div>
-        <Link href="/" className="eyebrow shrink-0 text-dim">
+        <Link href="/aujourdhui" className="eyebrow shrink-0 text-dim">
           Quitter
         </Link>
       </header>
@@ -421,7 +421,7 @@ export function SessionRunner({ session }: { session: Session }) {
                   revient. Tant qu&apos;elle n&apos;est pas partie, elle ne compte pas encore dans
                   ton score.
                 </p>
-                <Link href="/" className="eyebrow mt-2.5 inline-block text-warn">
+                <Link href="/aujourdhui" className="eyebrow mt-2.5 inline-block text-warn">
                   Retour à l&apos;accueil
                 </Link>
               </div>

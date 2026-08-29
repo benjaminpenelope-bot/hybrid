@@ -26,7 +26,7 @@ export async function sendMagicLink(_prev: LoginState, formData: FormData): Prom
   }
 
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? headers().get('origin') ?? ''
-  const suite = parsed.data.suite && parsed.data.suite.startsWith('/') ? parsed.data.suite : '/'
+  const suite = parsed.data.suite && parsed.data.suite.startsWith('/') ? parsed.data.suite : '/aujourdhui'
 
   const supabase = createClient()
   const { error } = await supabase.auth.signInWithOtp({
@@ -94,7 +94,7 @@ export async function signInWithPassword(
     }
   }
 
-  const suite = parsed.data.suite?.startsWith('/') ? parsed.data.suite : '/'
+  const suite = parsed.data.suite?.startsWith('/') ? parsed.data.suite : '/aujourdhui'
   redirect(suite)
 }
 

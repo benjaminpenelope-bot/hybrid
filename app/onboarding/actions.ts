@@ -138,6 +138,6 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
     .insert(plan.map((s) => sessionToRow(s, user.id)))
   if (planError) return { ok: false, message: planError.message }
 
-  revalidatePath('/')
-  redirect('/')
+  revalidatePath('/aujourdhui')
+  redirect('/aujourdhui')
 }

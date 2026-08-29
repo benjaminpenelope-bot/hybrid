@@ -35,7 +35,7 @@ export async function completerRpe(
   if (error) return { ok: false, message: 'Enregistrement impossible.' }
 
   revalidatePath(`/seance/${sessionId}/resume`)
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   revalidatePath('/semaine')
   return { ok: true }
 }

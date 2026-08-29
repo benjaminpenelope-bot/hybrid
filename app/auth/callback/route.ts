@@ -21,7 +21,7 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl
-  const suite = searchParams.get('suite') ?? '/'
+  const suite = searchParams.get('suite') ?? '/aujourdhui'
 
   const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
@@ -48,6 +48,6 @@ export async function GET(request: NextRequest) {
   }
 
   // `suite` vient de l'URL : on n'autorise qu'un chemin interne.
-  const destination = suite.startsWith('/') && !suite.startsWith('//') ? suite : '/'
+  const destination = suite.startsWith('/') && !suite.startsWith('//') ? suite : '/aujourdhui'
   return NextResponse.redirect(`${origin}${destination}`)
 }

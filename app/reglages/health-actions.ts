@@ -131,7 +131,7 @@ export async function importHealth(brut: unknown): Promise<ResultatHealth> {
   }
 
   revalidatePath('/reglages')
-  revalidatePath('/')
+  revalidatePath('/aujourdhui')
   revalidatePath('/corps')
   revalidatePath('/semaine')
 

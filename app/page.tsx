@@ -1,176 +1,411 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { Alerts } from '@/components/alerts'
 import { LogoMark } from '@/components/logo'
-import { LoadChart } from '@/components/load-chart'
-import { RecoveryCard } from '@/components/recovery-card'
-import { ScoreRing } from '@/components/score-ring'
-import { SecondaryNav } from '@/components/secondary-nav'
-import { SessionCard } from '@/components/session-card'
-import { SubScores } from '@/components/sub-scores'
-import {
-  AdherenceChart,
-  DisciplineSplit,
-  VolumeChart,
-  WeeklyLoadChart,
-  WeightChart,
-} from '@/components/weekly-charts'
-import { loadState } from '@/lib/db/queries'
-import { computeAlerts } from '@/lib/engine/alerts'
-import { weightTrend } from '@/lib/engine/body'
-import { formatDate, todayISO } from '@/lib/engine/date'
-import { disciplineSplit, weeklySeries } from '@/lib/engine/history'
-import { loadSeries } from '@/lib/engine/load'
-import { sum } from '@/lib/engine/math'
-import { computeRecovery } from '@/lib/engine/recovery'
-import { computeScores, levelOf } from '@/lib/engine/scoring'
-import { hasSupabaseEnv } from '@/lib/supabase/env'
-import { currentUserId } from '@/lib/supabase/server'
-import { SESSION_META } from '@/lib/ui/session-meta'
-import { ConfigurationRequise } from './configuration-requise'
 
-export const dynamic = 'force-dynamic'
+export const metadata: Metadata = {
+  title: 'HYBRID · Un entraîneur. Tous tes entraînements.',
+  description:
+    "L'entraîneur intelligent qui adapte ton programme à ton objectif, tes sports, ta charge et ta récupération.",
+}
 
-export default async function Page() {
-  if (!hasSupabaseEnv()) return <ConfigurationRequise />
+const sports = ['Course', 'Musculation', 'Cyclisme', 'Natation', 'HYROX'] as const
 
-  const userId = await currentUserId()
-  if (!userId) redirect('/login')
+const steps = [
+  ['01', 'Définis ton objectif', 'Marathon, HYROX, force, muscle ou condition physique.'],
+  ['02', 'HYBRID construit ton programme', 'Un programme cohérent avec tes sports, ton niveau et ton agenda.'],
+  ['03', 'Entraîne-toi', 'Tu sais quoi faire, pourquoi tu le fais, et à quelle intensité.'],
+  ['04', 'L’entraîneur adapte ton programme', 'Fatigue, charge, récupération et progression modifient la suite.'],
+] as const
 
-  const state = await loadState(userId)
-  if (!state || state.sessions.length === 0) redirect('/onboarding')
+const appScreens = [
+  ['AUJOURD’HUI', 'Sache exactement quoi faire.', 'Sortie tempo', '42 min · intensité 3/5'],
+  ['SEMAINE', 'Visualise ton programme.', '5 séances', '2 course · 1 musculation · 1 natation · 1 vélo'],
+  ['PERFORMANCES', 'Comprends ta progression.', '+12 %', 'charge maîtrisée sur 28 jours'],
+  ['ENTRAÎNEUR', 'Adapte ton entraînement.', 'Réduire', 'fatigue élevée détectée'],
+] as const
 
-  const today = todayISO()
-  const scores = computeScores(state, today)
-  const recovery = computeRecovery(state, today)
-  const alerts = computeAlerts(state, today, { scores })
-  const level = levelOf(scores.global)
-  const session = state.sessions.find((s) => s.date === today)
-  const load = loadSeries(state, 7, today)
-  const l7 = sum(load.map((p) => p.load))
-  const hasHistory = state.sessions.some((s) => s.status === 'done')
-  const upcoming = state.sessions.filter((s) => s.date > today).slice(0, 4)
-  // Seconde colonne des grands écrans : le recul que le mobile n'a pas la place d'afficher.
-  const weeks = weeklySeries(state, today, 12)
-  const split = disciplineSplit(state, today, 28)
-  const trend = weightTrend(state, today)
+const goals = [
+  'Préparer un marathon',
+  'Préparer un HYROX',
+  'Développer sa force',
+  'Construire du muscle',
+  'Améliorer sa condition physique',
+  'Développer son endurance',
+] as const
 
+export default function LandingPage() {
   return (
-    <main className="wrap wrap-large py-[18px]">
-      <header className="flex items-start justify-between">
-        <div className="flex items-center gap-2.5">
-          <LogoMark size={26} />
-          <div>
-          <h1 className="dsp text-[22px] tracking-[0.06em]">Hybrid</h1>
-          <p className="mt-0.5 text-xs text-dim">
-            {formatDate(today)} · {state.profile.name}
-          </p>
+    <main className="min-h-screen overflow-hidden bg-[#050606] text-text">
+      <section className="relative min-h-screen px-3 py-3 sm:px-5 sm:py-5">
+        <LandingGlow />
+        <Header />
+
+        <div className="relative mx-auto grid min-h-[calc(100vh-108px)] w-full max-w-[1220px] grid-cols-1 items-center gap-12 overflow-hidden rounded-[30px] border border-[#dfff001a] bg-[#070808] px-5 pb-12 pt-8 shadow-[0_28px_90px_rgba(0,0,0,0.65)] sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,0.85fr)] lg:px-10 lg:pb-16">
+          <div className="pointer-events-none absolute inset-0" aria-hidden>
+            <div className="absolute left-[-16%] top-[27%] h-[170px] w-[72%] -rotate-[15deg] bg-[#dfff00]/45 blur-[50px]" />
+            <div className="absolute right-[-18%] top-[26%] h-[150px] w-[62%] rotate-[18deg] bg-[#a7ff2c]/35 blur-[56px]" />
+            <div className="absolute bottom-[-18%] left-[-8%] h-[42%] w-[116%] rounded-[50%] border-t border-[#dfff0040]" />
           </div>
-        </div>
-        <div className="text-right">
-          <div className="num text-[13px] text-mut">LVL {level.n}</div>
-          <div className="eyebrow text-[9.5px]">{level.t}</div>
-        </div>
-      </header>
-
-      {/*
-        `grid-cols-1` est indispensable, pas décoratif. Sans lui, la grille n'a
-        qu'une piste implicite, dimensionnée `auto` — donc sur le contenu, qui
-        peut déborder le conteneur. C'est ce qui décalait tout l'accueil sur
-        iPhone : l'anneau se centrait sur une colonne plus large que l'écran et
-        les cartes étaient rognées à droite. Le défaut ne se reproduisait sur
-        aucune largeur testée en local. `grid-cols-1` vaut `minmax(0, 1fr)` et
-        reste bornée quoi qu'il arrive.
-      */}
-      <div className="mt-3.5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
-        <div>
-          <ScoreRing scores={scores} />
-
-        {scores.missing > 0 && (
-          <div className="mt-2.5 flex items-start gap-2.5 rounded-card border border-line bg-bg2 p-3">
-            <span className="text-[13px]" aria-hidden>
-              ⚠️
-            </span>
-            <p className="text-[12.5px] leading-relaxed text-mut">
-              <b className="text-text">{scores.missing} % du score est en attente de mesure.</b>{' '}
-              Une donnée non mesurée sort du calcul : elle n&apos;est jamais remplacée par une
-              estimation.
-            </p>
-          </div>
-        )}
-
-        <SubScores scores={scores} />
-
-        <RecoveryCard recovery={recovery} />
-
-        <section className="mt-6">
-          <h2 className="eyebrow mb-2.5">Signaux</h2>
-          <Alerts alerts={alerts} hasHistory={hasHistory} />
-        </section>
-
-        <section className="mt-6">
-          <h2 className="eyebrow mb-2.5">Ta séance du jour</h2>
-          <SessionCard session={session} />
-        </section>
-
-        <section className="mt-6">
-          <div className="mb-2.5 flex items-center justify-between">
-            <h2 className="eyebrow">Charge des 7 derniers jours</h2>
-            <span className="num text-[12px] text-mut">{l7} unités</span>
-          </div>
-          <LoadChart series={load} />
-        </section>
-
-        <section className="mt-6">
-          <h2 className="eyebrow mb-2.5">Prochains jours</h2>
-          <ul className="flex flex-col gap-[7px]">
-            {upcoming.map((s) => (
-              <li key={s.id}>
-                <Link
-                  href="/semaine"
-                  className="flex w-full items-center gap-2.5 rounded-[13px] border border-line bg-card px-3 py-[11px] text-left"
+          <div className="relative z-10">
+            <div className="mb-5 flex flex-wrap gap-2">
+              {sports.map((sport) => (
+                <span
+                  key={sport}
+                  className="rounded-full border border-[#dfff0026] bg-white/[0.035] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-[#d6d9d0]"
                 >
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full"
-                    style={{ background: SESSION_META[s.type].color }}
-                    aria-hidden
-                  />
-                  <span className="w-[62px] shrink-0 text-[12px] text-dim">
-                    {formatDate(s.date)}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-[13.5px]">{s.title}</span>
-                  <span className="num shrink-0 text-[12px] text-dim">
-                    {s.duration ? `${s.duration}'` : '—'}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+                  {sport}
+                </span>
+              ))}
+            </div>
 
+            <p className="eyebrow text-[#dfff00]">Un entraîneur. Tous tes entraînements.</p>
+            {/*
+              Taille fluide plutôt que trois paliers fixes. Le mot le plus long,
+              « ENTRAÎNEMENTS. », mesure 6,34 px de large par pixel de police :
+              à 70 px il fait 444 px et débordait toute fenêtre de téléphone,
+              rogné en silence par le `overflow-hidden` du parent. 13vw le garde
+              dans le cadre de 375 px jusqu'au grand écran, et le plafond de
+              7rem préserve la taille voulue en desktop.
+            */}
+            <h1 className="dsp mt-4 max-w-[11ch] text-[clamp(2.5rem,13vw,7rem)] leading-[0.9] text-white">
+              Un entraîneur.
+              <br />
+              Tous tes entraînements.
+            </h1>
+            <p className="mt-6 max-w-[560px] text-[18px] leading-8 text-mut sm:text-[20px]">
+              L’entraîneur intelligent qui adapte ton entraînement à ta vraie vie.
+            </p>
+            <p className="mt-4 max-w-[620px] text-[14px] leading-7 text-mut sm:text-[15px]">
+              HYBRID ne se contente pas d’enregistrer tes séances. Il comprend ton objectif,
+              tes entraînements, ta charge et ton état actuel pour te dire quoi faire aujourd’hui.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/login"
+                className="inline-flex min-h-[52px] items-center justify-center rounded-full bg-[#dfff00] px-7 font-display text-[15px] font-bold uppercase tracking-[0.09em] text-[#050606] shadow-[0_0_34px_rgba(223,255,0,0.28)] transition-transform active:scale-[0.98]"
+              >
+                Commencer gratuitement
+              </Link>
+              <a
+                href="#produit"
+                className="inline-flex min-h-[52px] items-center justify-center rounded-full border border-white/12 bg-white/[0.04] px-7 font-display text-[15px] font-bold uppercase tracking-[0.09em] text-text backdrop-blur-xl transition-colors hover:bg-white/[0.08]"
+              >
+                Découvrir HYBRID
+              </a>
+            </div>
+          </div>
+
+          <HeroVisual />
         </div>
+      </section>
 
-        <div className="hidden flex-col gap-4 lg:flex">
-          <VolumeChart series={weeks} />
-          <WeeklyLoadChart series={weeks} />
-          <AdherenceChart series={weeks} />
-          <DisciplineSplit parts={split} />
-          <WeightChart trend={trend} goalWeight={state.profile.goalWeight} />
+      <section className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
+        <SectionHeader eyebrow="Comment ça marche" title="Ton objectif. Ton programme. Ton adaptation." />
+        <div className="mt-8 grid gap-3 md:grid-cols-4">
+          {steps.map(([number, title, text], index) => (
+            <article
+              key={number}
+              className={`rounded-card border p-5 ${
+                index === 3
+                  ? 'border-[#dfff0066] bg-[#dfff00]/10 shadow-[0_0_60px_rgba(223,255,0,0.14)]'
+                  : 'border-white/10 bg-white/[0.045]'
+              }`}
+            >
+              <div className="num text-[15px] text-dim">{number}</div>
+              <h3 className="dsp mt-5 text-[25px] leading-none">{title}</h3>
+              <p className="mt-3 text-[13px] leading-6 text-mut">{text}</p>
+            </article>
+          ))}
         </div>
-      </div>
+      </section>
 
-      <div className="lg:hidden">
-        <SecondaryNav />
-      </div>
+      <section className="border-y border-white/10 bg-[#090a0a]">
+        <div className="mx-auto grid w-full max-w-[1180px] gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.8fr_1fr] lg:px-8">
+          <div>
+            <p className="eyebrow text-brand">Coaching adaptatif</p>
+            <h2 className="dsp mt-4 text-[48px] leading-[0.95] sm:text-[68px]">
+              Ton programme ne sait pas que tu as mal dormi.
+              <br />
+              <span className="text-[#dfff00]">HYBRID, oui.</span>
+            </h2>
+          </div>
+          <AdaptationFlow />
+        </div>
+      </section>
 
-      <div className="mt-7 flex items-center justify-between gap-4">
-        <p className="text-[11.5px] leading-relaxed text-dim">Étape 8 sur 9.</p>
-        <form action="/auth/signout" method="post">
-          <button type="submit" className="eyebrow whitespace-nowrap text-dim">
-            Déconnexion
-          </button>
-        </form>
-      </div>
+      <section className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
+        <SectionHeader eyebrow="Les 5 sports" title="Tout ton entraînement. Au même endroit." />
+        <p className="mt-4 max-w-[720px] text-[15px] leading-7 text-mut">
+          Un marathonien peut aussi faire de la musculation, du vélo et de la natation. HYBRID
+          construit une stratégie globale au lieu de traiter chaque discipline séparément.
+        </p>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {sports.map((sport) => (
+            <article key={sport} className="rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_30%_10%,rgba(223,255,0,0.13),rgba(255,255,255,0.035)_44%,rgba(255,255,255,0.02))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <div className="h-2 w-10 rounded-full bg-[#dfff00]" />
+              <h3 className="dsp mt-8 text-[28px]">{sport}</h3>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="produit" className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
+        <SectionHeader eyebrow="L’application" title="Chaque écran sert une décision." />
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {appScreens.map(([label, benefit, value, sub]) => (
+            <article key={label} className="rounded-[22px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.025))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+              <p className="eyebrow text-[9.5px]">{label}</p>
+              <p className="mt-2 text-[13px] text-mut">{benefit}</p>
+              <div className="mt-8 rounded-[18px] border border-white/10 bg-black/30 p-4">
+                <div className="dsp text-[26px]">{value}</div>
+                <div className="mt-2 text-[12px] text-dim">{sub}</div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto grid w-full max-w-[1180px] gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.85fr_1fr] lg:px-8">
+        <SectionHeader eyebrow="Pour qui ?" title="Un seul entraîneur pour plusieurs objectifs." />
+        <div className="grid gap-3 sm:grid-cols-2">
+          {goals.map((goal) => (
+            <div key={goal} className="rounded-[18px] border border-white/10 bg-white/[0.04] px-4 py-4 text-[14px] text-mut shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              {goal}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
+        <div className="grid gap-4 lg:grid-cols-3">
+          <article className="rounded-[22px] border border-dashed border-white/15 bg-white/[0.035] p-6">
+            <p className="eyebrow">Témoignages</p>
+            <h2 className="dsp mt-4 text-[36px] leading-none">Preuves sociales à ajouter.</h2>
+            <p className="mt-4 text-[13px] leading-6 text-mut">
+              Placeholder volontaire : aucun faux avis, aucun chiffre inventé.
+            </p>
+          </article>
+          <PricingCard name="GRATUIT" price="0 €/mois" cta="Commencer gratuitement" />
+          <PricingCard name="ABONNEMENT" price="Prix à définir" cta="Être prévenu" highlighted />
+        </div>
+      </section>
+
+      <section className="relative px-4 py-20 text-center sm:px-6">
+        <LandingGlow />
+        <div className="relative z-10 mx-auto max-w-[780px]">
+          <h2 className="dsp text-[56px] leading-[0.92] sm:text-[82px]">
+            Arrête de deviner.
+            <br />
+            Commence à t’entraîner intelligemment.
+          </h2>
+          <Link
+            href="/login"
+            className="mt-8 inline-flex min-h-[52px] items-center justify-center rounded-full bg-[#dfff00] px-7 font-display text-[15px] font-bold uppercase tracking-[0.09em] text-[#050606] shadow-[0_0_34px_rgba(223,255,0,0.28)] transition-transform active:scale-[0.98]"
+          >
+            Commencer gratuitement
+          </Link>
+        </div>
+      </section>
     </main>
+  )
+}
+
+function Header() {
+  return (
+    <header className="relative z-20 mx-auto flex h-20 w-full max-w-[1220px] items-center justify-between px-5 sm:px-8 lg:px-10">
+      <Link href="/" className="flex items-center gap-2.5 rounded-full bg-black/20 pr-3" aria-label="HYBRID">
+        <LogoMark size={30} />
+        <span className="dsp text-[22px] tracking-[0.06em]">HYBRID</span>
+      </Link>
+      <nav className="hidden items-center gap-2 rounded-full border border-[#dfff0033] bg-black/40 p-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-mut backdrop-blur-xl md:flex">
+        <a href="#produit" className="rounded-full px-5 py-2.5 transition-colors hover:bg-[#dfff00] hover:text-[#050606]">
+          Produit
+        </a>
+        <Link href="/login" className="rounded-full px-5 py-2.5 transition-colors hover:bg-[#dfff00] hover:text-[#050606]">
+          Connexion
+        </Link>
+      </nav>
+    </header>
+  )
+}
+
+function HeroVisual() {
+  return (
+    <div className="relative z-10 mx-auto flex min-h-[560px] w-full max-w-[500px] items-end justify-center lg:mx-0">
+      <div className="pointer-events-none absolute inset-x-0 bottom-2 h-[88%]" aria-hidden>
+        <div className="absolute bottom-0 left-1/2 h-[520px] w-[260px] -translate-x-1/2 rounded-t-[130px] bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.22),rgba(255,255,255,0.02))] opacity-70 blur-[1px]" />
+        <div className="absolute bottom-[78px] left-[49%] h-[150px] w-[200px] -translate-x-1/2 rotate-[-24deg] rounded-full border border-[#dfff0066]" />
+        <div className="absolute bottom-[220px] left-[46%] h-[160px] w-[78px] -translate-x-1/2 rounded-full border border-white/20 bg-white/[0.04]" />
+        <div className="absolute bottom-[362px] left-[48%] h-[78px] w-[58px] -translate-x-1/2 rounded-full border border-white/25 bg-white/[0.08]" />
+        <div className="absolute bottom-[286px] left-[27%] h-[156px] w-[22px] rotate-[35deg] rounded-full border border-[#dfff004d]" />
+        <div className="absolute bottom-[260px] right-[24%] h-[190px] w-[22px] rotate-[-42deg] rounded-full border border-[#dfff004d]" />
+        <div className="absolute bottom-[70px] left-[31%] h-[230px] w-[24px] rotate-[13deg] rounded-full border border-white/15" />
+        <div className="absolute bottom-[70px] right-[32%] h-[230px] w-[24px] rotate-[-11deg] rounded-full border border-white/15" />
+        <div className="absolute bottom-[245px] left-[20%] h-px w-[310px] rotate-[-18deg] bg-[#dfff0080]" />
+        <div className="absolute bottom-[330px] right-[15%] h-px w-[260px] rotate-[24deg] bg-[#dfff0066]" />
+      </div>
+      <HeroMockup />
+    </div>
+  )
+}
+
+function HeroMockup() {
+  return (
+    <div className="relative z-10 mb-2 ml-auto w-full max-w-[360px]">
+      <div className="absolute -inset-8 rounded-full bg-[#dfff00]/18 blur-3xl" />
+      <div className="relative rounded-[36px] border border-[#dfff0030] bg-black/35 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl">
+        <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.1),rgba(12,13,13,0.88)_42%,rgba(0,0,0,0.94))] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="eyebrow text-[9px]">Aujourd’hui</p>
+              <h2 className="dsp mt-1 text-[30px]">Séance adaptée</h2>
+            </div>
+            <div className="num rounded-full border border-[#dfff0059] bg-[#dfff00]/10 px-3 py-1.5 text-[13px] text-[#dfff00]">
+              87
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-[22px] border border-white/10 bg-black/35 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="rounded-full border border-[#dfff0040] bg-[#dfff00]/10 px-2.5 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.09em] text-[#dfff00]">
+                Course
+              </span>
+              <span className="num text-[13px] text-mut">42 min</span>
+            </div>
+            <h3 className="dsp text-[34px] leading-none">Tempo contrôlé</h3>
+            <p className="mt-3 text-[12.5px] leading-6 text-mut">
+              Intensité ajustée après une charge élevée et une récupération moyenne.
+            </p>
+            <div className="mt-4 flex gap-1.5">
+              {[0, 1, 2, 3, 4].map((bar) => (
+                <span
+                  key={bar}
+                  className={`h-1 flex-1 rounded-full ${bar < 3 ? 'bg-[#dfff00]' : 'bg-white/10'}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <MiniMetric label="Charge" value="Haute" color="#dfff00" />
+            <MiniMetric label="Récupération" value="68" color="var(--swim)" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MiniMetric({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="rounded-[18px] border border-white/10 bg-white/[0.04] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+      <p className="text-[11px] text-dim">{label}</p>
+      <p className="num mt-1 text-[22px]" style={{ color }}>
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function AdaptationFlow() {
+  return (
+    <div className="rounded-[26px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.025))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+      <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-center">
+        <FlowCard title="Programme initial" main="Sortie longue · 18 km" />
+        <Arrow />
+        <FlowCard title="Contexte" main="Charge élevée" sub="Récupération insuffisante" />
+        <Arrow />
+        <FlowCard title="Nouvelle séance" main="Sortie longue · 14 km" sub="Intensité réduite" accent />
+      </div>
+      <div className="mt-5 rounded-[18px] border border-[#dfff0040] bg-[#dfff00]/10 p-4">
+        <p className="eyebrow text-[9.5px] text-[#dfff00]">Entraîneur HYBRID</p>
+        <p className="mt-2 text-[13px] leading-6 text-mut">
+          Objectif, programme, entraînement, données, adaptation, progression : la boucle reste
+          vivante à chaque séance.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function FlowCard({
+  title,
+  main,
+  sub,
+  accent,
+}: {
+  title: string
+  main: string
+  sub?: string
+  accent?: boolean
+}) {
+  return (
+    <div className={`rounded-[18px] border p-4 ${accent ? 'border-[#dfff0066] bg-[#dfff00]/10' : 'border-white/10 bg-black/25'}`}>
+      <p className="eyebrow text-[9px]">{title}</p>
+      <p className="dsp mt-4 text-[25px] leading-none">{main}</p>
+      {sub && <p className="mt-2 text-[12px] text-mut">{sub}</p>}
+    </div>
+  )
+}
+
+function Arrow() {
+  return (
+    <div className="num hidden text-center text-[22px] text-dim md:block" aria-hidden>
+      →
+    </div>
+  )
+}
+
+function SectionHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <div>
+      <p className="eyebrow text-[#dfff00]">{eyebrow}</p>
+      <h2 className="dsp mt-4 max-w-[760px] text-[48px] leading-[0.95] sm:text-[64px]">{title}</h2>
+    </div>
+  )
+}
+
+function PricingCard({
+  name,
+  price,
+  cta,
+  highlighted,
+}: {
+  name: string
+  price: string
+  cta: string
+  highlighted?: boolean
+}) {
+  return (
+    <article
+      className={`rounded-card border p-6 ${
+        highlighted ? 'border-[#dfff0066] bg-[#dfff00]/10' : 'border-white/10 bg-white/[0.04]'
+      }`}
+    >
+      <p className="eyebrow">{name}</p>
+      <div className="dsp mt-5 text-[38px] leading-none">{price}</div>
+      <p className="mt-4 text-[13px] leading-6 text-mut">
+        Structure prête pour l’abonnement, sans promettre de fonctionnalités non validées.
+      </p>
+      <Link
+        href="/login"
+        className={`mt-6 inline-flex min-h-[48px] w-full items-center justify-center rounded-[13px] font-display text-[13px] font-bold uppercase tracking-[0.09em] ${
+          highlighted ? 'bg-[#dfff00] text-[#050606]' : 'bg-text text-bg'
+        }`}
+      >
+        {cta}
+      </Link>
+    </article>
+  )
+}
+
+function LandingGlow() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div className="absolute left-[-12%] top-[8%] h-[360px] w-[360px] rounded-full bg-[#dfff00]/16 blur-3xl" />
+      <div className="absolute right-[-8%] top-[18%] h-[300px] w-[300px] rounded-full bg-swim/12 blur-3xl" />
+      <div className="absolute bottom-[4%] left-[42%] h-[260px] w-[260px] rounded-full bg-run/10 blur-3xl" />
+    </div>
   )
 }

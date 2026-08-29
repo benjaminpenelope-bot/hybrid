@@ -23,7 +23,7 @@ export function AVenir({
         n&apos;y a rien de réel à montrer.
       </p>
       <Link
-        href="/"
+        href="/aujourdhui"
         className="mt-6 flex w-full items-center justify-center rounded-[13px] border border-line2 p-3 font-display text-[13px] font-bold uppercase tracking-[0.09em] text-text"
       >
         Retour à l&apos;accueil
