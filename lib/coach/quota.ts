@@ -133,6 +133,8 @@ export interface UsageJetons {
   input: number
   output: number
   cacheRead: number
+  /** Ecriture de cache : facturee 1,25 fois le prix de l'entree. */
+  cacheWrite: number
 }
 
 /**
@@ -150,6 +152,7 @@ export async function enregistrerUsage(userId: string, jetons: UsageJetons): Pro
       p_input_tokens: jetons.input,
       p_output_tokens: jetons.output,
       p_cache_read_tokens: jetons.cacheRead,
+      p_cache_write_tokens: jetons.cacheWrite,
     })
     if (error) console.error('[coach] usage non enregistre', error)
   } catch (e) {

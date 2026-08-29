@@ -210,6 +210,7 @@ export async function POST(request: NextRequest) {
           input: final.usage.input_tokens,
           output: final.usage.output_tokens,
           cacheRead: final.usage.cache_read_input_tokens ?? 0,
+          cacheWrite: final.usage.cache_creation_input_tokens ?? 0,
         })
 
         controller.enqueue(line({ type: 'done', offline: false }))
