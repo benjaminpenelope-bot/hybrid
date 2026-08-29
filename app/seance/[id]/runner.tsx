@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ChipGroup } from '@/components/ui/chip'
 import { NumPad, Scale } from '@/components/ui/numpad'
+import { Ressenti } from '@/components/ui/ressenti'
 import { RestTimer } from '@/components/ui/rest-timer'
 import { pace } from '@/lib/engine/math'
 import type { Exercise, Session } from '@/lib/engine/types'
@@ -365,17 +366,23 @@ export function SessionRunner({ session }: { session: Session }) {
         <section>
           <h2 className="dsp mb-3 text-[20px]">Comment c&apos;est passé ?</h2>
           <div className="card">
-            <Scale
-              label="Effort ressenti (RPE)"
+            {/*
+              Cinq visages au lieu d'une echelle de 1 a 10. Le moteur recoit
+              toujours un RPE, l'athlete ne voit jamais le mot : demander
+              « 6 ou 7 ? » apres une seance produit une reponse arbitraire, et
+              cette fausse precision se propage ensuite dans toute la charge.
+            */}
+            <Ressenti
+              label="Comment était la séance ?"
               value={rpe}
               onChange={setRpe}
-              hint="1 = très facile · 10 = maximal. C'est ce chiffre qui calcule ta charge."
+              hint="C’est ce que tu réponds ici qui permet au coach d’adapter la suite."
             />
-            <Scale
-              label="Fatigue générale"
+            <Ressenti
+              label="Et toi, comment tu te sens ?"
               value={fatigue}
               onChange={setFatigue}
-              hint="1 = frais · 10 = vidé."
+              hint="Ton état général, pas celui de la séance."
             />
             <NumPad label="Sommeil de la nuit" value={sleep} onChange={setSleep} unit="h" step={0.5} />
 

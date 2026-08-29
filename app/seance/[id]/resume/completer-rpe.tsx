@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { Scale } from '@/components/ui/numpad'
+import { Ressenti } from '@/components/ui/ressenti'
 import { completerRpe } from './actions'
 
 /**
@@ -40,7 +40,7 @@ export function CompleterRpe({ sessionId }: { sessionId: string }) {
         </p>
 
         <div className="mt-3.5">
-          <Scale label="Effort perçu" value={rpe} onChange={setRpe} max={10} />
+          <Ressenti label="Comment était cette séance ?" value={rpe} onChange={setRpe} />
         </div>
 
         {erreur && (

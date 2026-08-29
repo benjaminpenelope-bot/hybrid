@@ -17,7 +17,9 @@ import {
 } from '@/components/weekly-charts'
 import { etatProfil } from '@/lib/db/profil-complet'
 import { loadState } from '@/lib/db/queries'
+import { VerdictCard } from '@/components/verdict-card'
 import { computeAlerts } from '@/lib/engine/alerts'
+import { decide } from '@/lib/engine/decide'
 import { weightTrend } from '@/lib/engine/body'
 import { formatDate, todayISO } from '@/lib/engine/date'
 import { disciplineSplit, weeklySeries } from '@/lib/engine/history'
@@ -51,6 +53,7 @@ export default async function Page() {
   const alerts = computeAlerts(state, today, { scores })
   const level = levelOf(scores.global)
   const session = state.sessions.find((s) => s.date === today)
+  const verdict = decide(state, today)
   const load = loadSeries(state, 7, today)
   const l7 = sum(load.map((p) => p.load))
   const hasHistory = state.sessions.some((s) => s.status === 'done')
@@ -72,10 +75,6 @@ export default async function Page() {
           </p>
           </div>
         </div>
-        <div className="text-right">
-          <div className="num text-[13px] text-mut">LVL {level.n}</div>
-          <div className="eyebrow text-[9.5px]">{level.t}</div>
-        </div>
       </header>
 
       {/*
@@ -89,6 +88,52 @@ export default async function Page() {
       */}
       <div className="mt-3.5 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
         <div>
+          {/*
+            L'ordre est le sujet de cet ecran : la situation, la seance, le
+            bouton. Le score et les graphiques descendent sous un repli — ils
+            restent consultables, mais ils n'ouvrent plus la journee. Une
+            metrique qui n'aide pas a decider n'a pas sa place en tete.
+          */}
+          <VerdictCard verdict={verdict} />
+
+          <section className="mt-5">
+            <h2 className="eyebrow mb-2.5">Ta séance du jour</h2>
+            <SessionCard session={session} />
+          </section>
+
+          <section className="mt-6">
+            <h2 className="eyebrow mb-2.5">Prochains jours</h2>
+            <ul className="flex flex-col gap-[7px]">
+              {upcoming.map((s) => (
+                <li key={s.id}>
+                  <Link
+                    href="/semaine"
+                    className="flex w-full items-center gap-2.5 rounded-[13px] border border-line bg-card px-3 py-[11px] text-left"
+                  >
+                    <span
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{ background: SESSION_META[s.type].color }}
+                      aria-hidden
+                    />
+                    <span className="w-[62px] shrink-0 text-[12px] text-dim">
+                      {formatDate(s.date)}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-[13.5px]">{s.title}</span>
+                    <span className="num shrink-0 text-[12px] text-dim">
+                      {s.duration ? `${s.duration}'` : '—'}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <details className="mt-7 border-t border-line pt-5">
+            <summary className="eyebrow cursor-pointer text-dim">
+              Où j&apos;en suis · niveau {level.n}, {level.t.toLowerCase()}
+            </summary>
+
+            <div className="mt-4">
           <ScoreRing scores={scores} />
 
         {scores.missing > 0 && (
@@ -114,45 +159,14 @@ export default async function Page() {
         </section>
 
         <section className="mt-6">
-          <h2 className="eyebrow mb-2.5">Ta séance du jour</h2>
-          <SessionCard session={session} />
-        </section>
-
-        <section className="mt-6">
           <div className="mb-2.5 flex items-center justify-between">
             <h2 className="eyebrow">Charge des 7 derniers jours</h2>
             <span className="num text-[12px] text-mut">{l7} unités</span>
           </div>
           <LoadChart series={load} />
         </section>
-
-        <section className="mt-6">
-          <h2 className="eyebrow mb-2.5">Prochains jours</h2>
-          <ul className="flex flex-col gap-[7px]">
-            {upcoming.map((s) => (
-              <li key={s.id}>
-                <Link
-                  href="/semaine"
-                  className="flex w-full items-center gap-2.5 rounded-[13px] border border-line bg-card px-3 py-[11px] text-left"
-                >
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full"
-                    style={{ background: SESSION_META[s.type].color }}
-                    aria-hidden
-                  />
-                  <span className="w-[62px] shrink-0 text-[12px] text-dim">
-                    {formatDate(s.date)}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-[13.5px]">{s.title}</span>
-                  <span className="num shrink-0 text-[12px] text-dim">
-                    {s.duration ? `${s.duration}'` : '—'}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-
+            </div>
+          </details>
         </div>
 
         <div className="hidden flex-col gap-4 lg:flex">
