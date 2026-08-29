@@ -35,30 +35,30 @@ const goals = [
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#050606] text-text">
+    <main className="min-h-screen overflow-hidden bg-bg text-text">
       <section className="relative min-h-screen px-3 py-3 sm:px-5 sm:py-5">
         <LandingGlow />
         <Header />
 
-        <div className="relative mx-auto grid min-h-[calc(100vh-108px)] w-full max-w-[1220px] grid-cols-1 items-center gap-12 overflow-hidden rounded-[30px] border border-[#dfff001a] bg-[#070808] px-5 pb-12 pt-8 shadow-[0_28px_90px_rgba(0,0,0,0.65)] sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,0.85fr)] lg:px-10 lg:pb-16">
+        <div className="relative mx-auto grid min-h-[calc(100vh-108px)] w-full max-w-[1220px] grid-cols-1 items-center gap-12 overflow-hidden rounded-[30px] border border-[#924dde1a] bg-bg2 px-5 pb-12 pt-8 shadow-[0_28px_90px_rgba(0,0,0,0.65)] sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(360px,0.85fr)] lg:px-10 lg:pb-16">
           <div className="pointer-events-none absolute inset-0" aria-hidden>
-            <div className="absolute left-[-16%] top-[27%] h-[170px] w-[72%] -rotate-[15deg] bg-[#dfff00]/45 blur-[50px]" />
-            <div className="absolute right-[-18%] top-[26%] h-[150px] w-[62%] rotate-[18deg] bg-[#a7ff2c]/35 blur-[56px]" />
-            <div className="absolute bottom-[-18%] left-[-8%] h-[42%] w-[116%] rounded-[50%] border-t border-[#dfff0040]" />
+            <div className="absolute left-[-16%] top-[27%] h-[170px] w-[72%] -rotate-[15deg] bg-brand/45 blur-[50px]" />
+            <div className="absolute right-[-18%] top-[26%] h-[150px] w-[62%] rotate-[18deg] bg-street/35 blur-[56px]" />
+            <div className="absolute bottom-[-18%] left-[-8%] h-[42%] w-[116%] rounded-[50%] border-t border-[#924dde40]" />
           </div>
           <div className="relative z-10">
             <div className="mb-5 flex flex-wrap gap-2">
               {sports.map((sport) => (
                 <span
                   key={sport}
-                  className="rounded-full border border-[#dfff0026] bg-white/[0.035] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-[#d6d9d0]"
+                  className="rounded-full border border-[#924dde33] bg-white/[0.035] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-[#EFF1F3]"
                 >
                   {sport}
                 </span>
               ))}
             </div>
 
-            <p className="eyebrow text-[#dfff00]">Un entraîneur. Tous tes entraînements.</p>
+            <p className="eyebrow text-brand">Un entraîneur. Tous tes entraînements.</p>
             {/*
               Taille fluide plutôt que trois paliers fixes. Le mot le plus long,
               « ENTRAÎNEMENTS. », mesure 6,34 px de large par pixel de police :
@@ -83,7 +83,7 @@ export default function LandingPage() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/login"
-                className="inline-flex min-h-[52px] items-center justify-center rounded-full bg-[#dfff00] px-7 font-display text-[15px] font-bold uppercase tracking-[0.09em] text-[#050606] shadow-[0_0_34px_rgba(223,255,0,0.28)] transition-transform active:scale-[0.98]"
+                className="inline-flex min-h-[52px] items-center justify-center rounded-full bg-brand px-7 font-display text-[15px] font-bold uppercase tracking-[0.09em] text-white shadow-[0_0_34px_rgba(146,77,222,0.38)] transition-transform active:scale-[0.98]"
               >
                 Commencer gratuitement
               </Link>
@@ -108,7 +108,7 @@ export default function LandingPage() {
               key={number}
               className={`rounded-card border p-5 ${
                 index === 3
-                  ? 'border-[#dfff0066] bg-[#dfff00]/10 shadow-[0_0_60px_rgba(223,255,0,0.14)]'
+                  ? 'border-[#924dde66] bg-brand/10 shadow-[0_0_60px_rgba(146,77,222,0.16)]'
                   : 'border-white/10 bg-white/[0.045]'
               }`}
             >
@@ -120,14 +120,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-[#090a0a]">
+      <section className="border-y border-white/10 bg-card">
         <div className="mx-auto grid w-full max-w-[1180px] gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.8fr_1fr] lg:px-8">
           <div>
             <p className="eyebrow text-brand">Coaching adaptatif</p>
             <h2 className="dsp mt-4 text-[48px] leading-[0.95] sm:text-[68px]">
               Ton programme ne sait pas que tu as mal dormi.
               <br />
-              <span className="text-[#dfff00]">HYBRID, oui.</span>
+              <span className="text-brand">HYBRID, oui.</span>
             </h2>
           </div>
           <AdaptationFlow />
@@ -142,8 +142,8 @@ export default function LandingPage() {
         </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {sports.map((sport) => (
-            <article key={sport} className="rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_30%_10%,rgba(223,255,0,0.13),rgba(255,255,255,0.035)_44%,rgba(255,255,255,0.02))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-              <div className="h-2 w-10 rounded-full bg-[#dfff00]" />
+            <article key={sport} className="rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_30%_10%,rgba(146,77,222,0.15),rgba(255,255,255,0.035)_44%,rgba(255,255,255,0.02))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <div className="h-2 w-10 rounded-full bg-brand" />
               <h3 className="dsp mt-8 text-[28px]">{sport}</h3>
             </article>
           ))}
@@ -177,18 +177,55 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid gap-4 lg:grid-cols-3">
-          <article className="rounded-[22px] border border-dashed border-white/15 bg-white/[0.035] p-6">
-            <p className="eyebrow">Témoignages</p>
-            <h2 className="dsp mt-4 text-[36px] leading-none">Preuves sociales à ajouter.</h2>
-            <p className="mt-4 text-[13px] leading-6 text-mut">
-              Placeholder volontaire : aucun faux avis, aucun chiffre inventé.
-            </p>
-          </article>
-          <PricingCard name="GRATUIT" price="0 €/mois" cta="Commencer gratuitement" />
-          <PricingCard name="ABONNEMENT" price="Prix à définir" cta="Être prévenu" highlighted />
+      <section id="tarifs" className="mx-auto w-full max-w-[1180px] px-4 py-16 sm:px-6 lg:px-8">
+        <SectionHeader eyebrow="Tarifs" title="Commence gratuitement. Passe Pro quand tu veux." />
+
+        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <PricingCard
+            name="HYBRID"
+            price="0 €"
+            periode="pour toujours"
+            resume="De quoi suivre ton entraînement et voir où tu en es."
+            features={[
+              'Suivi des entraînements et historique',
+              'Statistiques basiques',
+              'Premières recommandations du coach IA',
+              'Connexion aux principales plateformes',
+            ]}
+            limite="Fonctionnalités limitées sur les intégrations."
+            cta="Commencer gratuitement"
+          />
+          <PricingCard
+            name="HYBRID PRO"
+            price="9,99 €"
+            periode="par mois, ou 79,99 € par an"
+            resume="L'entraîneur complet, qui construit et adapte ton programme."
+            features={[
+              'Coach IA complet',
+              'Programme personnalisé',
+              'Adaptation automatique des séances',
+              'Analyse des performances et de la récupération',
+              'Objectifs personnalisés et préparation aux compétitions',
+              'Toutes les intégrations disponibles',
+            ]}
+            cta="Essayer 14 jours"
+            highlighted
+          />
         </div>
+
+        <p className="mt-6 text-[14px] leading-7 text-mut">
+          <b className="text-text">14 jours d&rsquo;essai gratuit de HYBRID PRO, sans carte bancaire.</b>{' '}
+          À la fin de l&rsquo;essai, tu repasses automatiquement sur l&rsquo;offre gratuite si tu ne
+          t&rsquo;abonnes pas. Rien ne se déclenche sans que tu l&rsquo;aies choisi.
+        </p>
+
+        <article className="mt-10 rounded-[22px] border border-dashed border-white/15 bg-white/[0.035] p-6">
+          <p className="eyebrow">Témoignages</p>
+          <h2 className="dsp mt-4 text-[36px] leading-none">Preuves sociales à ajouter.</h2>
+          <p className="mt-4 max-w-[640px] text-[13px] leading-6 text-mut">
+            Placeholder volontaire : aucun faux avis, aucun chiffre inventé.
+          </p>
+        </article>
       </section>
 
       <section className="relative px-4 py-20 text-center sm:px-6">
@@ -201,7 +238,7 @@ export default function LandingPage() {
           </h2>
           <Link
             href="/login"
-            className="mt-8 inline-flex min-h-[52px] items-center justify-center rounded-full bg-[#dfff00] px-7 font-display text-[15px] font-bold uppercase tracking-[0.09em] text-[#050606] shadow-[0_0_34px_rgba(223,255,0,0.28)] transition-transform active:scale-[0.98]"
+            className="mt-8 inline-flex min-h-[52px] items-center justify-center rounded-full bg-brand px-7 font-display text-[15px] font-bold uppercase tracking-[0.09em] text-white shadow-[0_0_34px_rgba(146,77,222,0.38)] transition-transform active:scale-[0.98]"
           >
             Commencer gratuitement
           </Link>
@@ -218,11 +255,11 @@ function Header() {
         <LogoMark size={30} />
         <span className="dsp text-[22px] tracking-[0.06em]">HYBRID</span>
       </Link>
-      <nav className="hidden items-center gap-2 rounded-full border border-[#dfff0033] bg-black/40 p-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-mut backdrop-blur-xl md:flex">
-        <a href="#produit" className="rounded-full px-5 py-2.5 transition-colors hover:bg-[#dfff00] hover:text-[#050606]">
+      <nav className="hidden items-center gap-2 rounded-full border border-[#924dde33] bg-black/40 p-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-mut backdrop-blur-xl md:flex">
+        <a href="#produit" className="rounded-full px-5 py-2.5 transition-colors hover:bg-brand hover:text-white">
           Produit
         </a>
-        <Link href="/login" className="rounded-full px-5 py-2.5 transition-colors hover:bg-[#dfff00] hover:text-[#050606]">
+        <Link href="/login" className="rounded-full px-5 py-2.5 transition-colors hover:bg-brand hover:text-white">
           Connexion
         </Link>
       </nav>
@@ -235,15 +272,15 @@ function HeroVisual() {
     <div className="relative z-10 mx-auto flex min-h-[560px] w-full max-w-[500px] items-end justify-center lg:mx-0">
       <div className="pointer-events-none absolute inset-x-0 bottom-2 h-[88%]" aria-hidden>
         <div className="absolute bottom-0 left-1/2 h-[520px] w-[260px] -translate-x-1/2 rounded-t-[130px] bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.22),rgba(255,255,255,0.02))] opacity-70 blur-[1px]" />
-        <div className="absolute bottom-[78px] left-[49%] h-[150px] w-[200px] -translate-x-1/2 rotate-[-24deg] rounded-full border border-[#dfff0066]" />
+        <div className="absolute bottom-[78px] left-[49%] h-[150px] w-[200px] -translate-x-1/2 rotate-[-24deg] rounded-full border border-[#924dde66]" />
         <div className="absolute bottom-[220px] left-[46%] h-[160px] w-[78px] -translate-x-1/2 rounded-full border border-white/20 bg-white/[0.04]" />
         <div className="absolute bottom-[362px] left-[48%] h-[78px] w-[58px] -translate-x-1/2 rounded-full border border-white/25 bg-white/[0.08]" />
-        <div className="absolute bottom-[286px] left-[27%] h-[156px] w-[22px] rotate-[35deg] rounded-full border border-[#dfff004d]" />
-        <div className="absolute bottom-[260px] right-[24%] h-[190px] w-[22px] rotate-[-42deg] rounded-full border border-[#dfff004d]" />
+        <div className="absolute bottom-[286px] left-[27%] h-[156px] w-[22px] rotate-[35deg] rounded-full border border-[#924dde4d]" />
+        <div className="absolute bottom-[260px] right-[24%] h-[190px] w-[22px] rotate-[-42deg] rounded-full border border-[#924dde4d]" />
         <div className="absolute bottom-[70px] left-[31%] h-[230px] w-[24px] rotate-[13deg] rounded-full border border-white/15" />
         <div className="absolute bottom-[70px] right-[32%] h-[230px] w-[24px] rotate-[-11deg] rounded-full border border-white/15" />
-        <div className="absolute bottom-[245px] left-[20%] h-px w-[310px] rotate-[-18deg] bg-[#dfff0080]" />
-        <div className="absolute bottom-[330px] right-[15%] h-px w-[260px] rotate-[24deg] bg-[#dfff0066]" />
+        <div className="absolute bottom-[245px] left-[20%] h-px w-[310px] rotate-[-18deg] bg-[#924dde80]" />
+        <div className="absolute bottom-[330px] right-[15%] h-px w-[260px] rotate-[24deg] bg-[#924dde66]" />
       </div>
       <HeroMockup />
     </div>
@@ -253,22 +290,22 @@ function HeroVisual() {
 function HeroMockup() {
   return (
     <div className="relative z-10 mb-2 ml-auto w-full max-w-[360px]">
-      <div className="absolute -inset-8 rounded-full bg-[#dfff00]/18 blur-3xl" />
-      <div className="relative rounded-[36px] border border-[#dfff0030] bg-black/35 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl">
+      <div className="absolute -inset-8 rounded-full bg-brand/18 blur-3xl" />
+      <div className="relative rounded-[36px] border border-[#924dde30] bg-black/35 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl">
         <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.1),rgba(12,13,13,0.88)_42%,rgba(0,0,0,0.94))] p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="eyebrow text-[9px]">Aujourd’hui</p>
               <h2 className="dsp mt-1 text-[30px]">Séance adaptée</h2>
             </div>
-            <div className="num rounded-full border border-[#dfff0059] bg-[#dfff00]/10 px-3 py-1.5 text-[13px] text-[#dfff00]">
+            <div className="num rounded-full border border-[#924dde59] bg-brand/10 px-3 py-1.5 text-[13px] text-brand">
               87
             </div>
           </div>
 
           <div className="mt-5 rounded-[22px] border border-white/10 bg-black/35 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
             <div className="mb-3 flex items-center justify-between">
-              <span className="rounded-full border border-[#dfff0040] bg-[#dfff00]/10 px-2.5 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.09em] text-[#dfff00]">
+              <span className="rounded-full border border-[#924dde40] bg-brand/10 px-2.5 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.09em] text-brand">
                 Course
               </span>
               <span className="num text-[13px] text-mut">42 min</span>
@@ -281,14 +318,16 @@ function HeroMockup() {
               {[0, 1, 2, 3, 4].map((bar) => (
                 <span
                   key={bar}
-                  className={`h-1 flex-1 rounded-full ${bar < 3 ? 'bg-[#dfff00]' : 'bg-white/10'}`}
+                  className={`h-1 flex-1 rounded-full ${bar < 3 ? 'bg-brand' : 'bg-white/10'}`}
                 />
               ))}
             </div>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-3">
-            <MiniMetric label="Charge" value="Haute" color="#dfff00" />
+            {/* Une charge haute est un avertissement, pas la marque : le violet de
+                marque ne se pose jamais sur une donnee. */}
+            <MiniMetric label="Charge" value="Haute" color="var(--warn)" />
             <MiniMetric label="Récupération" value="68" color="var(--swim)" />
           </div>
         </div>
@@ -318,8 +357,8 @@ function AdaptationFlow() {
         <Arrow />
         <FlowCard title="Nouvelle séance" main="Sortie longue · 14 km" sub="Intensité réduite" accent />
       </div>
-      <div className="mt-5 rounded-[18px] border border-[#dfff0040] bg-[#dfff00]/10 p-4">
-        <p className="eyebrow text-[9.5px] text-[#dfff00]">Entraîneur HYBRID</p>
+      <div className="mt-5 rounded-[18px] border border-[#924dde40] bg-brand/10 p-4">
+        <p className="eyebrow text-[9.5px] text-brand">Entraîneur HYBRID</p>
         <p className="mt-2 text-[13px] leading-6 text-mut">
           Objectif, programme, entraînement, données, adaptation, progression : la boucle reste
           vivante à chaque séance.
@@ -341,7 +380,7 @@ function FlowCard({
   accent?: boolean
 }) {
   return (
-    <div className={`rounded-[18px] border p-4 ${accent ? 'border-[#dfff0066] bg-[#dfff00]/10' : 'border-white/10 bg-black/25'}`}>
+    <div className={`rounded-[18px] border p-4 ${accent ? 'border-[#924dde66] bg-brand/10' : 'border-white/10 bg-black/25'}`}>
       <p className="eyebrow text-[9px]">{title}</p>
       <p className="dsp mt-4 text-[25px] leading-none">{main}</p>
       {sub && <p className="mt-2 text-[12px] text-mut">{sub}</p>}
@@ -360,7 +399,7 @@ function Arrow() {
 function SectionHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <div>
-      <p className="eyebrow text-[#dfff00]">{eyebrow}</p>
+      <p className="eyebrow text-brand">{eyebrow}</p>
       <h2 className="dsp mt-4 max-w-[760px] text-[48px] leading-[0.95] sm:text-[64px]">{title}</h2>
     </div>
   )
@@ -369,33 +408,64 @@ function SectionHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
 function PricingCard({
   name,
   price,
+  periode,
+  resume,
+  features,
+  limite,
   cta,
   highlighted,
 }: {
   name: string
   price: string
+  periode: string
+  resume: string
+  features: readonly string[]
+  /** Restriction de l'offre, dite franchement plutot que noyee dans la liste. */
+  limite?: string
   cta: string
   highlighted?: boolean
 }) {
   return (
     <article
-      className={`rounded-card border p-6 ${
-        highlighted ? 'border-[#dfff0066] bg-[#dfff00]/10' : 'border-white/10 bg-white/[0.04]'
+      className={`flex flex-col rounded-card border p-6 ${
+        highlighted ? 'border-[#924dde66] bg-brand/10' : 'border-white/10 bg-white/[0.04]'
       }`}
     >
-      <p className="eyebrow">{name}</p>
-      <div className="dsp mt-5 text-[38px] leading-none">{price}</div>
-      <p className="mt-4 text-[13px] leading-6 text-mut">
-        Structure prête pour l’abonnement, sans promettre de fonctionnalités non validées.
-      </p>
-      <Link
-        href="/login"
-        className={`mt-6 inline-flex min-h-[48px] w-full items-center justify-center rounded-[13px] font-display text-[13px] font-bold uppercase tracking-[0.09em] ${
-          highlighted ? 'bg-[#dfff00] text-[#050606]' : 'bg-text text-bg'
-        }`}
-      >
-        {cta}
-      </Link>
+      <p className={`eyebrow ${highlighted ? 'text-brand' : ''}`}>{name}</p>
+
+      <div className="mt-5 flex items-baseline gap-2">
+        <span className="dsp text-[38px] leading-none">{price}</span>
+        <span className="text-[13px] text-mut">{periode}</span>
+      </div>
+
+      <p className="mt-4 text-[14px] leading-6 text-mut">{resume}</p>
+
+      <ul className="mt-5 flex flex-col gap-2.5">
+        {features.map((f) => (
+          <li key={f} className="flex items-start gap-2.5 text-[14px] leading-6">
+            <span
+              className={`mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full ${highlighted ? 'bg-brand' : 'bg-mut'}`}
+              aria-hidden
+            />
+            {f}
+          </li>
+        ))}
+      </ul>
+
+      {limite && <p className="mt-4 text-[13px] leading-6 text-dim">{limite}</p>}
+
+      {/* mt-auto sur l enveloppe : les deux boutons s alignent en bas meme si
+          les listes de fonctionnalites n ont pas la meme longueur. */}
+      <div className="mt-auto pt-6">
+        <Link
+          href="/login"
+          className={`inline-flex min-h-[48px] w-full items-center justify-center rounded-[13px] font-display text-[13px] font-bold uppercase tracking-[0.09em] ${
+            highlighted ? 'bg-brand text-white' : 'bg-text text-bg'
+          }`}
+        >
+          {cta}
+        </Link>
+      </div>
     </article>
   )
 }
@@ -403,7 +473,7 @@ function PricingCard({
 function LandingGlow() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      <div className="absolute left-[-12%] top-[8%] h-[360px] w-[360px] rounded-full bg-[#dfff00]/16 blur-3xl" />
+      <div className="absolute left-[-12%] top-[8%] h-[360px] w-[360px] rounded-full bg-brand/16 blur-3xl" />
       <div className="absolute right-[-8%] top-[18%] h-[300px] w-[300px] rounded-full bg-swim/12 blur-3xl" />
       <div className="absolute bottom-[4%] left-[42%] h-[260px] w-[260px] rounded-full bg-run/10 blur-3xl" />
     </div>
