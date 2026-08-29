@@ -62,8 +62,14 @@ export function Ressenti({
               <span className="text-[26px] leading-none" aria-hidden>
                 {n.emoji}
               </span>
+              {/*
+                `text-mut` et non `text-dim` : au moment du choix, les cinq
+                labels sont inactifs, et ce sont eux qui distinguent les
+                visages. `text-dim` tombe a 3,0 de contraste sur cette
+                surface — sous le seuil AA pour du 10,5 px.
+              */}
               <span
-                className={`text-center text-[10.5px] leading-tight ${actif ? 'text-text' : 'text-dim'}`}
+                className={`text-center text-[10.5px] leading-tight ${actif ? 'text-text' : 'text-mut'}`}
               >
                 {n.label}
               </span>
@@ -71,7 +77,7 @@ export function Ressenti({
           )
         })}
       </div>
-      {hint && <p className="mt-[9px] text-[11.5px] leading-relaxed text-dim">{hint}</p>}
+      {hint && <p className="mt-[9px] text-[11.5px] leading-relaxed text-mut">{hint}</p>}
     </div>
   )
 }

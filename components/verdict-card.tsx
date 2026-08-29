@@ -61,7 +61,7 @@ export function VerdictCard({ verdict }: { verdict: Verdict }) {
 
       {verdict.preuves.length > 0 && (
         <details className="mt-3 border-t border-line pt-3">
-          <summary className="eyebrow cursor-pointer text-dim">Sur quoi je me base</summary>
+          <summary className="eyebrow cursor-pointer text-mut">Sur quoi je me base</summary>
           <dl className="mt-3 flex flex-col gap-3">
             {verdict.preuves.map((p) => (
               <div key={`${p.quoi}-${p.valeur}`}>
@@ -69,7 +69,7 @@ export function VerdictCard({ verdict }: { verdict: Verdict }) {
                   <span className="text-mut">{p.quoi}</span>
                   <span className="num shrink-0 text-text">{p.valeur}</span>
                 </dt>
-                <dd className="mt-0.5 text-[11.5px] leading-relaxed text-dim">{p.effet}</dd>
+                <dd className="mt-0.5 text-[11.5px] leading-relaxed text-mut">{p.effet}</dd>
               </div>
             ))}
           </dl>
