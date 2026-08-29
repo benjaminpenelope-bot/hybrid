@@ -33,17 +33,23 @@ function entier(nom: string, defaut: number): number {
 /**
  * Plafonds par défaut, calés sur l'offre.
  *
- * Coût mesuré d'un message : contexte 1 250 jetons, prompt système et outils
- * 1 450 (mis en cache), historique ~1 200, sortie ~600. Soit environ un
- * centime avec Claude Sonnet 5, deux fois et demie plus avec Opus 5.
+ * Coût mesuré sur un vrai appel, question courte et sans historique :
+ * 2 167 jetons d'entrée non mis en cache, 2 447 relus du cache au deuxième
+ * message, 165 jetons de sortie. Soit 0,6 centime de dollar avec Claude
+ * Sonnet 5, 1,6 avec Opus 5.
+ *
+ * Ces chiffres sont un plancher : une conversation de plusieurs tours traîne
+ * son historique, donc le coût monte avec la longueur de l'échange. C'est
+ * `coach_usage` qui donnera la vraie moyenne.
  *
  *   free — 20 messages par mois : de quoi juger le coach, pas de quoi vivre
  *   dessus. Vingt centimes au pire par compte gratuit, soit un coût
  *   d'acquisition assumé.
  *
- *   pro — 100 par mois pour 9,99 €. Au pire un euro d'API, soit un dixième
+ *   pro — 100 par mois pour 9,99 €. Au pire environ 1,50 € d'API, soit 15 %
  *   du prix ; en pratique bien moins, personne n'écrit cent messages à son
- *   coach. Le plafond ne borne pas l'usage normal, il borne la traîne.
+ *   coach. Le plafond ne borne pas l'usage normal, il borne la traîne — le
+ *   descendre à 60 ramènerait le pire cas sous le dixième du prix.
  *
  * Réglables sans redéploiement : les mesures réelles vaudront toujours mieux
  * que cette estimation, et `coach_usage` les enregistre pour ça.
