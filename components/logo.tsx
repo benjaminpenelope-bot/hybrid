@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 /**
- * MARQUE HYBRID
+ * MARQUE POLYTRAIN
  *
  * Le fichier source est `public/logo.png` : trois bandes entrelacées, une par
  * discipline. Défini ici et nulle part ailleurs — changer de logo, c'est

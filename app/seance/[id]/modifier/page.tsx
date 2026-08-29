@@ -4,7 +4,7 @@ import { currentUserId } from '@/lib/supabase/server'
 import { SessionEditor } from './editor'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Modifier la séance · Hybrid' }
+export const metadata = { title: 'Modifier la séance · Polytrain' }
 
 export default async function Page({ params }: { params: { id: string } }) {
   const userId = await currentUserId()

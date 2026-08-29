@@ -7,7 +7,7 @@ import { signedPhotoUrl } from './actions'
 import { BodyView } from './body-view'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Corps · Hybrid' }
+export const metadata = { title: 'Corps · Polytrain' }
 
 export default async function Page() {
   const userId = await currentUserId()

@@ -10,7 +10,7 @@ import { SESSION_META } from '@/lib/ui/session-meta'
 import { CompleterRpe } from './completer-rpe'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Séance terminée · Hybrid' }
+export const metadata = { title: 'Séance terminée · Polytrain' }
 
 export default async function Page({ params }: { params: { id: string } }) {
   const userId = await currentUserId()

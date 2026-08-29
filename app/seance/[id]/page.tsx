@@ -4,7 +4,7 @@ import { currentUserId } from '@/lib/supabase/server'
 import { SessionRunner } from './runner'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Séance · Hybrid' }
+export const metadata = { title: 'Séance · Polytrain' }
 
 export default async function Page({ params }: { params: { id: string } }) {
   const userId = await currentUserId()

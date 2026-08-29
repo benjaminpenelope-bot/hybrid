@@ -4,7 +4,7 @@ import { etatProfil } from '@/lib/db/profil-complet'
 import { currentUserId } from '@/lib/supabase/server'
 import { OnboardingForm } from './onboarding-form'
 
-export const metadata: Metadata = { title: 'Bienvenue · Hybrid' }
+export const metadata: Metadata = { title: 'Bienvenue · Polytrain' }
 
 export default async function OnboardingPage() {
   const userId = await currentUserId()

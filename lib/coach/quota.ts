@@ -185,7 +185,7 @@ export function messageQuota(etat: EtatQuota): MessageQuota {
     texte: `Tu as atteint ta limite de messages ${quand}`,
     offre:
       etat.plan === 'free'
-        ? `HYBRID PRO passe à ${LIMITES.pro.jour} messages par jour et ${LIMITES.pro.mois} par mois, sur un modèle qui réfléchit plus longtemps. 14 jours d’essai, sans carte.`
+        ? `POLYTRAIN PRO passe à ${LIMITES.pro.jour} messages par jour et ${LIMITES.pro.mois} par mois, sur un modèle qui réfléchit plus longtemps. 14 jours d’essai, sans carte.`
         : null,
   }
 }

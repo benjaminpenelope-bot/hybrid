@@ -89,7 +89,7 @@ export function TabBar() {
         <div className="flex items-center gap-2.5 px-2 pb-5">
           <LogoMark size={30} />
           <div>
-            <div className="dsp text-[20px] tracking-[0.04em]">HYBRID</div>
+            <div className="dsp text-[20px] tracking-[0.04em]">POLYTRAIN</div>
             <div className="eyebrow mt-0.5">Course · Nage · Barre</div>
           </div>
         </div>

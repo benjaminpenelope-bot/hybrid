@@ -1,5 +1,5 @@
 /**
- * Service worker d'HYBRID.
+ * Service worker d'POLYTRAIN.
  *
  * Lecture hors ligne : les écrans déjà visités restent consultables, avec la
  * dernière version connue. Écriture hors ligne : rien n'est mis en cache ici,

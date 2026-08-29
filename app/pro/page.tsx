@@ -13,7 +13,7 @@ import { EssaiBouton } from './essai-bouton'
 import { PaiementBoutons, PortailBouton } from './paiement-boutons'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'HYBRID PRO · Hybrid' }
+export const metadata = { title: 'POLYTRAIN PRO · Polytrain' }
 
 /** Ce que chaque offre donne, cote a cote. Les chiffres viennent du code. */
 function comparaison() {
@@ -63,7 +63,7 @@ export default async function Page({
 
   return (
     <main className="wrap py-[18px]">
-      <h1 className="dsp text-[22px]">HYBRID PRO</h1>
+      <h1 className="dsp text-[22px]">POLYTRAIN PRO</h1>
 
       {/*
         Le retour de Stripe ne prouve rien : c'est le webhook signe qui decide

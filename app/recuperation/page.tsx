@@ -12,7 +12,7 @@ import { currentUserId } from '@/lib/supabase/server'
 import { WellnessForm } from './wellness-form'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Récupération · Hybrid' }
+export const metadata = { title: 'Récupération · Polytrain' }
 
 export default async function Page() {
   const userId = await currentUserId()

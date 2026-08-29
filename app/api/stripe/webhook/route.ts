@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ recu: true })
 }
 
-/** Identifiant HYBRID porte par l'abonnement Stripe. */
+/** Identifiant POLYTRAIN porte par l'abonnement Stripe. */
 function userIdDe(objet: { metadata?: Stripe.Metadata | null }): string | null {
   return objet.metadata?.hybrid_user_id ?? null
 }

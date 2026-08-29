@@ -7,7 +7,7 @@ import { computeGoals, HORIZONS, LIBELLE_OBJECTIF, objectifsActifs } from '@/lib
 import { currentUserId } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Objectifs · Hybrid' }
+export const metadata = { title: 'Objectifs · Polytrain' }
 
 export default async function Page() {
   const userId = await currentUserId()
