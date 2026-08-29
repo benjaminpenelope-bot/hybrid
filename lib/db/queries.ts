@@ -3,6 +3,8 @@ import type { AthleteState } from '@/lib/engine/types'
 import {
   stateFromRows,
   type BenchmarkRow,
+  type GoalRow,
+  type LimitationRow,
   type MeasurementRow,
   type PhotoRow,
   type ProfileRow,
@@ -21,8 +23,18 @@ import {
 export async function loadState(userId: string): Promise<AthleteState | null> {
   const supabase = createClient()
 
-  const [profile, sessions, weights, measurements, photos, wellness, benchmarks, records] =
-    await Promise.all([
+  const [
+    profile,
+    sessions,
+    weights,
+    measurements,
+    photos,
+    wellness,
+    benchmarks,
+    records,
+    goals,
+    limitations,
+  ] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('sessions').select('*').eq('user_id', userId).order('date'),
       supabase.from('weights').select('date, kg, source').eq('user_id', userId).order('date'),
@@ -43,6 +55,25 @@ export async function loadState(userId: string): Promise<AthleteState | null> {
         .eq('user_id', userId)
         .order('tested_at'),
       supabase.from('records').select('label, value, date').eq('user_id', userId).order('date'),
+      /*
+       * Seuls les objectifs actifs entrent dans l'etat : un objectif atteint
+       * ou abandonne appartient a l'historique, pas au programme du jour.
+       */
+      supabase
+        .from('goals')
+        .select('id, type, priority, status, target_date, target_value, target_unit, note')
+        .eq('user_id', userId)
+        .eq('status', 'actif'),
+      /*
+       * Les limitations closes sont chargees aussi : le moteur distingue une
+       * contrainte en cours d'un antecedent, et l'antecedent reste une
+       * information utile.
+       */
+      supabase
+        .from('limitations')
+        .select('id, zone, description, started_on, ended_on')
+        .eq('user_id', userId)
+        .order('started_on'),
     ])
 
   if (!profile.data) return null
@@ -56,6 +87,8 @@ export async function loadState(userId: string): Promise<AthleteState | null> {
     wellness: (wellness.data ?? []) as WellnessRow[],
     benchmarks: (benchmarks.data ?? []) as BenchmarkRow[],
     records: (records.data ?? []) as RecordRow[],
+    goals: (goals.data ?? []) as GoalRow[],
+    limitations: (limitations.data ?? []) as LimitationRow[],
   })
 }
 

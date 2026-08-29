@@ -192,6 +192,31 @@ describe('forme du verdict', () => {
   })
 })
 
+describe('limitations déclarées', () => {
+  it('les cite dans les preuves sans toucher à la séance', () => {
+    // Elles etaient enregistrees a l'inscription et relues nulle part.
+    const s: AthleteState = {
+      ...etat([seance(TODAY)]),
+      limitations: [
+        { id: 'l1', zone: 'épaule droite', description: null, startedOn: addDays(TODAY, -20), endedOn: null },
+      ],
+    }
+    const v = decide(s, TODAY)
+    expect(v.action).toBe('maintenir')
+    expect(v.preuves.some((p) => p.valeur === 'épaule droite')).toBe(true)
+  })
+
+  it('ignore une limitation terminée', () => {
+    const s: AthleteState = {
+      ...etat([seance(TODAY)]),
+      limitations: [
+        { id: 'l1', zone: 'genou', description: null, startedOn: addDays(TODAY, -60), endedOn: addDays(TODAY, -30) },
+      ],
+    }
+    expect(decide(s, TODAY).preuves.some((p) => p.valeur === 'genou')).toBe(false)
+  })
+})
+
 describe('fraîcheur du ressenti', () => {
   it('ignore un relevé de la veille pour décider du jour', () => {
     // computeRecovery se contente du dernier releve connu, sans limite d age.

@@ -197,6 +197,51 @@ export interface Profile {
   baseWeeklyKm?: number | null
 }
 
+/** Types d'objectif proposes a l'onboarding. Miroir de l'enum `goal_type`. */
+export type GoalType =
+  | 'marathon'
+  | 'semi'
+  | 'dix_km'
+  | 'hyrox'
+  | 'force'
+  | 'hypertrophie'
+  | 'street_workout'
+  | 'endurance'
+  | 'hybride'
+
+export type GoalPriority = 'principal' | 'secondaire'
+export type GoalStatus = 'actif' | 'atteint' | 'abandonne'
+
+/**
+ * Objectif tel que l'athlete l'a declare, par opposition aux jalons que le
+ * moteur en derive. Un seul objectif principal peut etre actif a la fois,
+ * garanti par un index unique en base.
+ */
+export interface DeclaredGoal {
+  id: string
+  type: GoalType
+  priority: GoalPriority
+  status: GoalStatus
+  /** Echeance facultative : on peut viser un marathon sans date. */
+  targetDate: ISODate | null
+  /** Cible chiffree, interpretee selon le type. Null = cible par defaut. */
+  targetValue: number | null
+  targetUnit: string | null
+  note: string | null
+}
+
+/**
+ * Contrainte physique declaree. `endedOn` a null signifie « toujours en
+ * cours » : c'est ce qui distingue une blessure actuelle d'un antecedent.
+ */
+export interface Limitation {
+  id: string
+  zone: string
+  description: string | null
+  startedOn: ISODate
+  endedOn: ISODate | null
+}
+
 export interface AthleteState {
   profile: Profile
   sessions: Session[]
@@ -206,6 +251,10 @@ export interface AthleteState {
   wellness: Wellness[]
   benchmarks: Benchmarks
   records: RecordEntry[]
+  /** Objectifs declares a l'onboarding. Vide tant que l'athlete n'a rien dit. */
+  goals: DeclaredGoal[]
+  /** Limitations declarees. Voir `limitationsActives` pour celles en cours. */
+  limitations: Limitation[]
 }
 
 /** Une composante de sous-score. `v === null` : donnée non mesurée, exclue du calcul. */

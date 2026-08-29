@@ -2,9 +2,14 @@ import type {
   AthleteState,
   Benchmark,
   BenchmarkKey,
+  DeclaredGoal,
   Exercise,
   Finisher,
   ExtraSession,
+  GoalPriority,
+  GoalStatus,
+  GoalType,
+  Limitation,
   Measurement,
   Photo,
   Profile,
@@ -246,6 +251,48 @@ export function benchmarksFromRows(rows: BenchmarkRow[]): Record<string, Benchma
   return out
 }
 
+export interface GoalRow {
+  id: string
+  type: string
+  priority: string
+  status: string
+  target_date: string | null
+  target_value: number | string | null
+  target_unit: string | null
+  note: string | null
+}
+
+export interface LimitationRow {
+  id: string
+  zone: string
+  description: string | null
+  started_on: string
+  ended_on: string | null
+}
+
+function rowToGoal(row: GoalRow): DeclaredGoal {
+  return {
+    id: row.id,
+    type: row.type as GoalType,
+    priority: row.priority as GoalPriority,
+    status: row.status as GoalStatus,
+    targetDate: row.target_date,
+    targetValue: num(row.target_value) ?? null,
+    targetUnit: row.target_unit,
+    note: row.note,
+  }
+}
+
+function rowToLimitation(row: LimitationRow): Limitation {
+  return {
+    id: row.id,
+    zone: row.zone,
+    description: row.description,
+    startedOn: row.started_on,
+    endedOn: row.ended_on,
+  }
+}
+
 export interface StateRows {
   profile: ProfileRow
   sessions: SessionRow[]
@@ -255,6 +302,8 @@ export interface StateRows {
   wellness: WellnessRow[]
   benchmarks: BenchmarkRow[]
   records: RecordRow[]
+  goals: GoalRow[]
+  limitations: LimitationRow[]
 }
 
 export function stateFromRows(rows: StateRows): AthleteState {
@@ -267,5 +316,7 @@ export function stateFromRows(rows: StateRows): AthleteState {
     wellness: rows.wellness.map(rowToWellness),
     benchmarks: benchmarksFromRows(rows.benchmarks),
     records: rows.records.map(rowToRecord),
+    goals: rows.goals.map(rowToGoal),
+    limitations: rows.limitations.map(rowToLimitation),
   }
 }

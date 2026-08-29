@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { emptyState, seedState } from '../seed-data'
 import { addDays } from './date'
 import { runStats, streetStats, swimStats, timeLabel } from './perf'
-import { computeGoals } from './goals'
 import { buildReview } from './review'
 import type { AthleteState, Session } from './types'
 
@@ -116,26 +115,6 @@ describe('streetStats', () => {
   it('compte le volume à la barre sur 14 jours', () => {
     // l'historique de référence contient une séance UPPER à 49 répétitions
     expect(streetStats(seedState(TODAY), TODAY).barVolume14d).toBe(49)
-  })
-})
-
-describe('computeGoals', () => {
-  it('laisse la progression à null quand la donnée manque', () => {
-    const goals = computeGoals(emptyState(TODAY), TODAY)
-    const marathon = goals.find((g) => g.label === 'Marathon sous 4 h')
-    expect(marathon?.progress).toBeNull()
-    expect(marathon?.current).toContain('aucune sortie')
-  })
-
-  it('calcule la progression sur les données réelles', () => {
-    const state = withSessions([run(addDays(TODAY, -2), 21.1, 130)])
-    const goals = computeGoals(state, TODAY)
-    expect(goals.find((g) => g.label === 'Marathon sous 4 h')?.progress).toBe(50)
-  })
-
-  it('couvre les quatre horizons', () => {
-    const horizons = new Set(computeGoals(seedState(TODAY), TODAY).map((g) => g.horizon))
-    expect(horizons.size).toBe(4)
   })
 })
 

@@ -1,4 +1,5 @@
 import { addDays } from './date'
+import { limitationsActives } from './goals'
 import { acuteChronic, consecutiveDays } from './load'
 import { computeRecovery } from './recovery'
 import { wellnessOn } from './state'
@@ -136,6 +137,24 @@ export function decide(state: AthleteState, today: ISODate): Verdict {
   const { acwr, l7, reliable } = acuteChronic(state, today)
   const streak = consecutiveDays(state, today)
   const preuves: Preuve[] = []
+
+  /* ── 0. Limitations déclarées ─────────────────────────────
+   * Une limitation en cours ne change aucune action, et c'est délibéré :
+   * relier une zone à des exercices demanderait une correspondance que
+   * personne n'a établie, et une adaptation devinée vaut moins que pas
+   * d'adaptation du tout. Elle entre quand même dans les preuves — une
+   * contrainte déclarée puis jamais mentionnée laisse croire qu'elle a été
+   * oubliée, et la preuve dit à l'athlète quel levier agit réellement.
+   */
+  const limitations = limitationsActives(state, today)
+  if (limitations.length > 0) {
+    preuves.push({
+      quoi: limitations.length > 1 ? 'Limitations en cours' : 'Limitation en cours',
+      valeur: limitations.map((l) => l.zone).join(', '),
+      effet:
+        'Déclarée à l’inscription. Elle n’allège pas la séance : signale une douleur le jour où la zone réagit, c’est ce qui fait baisser la charge.',
+    })
+  }
 
   /* ── 1. Douleur déclarée ──────────────────────────────────
    * La règle la plus forte, et la seule qui ne dépende d'aucun calcul. Le

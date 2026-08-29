@@ -150,6 +150,23 @@ export function seedState(today: ISODate, makeId: () => string = seq): AthleteSt
       },
     },
     records: [],
+    /*
+     * L'athlete de reference court, nage et fait du street : c'est la
+     * definition meme de l'objectif hybride. Sans date, comme en base.
+     */
+    goals: [
+      {
+        id: 'seed-goal',
+        type: 'hybride',
+        priority: 'principal',
+        status: 'actif',
+        targetDate: null,
+        targetValue: null,
+        targetUnit: null,
+        note: null,
+      },
+    ],
+    limitations: [],
   }
 }
 
@@ -174,5 +191,7 @@ export function emptyState(today: ISODate): AthleteState {
     wellness: [],
     benchmarks: {},
     records: [],
+    goals: [],
+    limitations: [],
   }
 }
