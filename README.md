@@ -13,7 +13,7 @@ Next.js 14 (App Router, TypeScript strict) + Supabase + Tailwind.
 | Étape | Contenu | État |
 |---|---|---|
 | 1 | Schéma Supabase, RLS, seed | fait |
-| 2 | `lib/engine/` complet + tests Vitest | fait — 321 tests verts |
+| 2 | `lib/engine/` complet + tests Vitest | fait — 325 tests verts |
 | 3 | Auth et onboarding | fait |
 | 4 | Accueil, séance du jour, mode séance, résumé | fait |
 | 5 | Semaine, éditeur, adaptation automatique | fait |
@@ -36,7 +36,8 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 | Planificateur multi-sport | partiel — la répartition de la semaine dépend de l'objectif, des sports déclarés et des jours disponibles. Reste à différencier la **prescription** de force selon l'objectif : force et hypertrophie partagent aujourd'hui le même microcycle et les mêmes séries |
 | Séances de vélo | aucune. Le cyclisme est enregistré au profil, jamais programmé, et l'onboarding refuse le vélo seul |
 | Ateliers HYROX (traîneau, rameur, ski erg) | non mesurables : aucun écran ne permet de les enregistrer |
-| Coach en ligne | jamais exercé, `ANTHROPIC_API_KEY` vide. Le mode hors ligne, déterministe, est celui qui tourne |
+| Coach en ligne | code à jour (Claude Opus 5, raisonnement adaptatif, repli serveur sur refus), mais **jamais exercé** : `ANTHROPIC_API_KEY` est vide. Le mode hors ligne, déterministe, est celui qui tourne |
+| Limite d'usage du coach | aucune. Avec une vraie clé, rien n'empêche un compte d'enchaîner les requêtes — à poser avant d'ouvrir le coach en ligne au public |
 | Envoi d'e-mails | SMTP Supabase partagé, plafonné autour de 4 inscriptions par heure. Bloquant pour un vrai lancement |
 | Suppression de compte et export RGPD | absents. Obligatoires pour un SaaS |
 | Abonnements | table `subscriptions` et `entitlement()` à écrire, avant tout branchement de paiement |
@@ -49,7 +50,7 @@ et aucun fichier Apple Health n'a encore été importé. Le code est là, jamais
 npm install
 cp .env.example .env.local   # puis renseigner les clés
 npm run dev                  # http://localhost:3400
-npm test                     # 321 tests
+npm test                     # 325 tests
 npm run typecheck
 ```
 
@@ -325,7 +326,7 @@ Le prototype ne servait qu'un athlète, dont la base était connue ; l'app en se
 npm test
 ```
 
-321 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
+325 tests sur `program`, `decide`, `summary`, `perf`, `goals`, `review`, `marathon`, `advice`, `scoring`, `load`, `recovery`, `adapt`, `alerts`, `prs`, avec les cas
 limites exigés : historique vide, une seule séance, benchmarks absents, semaine de deload,
 première semaine de données (pas de faux rouge sur le ratio de charge).
 

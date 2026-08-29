@@ -23,7 +23,30 @@ import { currentUserId } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-const MODEL = 'claude-sonnet-4-6'
+const MODEL = 'claude-opus-5'
+
+/**
+ * Le raisonnement adaptatif consomme le meme budget que la reponse. A 1 024
+ * jetons — la valeur d'origine, ecrite quand le modele ne raisonnait pas — la
+ * reponse partait entiere en reflexion et se coupait avant la premiere phrase.
+ * La longueur reelle est tenue par le prompt (cinq phrases), pas par ce
+ * plafond, qui n'est la que comme garde-fou.
+ */
+const MAX_TOKENS = 8000
+
+/**
+ * Un coach d'entrainement n'est pas un probleme difficile, et l'athlete attend
+ * devant son ecran : `medium` raisonne assez pour croiser charge, recuperation
+ * et verdict sans faire patienter pour rien.
+ */
+const EFFORT = 'medium' as const
+
+/**
+ * Repli serveur en cas de refus des classificateurs. Sans lui, une requete
+ * declinee ne rend rien du tout. « default » laisse Anthropic router selon le
+ * motif du refus, ce qui evite d'avoir a maintenir une liste de modeles.
+ */
+const BETA_REPLI = 'server-side-fallback-2026-07-01'
 
 const bodySchema = z.object({
   messages: z
@@ -54,6 +77,29 @@ function ndjson(stream: ReadableStream<Uint8Array>): Response {
       'X-Accel-Buffering': 'no',
     },
   })
+}
+
+/**
+ * Traduit une erreur d'API en une phrase pour l'athlete.
+ *
+ * Les codes qui relevent d'une configuration serveur le disent : sinon
+ * l'exploitant croit a une panne reseau et cherche au mauvais endroit.
+ */
+function messageDErreur(error: unknown): string {
+  if (!(error instanceof Anthropic.APIError)) {
+    return 'Le coach en ligne est injoignable. Voici une réponse locale, plus courte.'
+  }
+  switch (error.status) {
+    case 401:
+    case 403:
+      return "La clé du coach en ligne est refusée. Voici une réponse locale en attendant."
+    case 400:
+      return "Le coach en ligne a refusé la requête — vérifie la configuration du serveur. Voici une réponse locale."
+    case 429:
+      return 'Trop de requêtes sur la dernière minute. Voici une réponse locale en attendant.'
+    default:
+      return 'Le coach en ligne est injoignable. Voici une réponse locale, plus courte.'
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -102,9 +148,15 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        const run = client.messages.stream({
+        const run = client.beta.messages.stream({
           model: MODEL,
-          max_tokens: 1024,
+          max_tokens: MAX_TOKENS,
+          thinking: { type: 'adaptive' },
+          output_config: { effort: EFFORT },
+          betas: [BETA_REPLI],
+          fallbacks: 'default',
+          // Le prompt systeme ne bouge pas d'un appel a l'autre : il est mis
+          // en cache, et le contexte variable voyage dans le tour utilisateur.
           system: [{ type: 'text', text: COACH_SYSTEM, cache_control: { type: 'ephemeral' } }],
           tools: COACH_TOOLS,
           messages,
@@ -115,6 +167,24 @@ export async function POST(request: NextRequest) {
         })
 
         const final = await run.finalMessage()
+
+        /*
+         * Un refus arrive en HTTP 200, avec un contenu vide ou partiel. Lire
+         * `content` sans verifier `stop_reason` donnerait une reponse tronquee
+         * presentee comme complete.
+         */
+        if (final.stop_reason === 'refusal') {
+          controller.enqueue(
+            line({
+              type: 'error',
+              message:
+                'Le coach en ligne n’a pas pu traiter cette demande. Voici une réponse locale.',
+            }),
+          )
+          controller.enqueue(line({ type: 'text', text: localAnswer(lastUser, state, today) }))
+          controller.enqueue(line({ type: 'done', offline: true }))
+          return
+        }
 
         for (const block of final.content) {
           if (block.type !== 'tool_use') continue
@@ -133,12 +203,20 @@ export async function POST(request: NextRequest) {
 
         controller.enqueue(line({ type: 'done', offline: false }))
       } catch (error) {
-        // Réseau coupé, quota atteint, clé invalide : on bascule sur le repli
-        // local plutôt que de laisser l'athlète sans réponse.
-        const message =
-          error instanceof Anthropic.APIError && error.status === 429
-            ? "Trop de requêtes sur la dernière minute. Voici une réponse locale en attendant."
-            : "Le coach en ligne est injoignable. Voici une réponse locale, plus courte."
+        /*
+         * Quoi qu'il arrive, l'athlete recoit une reponse : on bascule sur le
+         * repli local plutot que de le laisser devant un ecran vide.
+         *
+         * Mais le message doit distinguer les causes. Ce chemin n'avait jamais
+         * tourne : une cle absente, une cle invalide et un reseau coupe
+         * rendaient tous « le coach est injoignable », ce qui donne une panne
+         * indiscernable d'une erreur de configuration. La cause exacte part
+         * dans les journaux du serveur, jamais vers le client — un message
+         * d'erreur d'API peut contenir des detourages de la requete.
+         */
+        console.error('[coach] appel en ligne echoue', error)
+
+        const message = messageDErreur(error)
         controller.enqueue(line({ type: 'error', message }))
         controller.enqueue(line({ type: 'text', text: localAnswer(lastUser, state, today) }))
         controller.enqueue(line({ type: 'done', offline: true }))

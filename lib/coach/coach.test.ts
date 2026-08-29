@@ -50,6 +50,37 @@ describe('buildCoachContext', () => {
   })
 })
 
+describe('ce que le coach sait de la declaration', () => {
+  it("porte l'objectif declare, pas un objectif suppose", () => {
+    const context = buildCoachContext(seedState(TODAY), TODAY)
+    expect(context.objectifs).toHaveLength(1)
+    expect(context.objectifs[0]?.objectif).toBe('Hybride')
+  })
+
+  it("n'invente aucun objectif quand rien n'a ete declare", () => {
+    expect(buildCoachContext(emptyState(TODAY), TODAY).objectifs).toEqual([])
+  })
+
+  it('ne transmet que les limitations en cours', () => {
+    const etat: AthleteState = {
+      ...emptyState(TODAY),
+      limitations: [
+        { id: 'a', zone: 'épaule', description: null, startedOn: addDays(TODAY, -5), endedOn: null },
+        { id: 'b', zone: 'genou', description: null, startedOn: addDays(TODAY, -90), endedOn: addDays(TODAY, -60) },
+      ],
+    }
+    expect(buildCoachContext(etat, TODAY).limitations.map((l) => l.zone)).toEqual(['épaule'])
+  })
+
+  it('porte le verdict du jour et ses preuves', () => {
+    // Sans lui, le coach raisonnait a cote de l'ecran d'accueil et pouvait
+    // le contredire sur la meme journee.
+    const v = buildCoachContext(seedState(TODAY), TODAY).verdict_du_jour
+    expect(v.action).toBeDefined()
+    expect(Array.isArray(v.preuves)).toBe(true)
+  })
+})
+
 describe('quickPrompts', () => {
   it('propose de tester les repères quand ils manquent', () => {
     const prompts = quickPrompts(seedState(TODAY), TODAY)

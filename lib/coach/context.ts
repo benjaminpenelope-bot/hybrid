@@ -1,5 +1,7 @@
 import { computeAlerts, type Alert } from '@/lib/engine/alerts'
 import { addDays } from '@/lib/engine/date'
+import { decide } from '@/lib/engine/decide'
+import { limitationsActives, LIBELLE_OBJECTIF, objectifsActifs } from '@/lib/engine/goals'
 import { acuteChronic } from '@/lib/engine/load'
 import { runStats, swimStats } from '@/lib/engine/perf'
 import { computeRecovery } from '@/lib/engine/recovery'
@@ -27,6 +29,16 @@ export interface CoachContext {
   course: Record<string, unknown>
   seances_recentes: Record<string, unknown>[]
   seances_a_venir: Record<string, unknown>[]
+  /** Ce que l'athlete a declare viser. Le coach ne le remplace jamais. */
+  objectifs: { objectif: string; priorite: string; echeance: string }[]
+  /** Contraintes en cours a la date du jour. */
+  limitations: { zone: string; description: string; depuis: string }[]
+  /**
+   * Ce que la couche de decision a conclu aujourd'hui, avec ses preuves.
+   * Sans ca, le coach raisonnait a cote de l'ecran d'accueil et pouvait le
+   * contredire — deux verdicts differents sur la meme journee.
+   */
+  verdict_du_jour: Record<string, unknown>
 }
 
 export function buildCoachContext(state: AthleteState, today: ISODate): CoachContext {
@@ -37,6 +49,7 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
   const run = runStats(state, today)
   const swim = swimStats(state, today)
 
+  const verdict = decide(state, today)
   const done = state.sessions
     .filter((s) => s.status === 'done' && s.date <= today)
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -103,6 +116,23 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
       plus_longue_sortie_km: run.longest ?? UNTESTED,
       meilleure_allure_min_par_km: run.bestPace === null ? UNTESTED : Number(run.bestPace.toFixed(2)),
       fc_moyenne: run.avgHr ?? 'non mesurée',
+    },
+    objectifs: objectifsActifs(state).map((g) => ({
+      objectif: LIBELLE_OBJECTIF[g.type],
+      priorite: g.priority,
+      echeance: g.targetDate ?? 'sans date',
+    })),
+    limitations: limitationsActives(state, today).map((l) => ({
+      zone: l.zone,
+      description: l.description ?? '',
+      depuis: l.startedOn,
+    })),
+    verdict_du_jour: {
+      action: verdict.action,
+      ampleur: verdict.ampleur ?? 'sans objet',
+      seance_visee: verdict.sessionId ?? 'aucune',
+      confirmation_requise: verdict.confirmationRequise,
+      preuves: verdict.preuves.map((p) => ({ quoi: p.quoi, valeur: p.valeur, effet: p.effet })),
     },
     seances_recentes: done.map((s) => ({
       date: s.date,
