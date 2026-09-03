@@ -37,15 +37,22 @@ export default function LandingPage() {
  * marque : le halo derriere le verre est litteralement la forme qu'on retrouve
  * en petit dans l'application.
  */
-function Aura({ taille, className }: { taille: number; className: string }) {
+function Aura({ taille, className }: { taille: string; className: string }) {
   return (
     <div className={`pointer-events-none absolute ${className}`} aria-hidden>
       <img
         src="/mark.png"
         alt=""
-        width={taille}
-        height={taille}
         style={{
+          /*
+           * Taille exprimee relativement a l'ecran, jamais en pixels fixes.
+           *
+           * Une aura plus large que la fenetre se fait trancher par le
+           * `overflow-hidden` de la page : le flou s'arrete net sur les deux
+           * bords, et le disque parait aplati. C'etait visible sur telephone
+           * et invisible sur ordinateur, ou la fenetre est plus large que
+           * l'image.
+           */
           width: taille,
           height: taille,
           /*
@@ -92,7 +99,7 @@ function Header() {
 function Hero() {
   return (
     <section className="relative px-4 pb-24 pt-10 sm:px-6 sm:pt-16">
-      <Aura taille={620} className="left-1/2 top-[-140px] -translate-x-1/2" />
+      <Aura taille="min(620px, 86vw)" className="left-1/2 top-[-110px] -translate-x-1/2" />
 
       <div className="relative z-10 mx-auto flex max-w-[760px] flex-col items-center text-center">
         <span className="glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12.5px] text-mut">
@@ -217,7 +224,7 @@ const AUTOUR = [
 function Coach() {
   return (
     <section className="relative px-4 py-20 sm:px-6">
-      <Aura taille={520} className="left-1/2 top-1/4 -translate-x-1/2" />
+      <Aura taille="min(520px, 80vw)" className="left-1/2 top-1/4 -translate-x-1/2" />
 
       <div className="relative z-10 mx-auto max-w-[1120px]">
         <div className="mx-auto max-w-[640px] text-center">
@@ -316,7 +323,7 @@ const OFFRES = [
 function Tarifs() {
   return (
     <section id="tarifs" className="relative px-4 py-20 sm:px-6">
-      <Aura taille={560} className="left-1/2 top-[10%] -translate-x-1/2" />
+      <Aura taille="min(560px, 82vw)" className="left-1/2 top-[10%] -translate-x-1/2" />
 
       <div className="relative z-10 mx-auto max-w-[900px]">
         <div className="mx-auto max-w-[620px] text-center">
