@@ -73,7 +73,7 @@ export function SessionCard({ session }: { session: Session | undefined }) {
               background: teinte(canal, 0.1),
             }}
           >
-            <span aria-hidden>{meta.icon}</span>
+            <meta.Icon size={14} />
             {meta.label}
           </span>
           <span className="num text-[13px] text-mut">{session.duration} min</span>

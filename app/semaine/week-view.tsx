@@ -501,7 +501,7 @@ function CarteSeance({
         aria-hidden
       />
       <span className="shrink-0 text-[17px]" aria-hidden>
-        {meta.icon}
+        <meta.Icon size={17} />
       </span>
       <span className="min-w-0 flex-1">
         <span

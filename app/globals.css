@@ -112,7 +112,12 @@
     font-size: 15px;
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
-    padding-bottom: 86px;
+    /*
+     * Reserve la place de la barre flottante : sa hauteur, sa marge basse et
+     * l'encoche. Elle ne colle plus au bord, donc l'ancienne valeur de 86 px
+     * la laissait recouvrir le dernier bouton de chaque ecran.
+     */
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 104px);
     overflow-x: hidden;
   }
 
