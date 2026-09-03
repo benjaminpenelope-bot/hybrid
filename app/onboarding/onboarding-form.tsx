@@ -19,6 +19,7 @@ import {
   type BenchmarkClaim,
   type OnboardingInput,
 } from '@/lib/validation/onboarding'
+import { ApercuSemaine } from '@/components/apercu-semaine'
 import {
   IconBarre,
   IconDixKm,
@@ -457,7 +458,15 @@ export function OnboardingForm() {
                 <button
                   key={o}
                   type="button"
-                  className="choix"
+                  /*
+                   * Les non-choisies s'effacent au lieu de disparaitre :
+                   * elles restent cliquables pour changer d'avis, mais
+                   * cessent de disputer l'attention a celle qu'on a prise.
+                   */
+                  className={`choix entre transition-opacity duration-300 ${
+                    d.goalMain && d.goalMain !== o ? 'opacity-45' : ''
+                  }`}
+                  style={{ animationDelay: `${OBJECTIFS.indexOf(o) * 40}ms` }}
                   data-actif={d.goalMain === o}
                   aria-pressed={d.goalMain === o}
                   onClick={() => {
@@ -488,7 +497,20 @@ export function OnboardingForm() {
           </div>
 
           {d.goalMain && (
-            <div className="entre mt-6">
+            <div className="entre mt-7">
+              {/*
+                La forme de la semaine, montree plutot qu'annoncee. Elle lit
+                le microcycle reel : la promesse et le programme livre ne
+                peuvent pas diverger.
+              */}
+              <p className="eyebrow mb-2.5">La forme de ta semaine</p>
+              <ApercuSemaine objectif={d.goalMain} />
+              <p className="mt-2.5 text-[12px] leading-5 text-dim">
+                Les jours se caleront sur tes disponibilités, deux étapes plus loin. C&rsquo;est la
+                répartition qui compte ici, pas le calendrier.
+              </p>
+
+              <div className="mt-7">
               <Field
                 label="Une échéance ?"
                 type="date"
@@ -512,6 +534,7 @@ export function OnboardingForm() {
                   ))}
                 </div>
               </Question>
+              </div>
             </div>
           )}
         </section>
