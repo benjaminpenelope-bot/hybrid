@@ -236,7 +236,7 @@ describe('baseWeeklyKm', () => {
     const plan = generatePlan(MONDAY, 1, 1, { ...opts, baseKm: baseWeeklyKm(5) })
     const long = plan.find((s) => s.type === 'LONG')
     // 8 km de base : la sortie longue tourne autour de 3,5 km, pas de 6,5
-    expect(long?.title).toContain('3.5 km')
+    expect(long?.title).toContain('3,5 km')
   })
 })
 

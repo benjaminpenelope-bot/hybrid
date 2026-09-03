@@ -805,6 +805,18 @@ const DUREE_ROLE: Record<RoleVelo, number> = {
   recuperation: 0.6,
 }
 
+/**
+ * Distance a la francaise, pour les libelles.
+ *
+ * Le moteur produit des chaines lues telles quelles par l'athlete — un titre
+ * de seance en est une. Les laisser en notation anglaise donnait « Footing
+ * souple — 4.5 km » a cote d'un « 4,5 km » affiche ailleurs dans la meme
+ * application.
+ */
+function dist(km: number): string {
+  return Number.isInteger(km) ? `${km}` : String(km).replace('.', ',')
+}
+
 /** Duree en heures et minutes. « 1.8 h » ne se lit pas, « 1 h 45 » si. */
 export function dureeLisible(minutes: number): string {
   if (minutes < 60) return `${minutes} min`
@@ -1065,10 +1077,10 @@ export function buildSession(
           ...base,
           type: 'RUN',
           kind: 'run',
-          title: `Footing souple — ${km} km`,
+          title: `Footing souple — ${dist(km)} km`,
           duration: Math.round(km * 6.7),
           intensity: 2,
-          goal: `${km} km vraiment lents, jambes encore chargées de la veille.`,
+          goal: `${dist(km)} km vraiment lents, jambes encore chargées de la veille.`,
           why: "Cette séance sert à accumuler du temps de course, pas à performer.",
           target: 'Allure 6:30–7:00/km. Si les jambes sont lourdes, coupe à 20 min sans culpabiliser.',
           cues: [
@@ -1079,7 +1091,7 @@ export function buildSession(
             {
               n: 'Footing continu',
               sets: 1,
-              reps: `${km} km`,
+              reps: `${dist(km)} km`,
               rest: 0,
               rir: 4,
               cue: 'Lent. Vraiment lent.',
@@ -1099,10 +1111,10 @@ export function buildSession(
         ...base,
         type: 'RUN',
         kind: 'run',
-        title: `Endurance fondamentale — ${km} km`,
+        title: `Endurance fondamentale — ${dist(km)} km`,
         duration: Math.round(km * 6.6) + (finisher ? finisher.duration : 0),
         intensity: 2,
-        goal: `${km} km à 6:20–6:50/km, FC sous 150 bpm${finisher ? ', puis bloc jambes enchaîné' : ''}.`,
+        goal: `${dist(km)} km à 6:20–6:50/km, FC sous 150 bpm${finisher ? ', puis bloc jambes enchaîné' : ''}.`,
         why: '80 % du volume marathon se court lentement. C\'est ce qui construit le réseau capillaire et la solidité tendineuse.',
         target: 'Allure 6:20–6:50/km · FC moyenne < 150 bpm',
         cues: [
@@ -1115,7 +1127,7 @@ export function buildSession(
           {
             n: 'Footing continu',
             sets: 1,
-            reps: `${km} km`,
+            reps: `${dist(km)} km`,
             rest: 0,
             rir: 4,
             cue: 'Allure conversationnelle du début à la fin.',
@@ -1299,10 +1311,10 @@ export function buildSession(
         ...base,
         type: 'LONG',
         kind: 'run',
-        title: `Sortie longue — ${long} km`,
+        title: `Sortie longue — ${dist(long)} km`,
         duration: Math.round(long * 7),
         intensity: 3,
-        goal: `${long} km en continu, très lentement.`,
+        goal: `${dist(long)} km en continu, très lentement.`,
         why: `Phase ${phase.label}. ${POURQUOI_LONGUE[goal ?? 'endurance'] ?? POURQUOI_LONGUE.endurance} On l'allonge de 1 km par semaine maximum.`,
         target: "Allure 6:40–7:10/km. L'objectif est la durée, pas l'allure.",
         cues: [
@@ -1314,7 +1326,7 @@ export function buildSession(
           {
             n: 'Sortie longue',
             sets: 1,
-            reps: `${long} km`,
+            reps: `${dist(long)} km`,
             rest: 0,
             rir: 4,
             cue: 'Régularité du début à la fin.',

@@ -20,6 +20,7 @@ import {
   type OnboardingInput,
 } from '@/lib/validation/onboarding'
 import { libellesDesJalons } from '@/lib/engine/goals'
+import { ApercuProgramme } from '@/components/apercu-programme'
 import { ApercuSemaine } from '@/components/apercu-semaine'
 import { ChoixDefilant } from '@/components/choix-defilant'
 import {
@@ -188,7 +189,16 @@ function BenchmarkPicker({
 }
 
 /** Identifiants d'étape. La liste affichée se compose selon les sports déclarés. */
-type StepId = 'profil' | 'sports' | 'objectifs' | 'dispo' | 'course' | 'natation' | 'force' | 'limites'
+type StepId =
+  | 'objectifs'
+  | 'sports'
+  | 'dispo'
+  | 'course'
+  | 'natation'
+  | 'force'
+  | 'apercu'
+  | 'profil'
+  | 'limites'
 
 /** Pictogramme de chaque objectif. */
 const OBJECTIF_ICONES: Record<(typeof OBJECTIFS)[number], (p: { size?: number }) => React.ReactElement> = {
@@ -256,6 +266,7 @@ const STEP_TITRES: Record<StepId, string> = {
   sports: 'Tes sports',
   objectifs: 'Ce que tu vises',
   dispo: 'Ta disponibilité',
+  apercu: 'Ta première semaine',
   course: 'Ta course',
   natation: 'Ta natation',
   force: 'Ta force',
@@ -316,6 +327,18 @@ export function OnboardingForm({
     if (d.sports.includes('running')) s.push('course')
     if (d.sports.includes('swimming')) s.push('natation')
     if (faitDeLaForce) s.push('force')
+    /*
+     * L'apercu arrive apres le calibrage et avant l'administratif.
+     *
+     * Il ne peut pas venir plus tot : les distances dependent du volume de
+     * course actuel, demande a l'etape « course ». Les montrer avant
+     * afficherait des chiffres que le programme livre ne contiendrait pas.
+     *
+     * Il vient en revanche avant le profil et les limitations, qui
+     * n'influencent pas le plan : c'est la recompense qui justifie de
+     * repondre aux deux dernieres questions.
+     */
+    s.push('apercu')
     s.push('profil')
     s.push('limites')
     return s
@@ -349,6 +372,7 @@ export function OnboardingForm({
       d.runFrequency !== null && num(d.runWeeklyKm) >= 0 && num(d.runLongestKm) >= 0,
     natation: d.swimFrequency !== null && d.swimStroke !== null && d.swimPoolAccess !== null,
     force: Object.values(d.claims).every(claimReady),
+    apercu: true,
     limites: true,
   }
 
@@ -893,6 +917,29 @@ export function OnboardingForm({
               />
             ))}
           </div>
+        </section>
+      )}
+
+      {step === 'apercu' && (
+        <section>
+          <p className="mb-5 text-[13.5px] leading-relaxed text-mut">
+            Voilà ce que tes réponses produisent. Rien n&rsquo;est encore enregistré : tu peux
+            revenir en arrière, le programme se recalcule.
+          </p>
+
+          <ApercuProgramme
+            objectif={d.goalMain}
+            sports={d.sports}
+            jours={d.weekdays}
+            allowDoubles={d.allowDoubles}
+            volumeCourseHebdo={d.sports.includes('running') ? num(d.runWeeklyKm) : null}
+          />
+
+          <p className="mt-5 text-[12px] leading-5 text-dim">
+            La semaine 1 sert de point de départ : le volume monte ensuite de 8 % par semaine, avec
+            une décharge toutes les quatre. Il reste deux questions, qui ne changent pas le
+            programme mais permettent de suivre ton corps et tes contraintes.
+          </p>
         </section>
       )}
 
