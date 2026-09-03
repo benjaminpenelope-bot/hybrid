@@ -26,6 +26,9 @@ import { ApercuSemaine } from '@/components/apercu-semaine'
 import { ChoixDefilant } from '@/components/choix-defilant'
 import {
   IconAucun,
+  IconAutreSexe,
+  IconFemme,
+  IconHomme,
   IconBarre,
   IconCourse,
   IconJambes,
@@ -56,6 +59,7 @@ type ClaimDraft = { mode: BenchmarkClaim['mode']; value: string }
  */
 interface Draft {
   name: string
+  sex: 'homme' | 'femme' | 'autre' | null
   heightCm: string
   currentKg: string
   goalKg: string
@@ -91,6 +95,7 @@ const EMPTY_CLAIM: ClaimDraft = { mode: 'untested', value: '' }
 
 const INITIAL: Draft = {
   name: '',
+  sex: null,
   heightCm: '',
   currentKg: '',
   goalKg: '',
@@ -340,6 +345,7 @@ export function OnboardingForm({
           runLongestKm: '12',
           name: 'Alex',
           heightCm: '180',
+          sex: null,
           currentKg: '78',
           goalKg: '73',
         }
@@ -422,6 +428,7 @@ export function OnboardingForm({
   const pret: Record<StepId, boolean> = {
     profil:
       d.name.trim().length > 0 &&
+      d.sex !== null &&
       num(d.heightCm) >= 100 &&
       num(d.heightCm) <= 250 &&
       num(d.currentKg) >= 30 &&
@@ -446,6 +453,7 @@ export function OnboardingForm({
     const payload: OnboardingInput = {
       profil: {
         name: d.name.trim(),
+        sex: d.sex,
         heightCm: Math.round(num(d.heightCm)),
         currentKg: num(d.currentKg),
         goalKg: num(d.goalKg),
@@ -532,7 +540,7 @@ export function OnboardingForm({
           <p className="mb-5 text-[13.5px] leading-relaxed text-mut">
             Ton programme est calé, ces réponses n&rsquo;y touchent plus. Elles servent au suivi de
             ton corps et au coach, qui te répond avec tes chiffres plutôt qu&rsquo;avec des
-            généralités. On ne demande que ce qui sert.
+            généralités.
           </p>
 
           <Field
@@ -542,64 +550,128 @@ export function OnboardingForm({
             placeholder="Ton prénom"
           />
 
-          {/* Taille et poids cote a cote : deux nombres courts n'ont pas besoin
-              d'une ligne chacun, et les rapprocher montre qu'ils vont ensemble. */}
-          <div className="grid grid-cols-2 gap-x-3">
-            <Field
-              label="Taille"
-              type="number"
-              inputMode="numeric"
-              suffix="cm"
-              value={d.heightCm}
-              onChange={(e) => set('heightCm', e.target.value)}
-            />
-            <Field
-              label="Poids actuel"
-              type="number"
-              inputMode="decimal"
-              suffix="kg"
-              value={d.currentKg}
-              onChange={(e) => set('currentKg', e.target.value)}
-            />
-          </div>
-
-          <Field
-            label="Poids visé"
-            type="number"
-            inputMode="decimal"
-            suffix="kg"
-            value={d.goalKg}
-            onChange={(e) => set('goalKg', e.target.value)}
-            hint="Mets le même que ton poids actuel si tu ne cherches pas à le changer."
-          />
-
           {/*
-            Le meme principe qu'a l'etape course : ce que la reponse produit,
-            affiche pendant qu'on la donne. Le rythme vient de la constante
-            que l'ecran Corps utilise pour alerter — la duree annoncee ici est
-            donc exactement celle au bout de laquelle l'app cessera de dire
-            que ca va trop vite.
+            Le reste de l'ecran n'arrive qu'une fois le prenom donne, et
+            s'ouvre en s'adressant a la personne par son nom. Six champs
+            poses d'un coup se remplissent comme un formulaire ; deux
+            questions qui se repondent l'une a l'autre se tiennent comme une
+            conversation, et c'est la derniere impression avant le programme.
           */}
-          {ecartDePoids !== null && (
-            <p className="entre -mt-1 rounded-[12px] bg-[rgb(255_255_255/0.035)] px-3.5 py-2.5 text-[12.5px] leading-5 text-mut">
-              {ecartDePoids === 0 ? (
-                <>
-                  Poids stable : l&rsquo;app suivra ta tendance sans jamais te pousser à la faire
-                  bouger.
-                </>
-              ) : (
-                <>
-                  {ecartDePoids > 0 ? 'Prendre' : 'Perdre'}{' '}
-                  <b className="text-text">{km(Math.abs(ecartDePoids))} kg</b> — au-delà de{' '}
-                  {fr(GAIN_MAX_KG_SEMAINE, 2)} kg par semaine, l&rsquo;app te signale que ça va trop
-                  vite. Compte donc{' '}
-                  <b className="text-text">
-                    {Math.ceil(Math.abs(ecartDePoids) / GAIN_MAX_KG_SEMAINE)} semaines
-                  </b>{' '}
-                  au minimum.
-                </>
+          {d.name.trim().length > 0 && (
+            <div className="entre mt-7">
+              <p className="mb-1.5 text-[19px] font-semibold tracking-[-0.02em]">
+                Enchanté, {d.name.trim()}.
+              </p>
+              <p className="mb-4 text-[13px] leading-relaxed text-mut">
+                Avec qui je travaille ? Le coach s&rsquo;adresse à toi au bon genre, et rapporte
+                tes repères à la bonne référence.
+              </p>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                {([
+                  ['homme', 'Homme', IconHomme],
+                  ['femme', 'Femme', IconFemme],
+                ] as const).map(([valeur, libelle, Icone], i) => (
+                  <button
+                    key={valeur}
+                    type="button"
+                    className="choix entre flex-col items-center gap-3 py-7"
+                    style={{ animationDelay: `${i * 70}ms` }}
+                    data-actif={d.sex === valeur}
+                    aria-pressed={d.sex === valeur}
+                    onClick={() => set('sex', valeur)}
+                  >
+                    <span className={d.sex === valeur ? 'text-text' : 'text-mut'}>
+                      <Icone size={30} />
+                    </span>
+                    <span className="text-[15px] font-semibold tracking-[-0.01em]">{libelle}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/*
+                Troisieme choix, entier mais discret : personne ne doit se
+                trouver bloque a l'avant-derniere question du questionnaire.
+              */}
+              <button
+                type="button"
+                className="choix entre mt-2.5 w-full justify-center gap-2 py-3 text-[13px]"
+                style={{ animationDelay: '140ms' }}
+                data-actif={d.sex === 'autre'}
+                aria-pressed={d.sex === 'autre'}
+                onClick={() => set('sex', 'autre')}
+              >
+                <span className={d.sex === 'autre' ? 'text-text' : 'text-mut'}>
+                  <IconAutreSexe size={17} />
+                </span>
+                <span className="font-medium">Autre, ou je préfère ne pas préciser</span>
+              </button>
+            </div>
+          )}
+
+          {d.sex !== null && (
+            <div className="entre mt-8">
+              {/* Taille et poids cote a cote : deux nombres courts n'ont pas
+                  besoin d'une ligne chacun, et les rapprocher montre qu'ils
+                  vont ensemble. */}
+              <div className="grid grid-cols-2 gap-x-3">
+                <Field
+                  label="Taille"
+                  type="number"
+                  inputMode="numeric"
+                  suffix="cm"
+                  value={d.heightCm}
+                  onChange={(e) => set('heightCm', e.target.value)}
+                />
+                <Field
+                  label="Poids actuel"
+                  type="number"
+                  inputMode="decimal"
+                  suffix="kg"
+                  value={d.currentKg}
+                  onChange={(e) => set('currentKg', e.target.value)}
+                />
+              </div>
+
+              <Field
+                label="Poids visé"
+                type="number"
+                inputMode="decimal"
+                suffix="kg"
+                value={d.goalKg}
+                onChange={(e) => set('goalKg', e.target.value)}
+                hint="Mets le même que ton poids actuel si tu ne cherches pas à le changer."
+              />
+
+              {/*
+                Le meme principe qu'a l'etape course : ce que la reponse
+                produit, affiche pendant qu'on la donne. Le rythme vient de la
+                constante que l'ecran Corps utilise pour alerter — la duree
+                annoncee ici est donc exactement celle au bout de laquelle
+                l'app cessera de dire que ca va trop vite.
+              */}
+              {ecartDePoids !== null && (
+                <p className="entre -mt-1 rounded-[12px] bg-[rgb(255_255_255/0.035)] px-3.5 py-2.5 text-[12.5px] leading-5 text-mut">
+                  {ecartDePoids === 0 ? (
+                    <>
+                      Poids stable : l&rsquo;app suivra ta tendance sans jamais te pousser à la
+                      faire bouger.
+                    </>
+                  ) : (
+                    <>
+                      {ecartDePoids > 0 ? 'Prendre' : 'Perdre'}{' '}
+                      <b className="text-text">{km(Math.abs(ecartDePoids))} kg</b> — au-delà de{' '}
+                      {fr(GAIN_MAX_KG_SEMAINE, 2)} kg par semaine, l&rsquo;app te signale que ça va
+                      trop vite. Compte donc{' '}
+                      <b className="text-text">
+                        {Math.ceil(Math.abs(ecartDePoids) / GAIN_MAX_KG_SEMAINE)} semaines
+                      </b>{' '}
+                      au minimum.
+                    </>
+                  )}
+                </p>
               )}
-            </p>
+            </div>
           )}
         </section>
       )}

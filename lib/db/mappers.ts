@@ -33,6 +33,7 @@ import type {
 export interface ProfileRow {
   id: string
   name: string
+  sex: string | null
   birth_date: string | null
   height_cm: number | null
   start_weight: string | number | null
@@ -127,6 +128,10 @@ const num = (v: string | number | null | undefined): number | null =>
 export function rowToProfile(row: ProfileRow): Profile {
   return {
     name: row.name,
+    // La colonne est libre en base ; seules les trois valeurs du questionnaire
+    // ont un sens ici, le reste vaut « non precise ».
+    sex:
+      row.sex === 'homme' || row.sex === 'femme' || row.sex === 'autre' ? row.sex : null,
     birthDate: row.birth_date,
     heightCm: row.height_cm,
     startWeight: num(row.start_weight) ?? 0,

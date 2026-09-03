@@ -380,7 +380,10 @@
    * Sur un écran noir, un simple changement de bordure passe inaperçu.
    */
   .choix {
-    @apply relative flex w-full items-start gap-3 rounded-[18px] p-4 text-left transition-[background-color,box-shadow] duration-200;
+    /* `select-none` : sur mobile, un appui un peu long sur le libellé
+       surlignait le texte au lieu de choisir. Un choix n'est pas du texte à
+       copier. */
+    @apply relative flex w-full select-none items-start gap-3 rounded-[18px] p-4 text-left transition-[background-color,box-shadow] duration-200;
     background: rgb(255 255 255 / 0.035);
     border: 1px solid rgb(255 255 255 / 0.07);
   }

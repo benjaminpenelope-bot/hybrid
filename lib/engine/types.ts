@@ -184,6 +184,12 @@ export interface RecordEntry {
 
 export interface Profile {
   name: string
+  /**
+   * Renseigne a l'inscription. Aucun calcul ne s'en sert encore : il part au
+   * coach, qui s'adresse a la personne au bon genre et rapporte ses reperes
+   * a la bonne reference. `null` quand elle a prefere ne pas preciser.
+   */
+  sex?: 'homme' | 'femme' | 'autre' | null
   birthDate?: ISODate | null
   heightCm?: number | null
   startWeight: number

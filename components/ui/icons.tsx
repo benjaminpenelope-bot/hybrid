@@ -21,6 +21,9 @@
  */
 import {
   Bike,
+  Mars,
+  Venus,
+  Transgender,
   CalendarDays,
   ChartNoAxesColumn,
   ClipboardList,
@@ -83,6 +86,14 @@ export const IconForce = fabrique(Dumbbell)
 export const IconHypertrophie = fabrique(Layers)
 export const IconEndurance = fabrique(Activity)
 export const IconHybride = fabrique(Gauge)
+
+/* ── Sexe ──
+   Les symboles de Mars et Venus plutot que deux silhouettes : ils tiennent
+   dans un trait de 1,6 comme le reste, ne caricaturent personne, et se
+   reconnaissent partout. */
+export const IconHomme = fabrique(Mars)
+export const IconFemme = fabrique(Venus)
+export const IconAutreSexe = fabrique(Transgender)
 
 /** « Aucun » : un cercle en pointilles, forme la plus proche d'une absence. */
 export const IconAucun = fabrique(CircleDashed)

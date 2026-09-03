@@ -71,6 +71,7 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
   return {
     profil: {
       prenom: state.profile.name,
+      sexe: state.profile.sex ?? 'non précisé',
       taille_cm: state.profile.heightCm,
       poids_depart_kg: state.profile.startWeight,
       poids_objectif_kg: state.profile.goalWeight,
