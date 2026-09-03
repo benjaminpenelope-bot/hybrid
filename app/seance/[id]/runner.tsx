@@ -418,7 +418,7 @@ export function SessionRunner({ session }: { session: Session }) {
                 value={pain}
                 onChange={(e) => setPain(e.target.value)}
                 placeholder="ex : tendon d'Achille gauche"
-                className="w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
+                className="field"
               />
               <p className="mt-[7px] text-[11.5px] leading-relaxed text-dim">
                 Renseignée, elle allège automatiquement les deux séances suivantes.
@@ -434,7 +434,7 @@ export function SessionRunner({ session }: { session: Session }) {
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={3}
-                className="w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
+                className="field"
               />
             </div>
 

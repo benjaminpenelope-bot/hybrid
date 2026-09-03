@@ -85,7 +85,7 @@ export function WellnessForm({ existing }: { existing: Wellness | null }) {
             setSaved(false)
           }}
           placeholder="ex : mollets, tendon d'Achille gauche"
-          className="w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
+          className="field"
         />
       </div>
 

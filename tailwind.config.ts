@@ -9,35 +9,47 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: '#0B0C0E',
-        bg2: '#101215',
-        card: '#141719',
-        cardHi: '#191D20',
-        line: '#24282D',
-        line2: '#2E333A',
-        text: '#EFF1F3',
-        mut: '#878E98',
-        dim: '#5B626B',
-        run: '#E2603A',
-        swim: '#2F97AE',
-        street: '#7C6BE3',
-        legs: '#C2547A',
-        rest: '#565D67',
-        ok: '#5BBF7B',
-        warn: '#E0A73C',
-        bad: '#D8524A',
-        physique: '#8A9BB0',
-        force: '#B98A4E',
-        endurance: '#C05B6E',
-        /* Marque : châssis uniquement, jamais sur une donnée. */
-        brand: '#924DDE',
+        /*
+         * Une seule source de verite : les canaux definis dans globals.css.
+         * `<alpha-value>` laisse Tailwind appliquer une opacite (`bg-text/10`),
+         * ce qu'une valeur hexadecimale interdit.
+         */
+        bg: 'rgb(var(--bg-c) / <alpha-value>)',
+        bg2: 'rgb(var(--bg2-c) / <alpha-value>)',
+        card: 'rgb(var(--card-c) / <alpha-value>)',
+        line: 'rgb(var(--line-c) / <alpha-value>)',
+        line2: 'rgb(var(--line2-c) / <alpha-value>)',
+        text: 'rgb(var(--text-c) / <alpha-value>)',
+        mut: 'rgb(var(--mut-c) / <alpha-value>)',
+        dim: 'rgb(var(--dim-c) / <alpha-value>)',
+        run: 'rgb(var(--run-c) / <alpha-value>)',
+        swim: 'rgb(var(--swim-c) / <alpha-value>)',
+        bike: 'rgb(var(--bike-c) / <alpha-value>)',
+        street: 'rgb(var(--street-c) / <alpha-value>)',
+        legs: 'rgb(var(--legs-c) / <alpha-value>)',
+        rest: 'rgb(var(--rest-c) / <alpha-value>)',
+        ok: 'rgb(var(--ok-c) / <alpha-value>)',
+        warn: 'rgb(var(--warn-c) / <alpha-value>)',
+        bad: 'rgb(var(--bad-c) / <alpha-value>)',
+        physique: 'rgb(var(--physique-c) / <alpha-value>)',
+        force: 'rgb(var(--force-c) / <alpha-value>)',
+        endurance: 'rgb(var(--endurance-c) / <alpha-value>)',
+        brand: 'rgb(var(--brand-c) / <alpha-value>)',
+        cardHi: 'rgb(var(--card-hi-c) / <alpha-value>)',
       },
       fontFamily: {
-        display: ['var(--font-barlow)', 'Impact', 'sans-serif'],
-        sans: ['var(--font-inter)', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        /*
+         * `-apple-system` en tete : sur iPhone et sur Mac, c'est le vrai
+         * SF Pro qui s'affiche — aucune police web ne l'egale, et elle est
+         * deja sur l'appareil, donc gratuite a charger. Inter prend le relais
+         * ailleurs, c'est le dessin le plus proche.
+         */
+        display: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'var(--font-inter)', 'sans-serif'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'var(--font-inter)', 'sans-serif'],
       },
       borderRadius: {
-        card: '16px',
+        /* Rayon iOS : plus genereux que la carte d'origine a 16 px. */
+        card: '22px',
       },
       maxWidth: {
         app: '520px',

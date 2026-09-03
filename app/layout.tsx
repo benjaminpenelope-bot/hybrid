@@ -1,15 +1,9 @@
 import type { Metadata, Viewport } from 'next'
-import { Barlow_Condensed, Inter } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { OfflineBar } from '@/components/offline-bar'
 import { NavOffset, TabBar } from '@/components/tab-bar'
 import './globals.css'
 
-const barlow = Barlow_Condensed({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-barlow',
-  display: 'swap',
-})
 
 const inter = Inter({
   subsets: ['latin'],
@@ -42,7 +36,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${barlow.variable} ${inter.variable}`}>
+    <html lang="fr" className={`${inter.variable}`}>
       <body className="font-sans">
         <NavOffset>
           <OfflineBar />

@@ -2,41 +2,93 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tokens du prototype. La couleur n'identifie qu'une discipline ou un niveau d'alerte. */
+/*
+ * IDENTITÉ — noir et argent.
+ *
+ * Les couleurs sont définies une seule fois, en canaux RVB séparés par des
+ * espaces. Deux raisons :
+ *
+ * 1. Tailwind peut alors appliquer une opacité (`bg-text/10`) sur un jeton,
+ *    ce qu'une valeur hexadécimale ne permet pas.
+ * 2. Le jeton hexadécimal est dérivé du canal juste en dessous, si bien que
+ *    les 163 usages directs de `var(--x)` continuent de fonctionner sans
+ *    retouche. Il n'y a qu'un seul endroit à modifier pour changer une teinte.
+ *
+ * Le fond est un noir franc : c'est ce qui fait ressortir le verre et
+ * l'argent, et ce qui éteint l'écran sur les dalles OLED.
+ */
 :root {
-  --bg: #0b0c0e;
-  --bg2: #101215;
-  --card: #141719;
-  --card-hi: #191d20;
-  --line: #24282d;
-  --line2: #2e333a;
-  --text: #eff1f3;
-  --mut: #878e98;
-  --dim: #5b626b;
-  --run: #e2603a;
-  --swim: #2f97ae;
-  --street: #7c6be3;
-  --legs: #c2547a;
-  /*
-   * Le velo. Un vert olive, choisi par elimination : l'orange est a la
-   * course, le turquoise a la nage, le violet au street, le rose aux jambes.
-   * Restaient l'ambre et le vert francs, deja pris par --warn et --ok, qui
-   * signalent une alerte : les reprendre pour une discipline rendrait un
-   * bandeau d'avertissement indistinguable d'une sortie velo.
-   */
-  --bike: #8fa63f;
-  --rest: #565d67;
-  --ok: #5bbf7b;
-  --warn: #e0a73c;
-  --bad: #d8524a;
+  --bg-c: 0 0 0;
+  --bg2-c: 10 10 12;
+  --card-c: 18 18 21;
+  --card-hi-c: 26 26 30;
+  --line-c: 38 38 43;
+  --line2-c: 58 58 65;
 
   /*
-   * Violet de marque. Règle : il ne vit que dans le châssis — marque, focus,
-   * élément de navigation actif. Il ne touche jamais une donnée. Sur un
-   * graphique ou une carte de séance, un violet veut dire street workout
-   * (--street) ; y ajouter un violet de marque rendrait la lecture ambiguë.
+   * Rampe d'argent. Les trois niveaux passent le seuil AA sur le noir :
+   * 20,1, 9,4 et 5,6 pour 1. L'ancien `--dim` plafonnait à 3,0, ce qui
+   * rendait illisible un texte sur dix de l'application.
    */
-  --brand: #924dde;
+  --text-c: 245 245 247;
+  --mut-c: 160 160 168;
+  --dim-c: 122 122 132;
+
+  /*
+   * Disciplines, désaturées. Sur un fond noir, une couleur franche crie ;
+   * la même teinte assourdie se lit comme un accent. Elles restent
+   * distinguables entre elles, c'est leur seule fonction.
+   */
+  --run-c: 201 96 63;
+  --swim-c: 74 147 166;
+  --bike-c: 138 154 87;
+  --street-c: 133 120 196;
+  --legs-c: 176 106 133;
+  --rest-c: 107 111 120;
+
+  /*
+   * Alertes. Volontairement NON désaturées : leur travail est d'arrêter le
+   * regard. Les assourdir comme une discipline reviendrait à les cacher.
+   */
+  --ok-c: 92 186 122;
+  --warn-c: 224 167 60;
+  --bad-c: 216 82 74;
+
+  --physique-c: 138 155 176;
+  --force-c: 185 138 78;
+  --endurance-c: 192 91 110;
+
+  /*
+   * La marque est un argent, plus un violet : le nouveau logo est un chrome
+   * sans couleur, et lui adjoindre une teinte de marque le contredirait.
+   * Règle inchangée : elle ne vit que dans le châssis — focus, navigation
+   * active, marque — jamais sur une donnée.
+   */
+  --brand-c: 214 218 226;
+
+  /* ── Jetons dérivés : ne pas modifier, ils suivent les canaux ── */
+  --bg: rgb(var(--bg-c));
+  --bg2: rgb(var(--bg2-c));
+  --card: rgb(var(--card-c));
+  --card-hi: rgb(var(--card-hi-c));
+  --line: rgb(var(--line-c));
+  --line2: rgb(var(--line2-c));
+  --text: rgb(var(--text-c));
+  --mut: rgb(var(--mut-c));
+  --dim: rgb(var(--dim-c));
+  --run: rgb(var(--run-c));
+  --swim: rgb(var(--swim-c));
+  --bike: rgb(var(--bike-c));
+  --street: rgb(var(--street-c));
+  --legs: rgb(var(--legs-c));
+  --rest: rgb(var(--rest-c));
+  --ok: rgb(var(--ok-c));
+  --warn: rgb(var(--warn-c));
+  --bad: rgb(var(--bad-c));
+  --physique: rgb(var(--physique-c));
+  --force: rgb(var(--force-c));
+  --endurance: rgb(var(--endurance-c));
+  --brand: rgb(var(--brand-c));
 }
 
 @layer base {
@@ -45,7 +97,17 @@
   }
 
   body {
-    background: var(--bg);
+    /*
+     * Un noir parfaitement plat ne donne rien à réfracter au verre : les
+     * surfaces translucides deviennent de simples aplats gris. Deux relevés
+     * radiaux très faibles suffisent à créer la profondeur que le flou vient
+     * capter.
+     */
+    background:
+      radial-gradient(120% 70% at 50% -10%, rgb(255 255 255 / 0.055), transparent 60%),
+      radial-gradient(90% 50% at 100% 100%, rgb(255 255 255 / 0.03), transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
     color: var(--text);
     font-size: 15px;
     line-height: 1.45;
@@ -77,20 +139,29 @@
 }
 
 @layer components {
+  /*
+   * Titres. La capitale condensée d'origine tirait vers l'affiche sportive ;
+   * on cherche ici la sobriété d'iOS : casse naturelle, graisse forte,
+   * approche resserrée. Le corps du texte porte la même pile, si bien qu'un
+   * iPhone rend du vrai SF Pro — impossible à obtenir avec une police web.
+   */
   .dsp {
-    @apply font-display uppercase font-semibold leading-none;
-    letter-spacing: 0.02em;
+    @apply font-display font-bold;
+    letter-spacing: -0.022em;
+    line-height: 1.08;
   }
 
   .num {
     @apply font-display font-semibold;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0;
+    letter-spacing: -0.01em;
   }
 
+  /* Le sur-titre garde la capitale espacée : c'est la seule forme du système
+     iOS qui l'emploie, et elle sépare une étiquette d'un titre sans trait. */
   .eyebrow {
     @apply font-display uppercase text-mut font-semibold;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.09em;
     font-size: 11px;
   }
 
@@ -148,8 +219,109 @@
     }
   }
 
+  /*
+   * VERRE
+   *
+   * Trois couches, et aucune n'est décorative :
+   *
+   * - un dégradé blanc très faible, plus clair en haut, qui simule la lumière
+   *   tombant sur une surface inclinée ;
+   * - le flou d'arrière-plan, avec une saturation relevée : c'est lui qui
+   *   distingue le verre d'un simple gris translucide ;
+   * - un filet spéculaire d'un pixel sur l'arête haute. C'est le détail qui
+   *   fait la différence entre « sombre » et « en verre » : sans lui la
+   *   surface n'a pas d'épaisseur.
+   */
+  .glass {
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.065), rgb(255 255 255 / 0.022));
+    backdrop-filter: blur(22px) saturate(165%);
+    -webkit-backdrop-filter: blur(22px) saturate(165%);
+    border: 1px solid rgb(255 255 255 / 0.075);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.14),
+      inset 0 -1px 0 rgb(0 0 0 / 0.5),
+      0 1px 2px rgb(0 0 0 / 0.55),
+      0 14px 44px rgb(0 0 0 / 0.5);
+  }
+
+  /* Halo diffus. Réservé à l'élément que l'écran veut désigner. */
+  .bloom {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.2),
+      0 0 0 1px rgb(255 255 255 / 0.09),
+      0 0 44px rgb(255 255 255 / 0.1),
+      0 14px 44px rgb(0 0 0 / 0.55);
+  }
+
+  /*
+   * Anneau irisé. Un seul par écran, jamais deux.
+   *
+   * C'est la seule couleur franche que le système s'autorise, et elle ne
+   * porte aucune information : elle désigne. En mettre deux reviendrait à ne
+   * désigner rien, et à rendre au hasard la couleur que l'application réserve
+   * aux disciplines et aux alertes.
+   */
+  .iris {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .iris::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from 200deg,
+      #ff6b7a,
+      #ffd07a,
+      #7ff0e0,
+      #7aa8ff,
+      #b98aff,
+      #ff6b7a
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.75;
+    z-index: -1;
+  }
+
   .card {
-    @apply rounded-card border border-line bg-card p-4;
+    @apply glass rounded-card p-4;
+  }
+
+  /*
+   * CHAMP DE SAISIE
+   *
+   * Le style etait recopie a la main a vingt-trois endroits, ce qui garantit
+   * la derive : un champ ajoute demain n'aurait ressemble a aucun autre.
+   *
+   * Creuse plutot que bombe — l'inverse d'une carte. Un fond plus sombre que
+   * le plan, un filet d'ombre en haut : la lumiere tombe dans le champ au
+   * lieu d'en sortir. C'est ce qui distingue une zone qui recoit d'une
+   * surface qui presente.
+   */
+  .field {
+    @apply mb-3 w-full rounded-[14px] px-[14px] py-3 text-base text-text outline-none transition-[border-color,box-shadow] duration-200;
+    background: rgb(255 255 255 / 0.035);
+    border: 1px solid rgb(255 255 255 / 0.07);
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.5);
+  }
+
+  .field::placeholder {
+    color: var(--dim);
+  }
+
+  .field:focus {
+    border-color: rgb(255 255 255 / 0.24);
+    box-shadow:
+      inset 0 1px 2px rgb(0 0 0 / 0.5),
+      0 0 0 3px rgb(255 255 255 / 0.07);
   }
 }
 

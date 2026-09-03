@@ -153,7 +153,7 @@ export function AjoutSeance({
               value={date}
               max={maxDate}
               onChange={(e) => setDate(e.target.value)}
-              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
+              className="mt-1.5 field"
             />
           </label>
 
@@ -165,7 +165,7 @@ export function AjoutSeance({
               placeholder={discipline.titre}
               maxLength={120}
               onChange={(e) => setTitre(e.target.value)}
-              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none placeholder:text-dim focus:border-mut"
+              className="mt-1.5 field placeholder:text-dim focus:border-mut"
             />
           </label>
 
@@ -290,7 +290,7 @@ export function AjoutSeance({
               rows={2}
               maxLength={1000}
               onChange={(e) => setNote(e.target.value)}
-              className="mt-1.5 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
+              className="mt-1.5 field"
             />
           </label>
 

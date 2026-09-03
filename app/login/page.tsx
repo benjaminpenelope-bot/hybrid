@@ -20,8 +20,10 @@ export default function LoginPage({
   return (
     <main className="wrap wrap-etroit flex min-h-screen flex-col justify-center py-10">
       <div>
-        <LogoMark size={54} title="Hybrid" />
-        <h1 className="dsp mt-3 text-[28px]">Hybrid</h1>
+        {/* La marque est le sujet de cet ecran : elle porte son halo ici, et
+            nulle part ailleurs. */}
+        <LogoMark size={76} title="Hybrid" halo />
+        <h1 className="dsp mt-5 text-[34px]">Hybrid</h1>
         <p className="mt-2 text-[13.5px] leading-relaxed text-mut">
           Course, natation, barre et suivi physique dans un seul programme. Connecte-toi pour
           retrouver tes séances.

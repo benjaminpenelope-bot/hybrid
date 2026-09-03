@@ -40,7 +40,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
 }
 
 const CHAMP =
-  'mb-3 w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none transition-colors focus:border-mut'
+  'field'
 
 export function LoginForm({ suite, erreur }: { suite: string; erreur?: string }) {
   const [mode, setMode] = useState<Mode>('mot-de-passe')
@@ -137,10 +137,10 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
           <SubmitButton label="Se connecter" pendingLabel="Connexion…" />
 
           <div className="mt-3 flex items-center justify-between gap-3">
-            <button type="button" onClick={() => setMode('lien')} className="eyebrow text-dim">
+            <button type="button" onClick={() => setMode('lien')} className="text-[13.5px] text-mut underline decoration-mut/40 underline-offset-4">
               Recevoir un lien
             </button>
-            <button type="button" onClick={() => setMode('oubli')} className="eyebrow text-dim">
+            <button type="button" onClick={() => setMode('oubli')} className="text-[13.5px] text-mut underline decoration-mut/40 underline-offset-4">
               Mot de passe oublié
             </button>
           </div>
@@ -215,7 +215,7 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
           <button
             type="button"
             onClick={() => setMode('mot-de-passe')}
-            className="eyebrow mt-3 block text-dim"
+            className="mt-3 block text-[13.5px] text-mut underline decoration-mut/40 underline-offset-4"
           >
             J&apos;ai déjà un compte
           </button>
@@ -245,7 +245,7 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
           <button
             type="button"
             onClick={() => setMode('mot-de-passe')}
-            className="eyebrow mt-3 block text-dim"
+            className="mt-3 block text-[13.5px] text-mut underline decoration-mut/40 underline-offset-4"
           >
             Utiliser mon mot de passe
           </button>
@@ -278,7 +278,7 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
           <button
             type="button"
             onClick={() => setMode('mot-de-passe')}
-            className="eyebrow mt-3 block text-dim"
+            className="mt-3 block text-[13.5px] text-mut underline decoration-mut/40 underline-offset-4"
           >
             Revenir à la connexion
           </button>

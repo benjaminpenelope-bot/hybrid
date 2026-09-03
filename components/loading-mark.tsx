@@ -34,7 +34,7 @@ export function LoadingMark({ size = 116 }: { size?: number }) {
         }}
       />
       <img
-        src="/logo2.png"
+        src="/mark.png"
         alt=""
         width={size}
         height={size}

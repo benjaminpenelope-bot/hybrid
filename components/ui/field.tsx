@@ -4,7 +4,7 @@ import type { InputHTMLAttributes, ReactNode } from 'react'
 import { useId } from 'react'
 
 const INPUT =
-  'w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none transition-colors focus:border-mut'
+  'field'
 
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string

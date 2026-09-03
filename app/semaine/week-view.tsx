@@ -143,7 +143,7 @@ export function WeekView({
           type="button"
           onClick={() => setOffset(offset - 1)}
           aria-label="Semaine précédente"
-          className="h-11 w-11 rounded-[11px] border border-line2 bg-bg2 font-display text-[18px] text-text"
+          className="h-11 w-11 field font-display text-[18px]"
         >
           ‹
         </button>
@@ -159,7 +159,7 @@ export function WeekView({
           type="button"
           onClick={() => setOffset(offset + 1)}
           aria-label="Semaine suivante"
-          className="h-11 w-11 rounded-[11px] border border-line2 bg-bg2 font-display text-[18px] text-text"
+          className="h-11 w-11 field font-display text-[18px]"
         >
           ›
         </button>

@@ -35,7 +35,7 @@ export function NumPad({
           type="button"
           onClick={() => onChange(clamp(value - step))}
           aria-label={`${label} moins ${step}`}
-          className="h-11 w-11 shrink-0 rounded-[11px] border border-line2 bg-bg2 font-display text-[20px] text-text"
+          className="h-11 w-11 shrink-0 field font-display text-[20px]"
         >
           −
         </button>
@@ -59,7 +59,7 @@ export function NumPad({
           type="button"
           onClick={() => onChange(clamp(value + step))}
           aria-label={`${label} plus ${step}`}
-          className="h-11 w-11 shrink-0 rounded-[11px] border border-line2 bg-bg2 font-display text-[20px] text-text"
+          className="h-11 w-11 shrink-0 field font-display text-[20px]"
         >
           +
         </button>

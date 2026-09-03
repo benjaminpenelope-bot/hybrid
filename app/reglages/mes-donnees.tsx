@@ -94,7 +94,7 @@ export function MesDonnees() {
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
               autoComplete="off"
-              className="w-full rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-bad"
+              className="field focus:border-bad"
             />
 
             <div className="mt-3 flex gap-2">
