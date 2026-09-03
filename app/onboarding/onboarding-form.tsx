@@ -20,6 +20,7 @@ import {
   type OnboardingInput,
 } from '@/lib/validation/onboarding'
 import { ApercuSemaine } from '@/components/apercu-semaine'
+import { ChoixDefilant } from '@/components/choix-defilant'
 import {
   IconBarre,
   IconDixKm,
@@ -446,40 +447,59 @@ export function OnboardingForm() {
 
       {step === 'objectifs' && (
         <section>
-          <p className="mb-4 text-[13.5px] leading-relaxed text-mut">
-            C&rsquo;est lui qui tranche quand deux besoins s&rsquo;opposent. Chaque objectif change
-            la forme de ta semaine, pas seulement son intitulé.
+          {/*
+            La semaine est visible des l'arrivee, avant tout choix.
+            
+            Elle affiche alors la repartition par defaut, celle que le
+            generateur produirait sans objectif declare — donc rien
+            d'invente. La montrer d'emblee vaut mieux que de la faire
+            apparaitre au premier clic : on voit une semaine se recomposer,
+            au lieu d'en voir une surgir. Le premier est un changement, le
+            second une apparition, et seul le changement se ressent.
+          */}
+          <div className="glass rounded-card p-4">
+            <p className="eyebrow mb-3">La forme de ta semaine</p>
+            <ApercuSemaine objectif={d.goalMain} />
+            <p className="mt-3 text-[12px] leading-5 text-dim">
+              {d.goalMain
+                ? 'Les jours se caleront sur tes disponibilités, deux étapes plus loin. C’est la répartition qui compte ici, pas le calendrier.'
+                : 'Choisis un objectif : la semaine se recompose.'}
+            </p>
+          </div>
+
+          <p className="mb-4 mt-7 text-[13.5px] leading-relaxed text-mut">
+            C&rsquo;est lui qui tranche quand deux besoins s&rsquo;opposent. Fais défiler : la
+            semaine se recompose à chaque objectif.
           </p>
 
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            {OBJECTIFS.map((o) => {
-              const O = OBJECTIF_ICONES[o]
-              return (
-                <button
-                  key={o}
-                  type="button"
-                  /*
-                   * Les non-choisies s'effacent au lieu de disparaitre :
-                   * elles restent cliquables pour changer d'avis, mais
-                   * cessent de disputer l'attention a celle qu'on a prise.
-                   */
-                  className={`choix entre transition-opacity duration-300 ${
-                    d.goalMain && d.goalMain !== o ? 'opacity-45' : ''
-                  }`}
-                  style={{ animationDelay: `${OBJECTIFS.indexOf(o) * 40}ms` }}
-                  data-actif={d.goalMain === o}
-                  aria-pressed={d.goalMain === o}
-                  onClick={() => {
-                    set('goalMain', o)
-                    // Un secondaire identique au principal ne veut rien dire.
-                    if (d.goalSecond === o) set('goalSecond', null)
-                  }}
-                >
-                  <span className={d.goalMain === o ? 'text-text' : 'text-mut'}>
-                    <O size={20} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[14.5px] font-semibold tracking-[-0.01em]">
+          {/*
+            Une rangee qui defile plutot qu'une liste de neuf cartes. Empilees,
+            elles faisaient plus haut qu'un ecran : on tapait la sixieme sans
+            plus voir la semaine qu'elle transformait. Ici les deux tiennent
+            dans le meme regard.
+          */}
+          <div className="-mx-4">
+            <ChoixDefilant
+              valeurs={OBJECTIFS}
+              valeur={d.goalMain}
+              onChange={(o) => {
+                set('goalMain', o)
+                // Un secondaire identique au principal ne veut rien dire.
+                if (d.goalSecond === o) set('goalSecond', null)
+              }}
+            >
+              {(o, actif) => {
+                const O = OBJECTIF_ICONES[o]
+                return (
+                  <span
+                    className="choix flex-col gap-2.5 transition-opacity duration-300"
+                    data-actif={actif}
+                    style={{ opacity: actif ? 1 : 0.5 }}
+                  >
+                    <span className={actif ? 'text-text' : 'text-mut'}>
+                      <O size={22} />
+                    </span>
+                    <span className="block text-[15px] font-semibold tracking-[-0.01em]">
                       {OBJECTIF_LABELS[o]}
                     </span>
                     {/*
@@ -487,30 +507,17 @@ export function OnboardingForm() {
                       phrases decrivent la repartition et le dosage que le
                       generateur applique reellement pour cet objectif.
                     */}
-                    <span className="mt-1 block text-[12.5px] leading-5 text-mut">
+                    <span className="block text-[12.5px] leading-5 text-mut">
                       {OBJECTIF_EFFET[o]}
                     </span>
                   </span>
-                </button>
-              )
-            })}
+                )
+              }}
+            </ChoixDefilant>
           </div>
 
           {d.goalMain && (
             <div className="entre mt-7">
-              {/*
-                La forme de la semaine, montree plutot qu'annoncee. Elle lit
-                le microcycle reel : la promesse et le programme livre ne
-                peuvent pas diverger.
-              */}
-              <p className="eyebrow mb-2.5">La forme de ta semaine</p>
-              <ApercuSemaine objectif={d.goalMain} />
-              <p className="mt-2.5 text-[12px] leading-5 text-dim">
-                Les jours se caleront sur tes disponibilités, deux étapes plus loin. C&rsquo;est la
-                répartition qui compte ici, pas le calendrier.
-              </p>
-
-              <div className="mt-7">
               <Field
                 label="Une échéance ?"
                 type="date"
@@ -534,7 +541,6 @@ export function OnboardingForm() {
                   ))}
                 </div>
               </Question>
-              </div>
             </div>
           )}
         </section>

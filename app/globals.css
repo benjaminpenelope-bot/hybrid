@@ -333,6 +333,27 @@
     font-size: 13.5px;
   }
 
+  /*
+   * Etat desactive.
+   *
+   * Il vivait dans le composant `Button` et s'est perdu quand le style a
+   * migre ici. Consequence : un bouton indisponible avait l'aspect d'un
+   * bouton disponible — on tape, rien ne se passe, et rien n'explique
+   * pourquoi. C'est le genre de defaut qu'on met sur le compte d'une panne.
+   *
+   * Le relief disparait aussi : une pastille lumineuse qui ne repond pas est
+   * plus trompeuse qu'un aplat terne.
+   */
+  .btn:disabled {
+    opacity: 0.35;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .btn:disabled:active {
+    transform: none;
+  }
+
   /* Principal : blanc sur noir, avec un halo. Un seul par ecran. */
   .btn-solid {
     @apply bg-text text-bg;
@@ -370,6 +391,37 @@
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 0.18),
       0 0 30px rgb(255 255 255 / 0.06);
+  }
+
+  /*
+   * CARROUSEL DE CHOIX
+   *
+   * Une rangee qui defile, dont la carte centrale est celle qu'on choisit.
+   * C'est le fonctionnement des selecteurs d'iOS : on fait defiler et la
+   * valeur suit, sans avoir a viser.
+   *
+   * `scroll-snap` fait le gros du travail — le navigateur cale lui-meme la
+   * carte la plus proche du centre, ce qu'aucun calcul en JavaScript ne fera
+   * aussi bien sur un ecran tactile.
+   *
+   * Le rembourrage lateral vaut la moitie de la largeur restante : sans lui,
+   * la premiere et la derniere carte ne peuvent jamais atteindre le centre,
+   * et deviennent donc impossibles a choisir.
+   */
+  .carrousel {
+    @apply flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2;
+    scroll-padding-inline: 50%;
+    padding-inline: calc(50% - 130px);
+    scrollbar-width: none;
+  }
+
+  .carrousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .carrousel > * {
+    @apply shrink-0 snap-center;
+    width: 260px;
   }
 
   /*
