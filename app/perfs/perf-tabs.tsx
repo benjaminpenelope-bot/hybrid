@@ -59,16 +59,15 @@ export function PerfTabs({
 
   return (
     <>
-      <div className="mb-5 flex gap-1.5" role="tablist">
+      <div className="segment mb-5" role="tablist">
         {TABS.map((t) => (
           <button
             key={t.id}
             role="tab"
             aria-selected={tab === t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 rounded-[10px] border py-2.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] transition-colors ${
-              tab === t.id ? 'border-text bg-text text-bg' : 'border-line2 bg-bg2 text-mut'
-            }`}
+            className="segment-item"
+            data-actif={tab === t.id}
           >
             {t.label}
           </button>

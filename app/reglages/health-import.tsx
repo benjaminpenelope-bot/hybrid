@@ -112,7 +112,12 @@ export function HealthImport() {
           const f = e.target.files?.[0]
           if (f) void traiter(f)
         }}
-        className="mt-3.5 w-full text-[12.5px] text-mut file:mr-3 file:rounded-[9px] file:border file:border-line2 file:bg-bg2 file:px-3 file:py-2 file:font-display file:text-[11px] file:uppercase file:tracking-[0.1em] file:text-text"
+        /*
+         * Masque a l'oeil, pas au clavier ni aux lecteurs d'ecran. Le bouton
+         * juste en dessous le declenche : les afficher tous les deux donnait
+         * deux commandes pour une seule action, dont une au style du systeme.
+         */
+        className="sr-only"
       />
 
       {etape === 'lecture' && (

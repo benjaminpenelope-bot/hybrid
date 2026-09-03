@@ -70,7 +70,14 @@ export function TabBar() {
       */}
       <nav
         className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 lg:hidden"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
+        style={{
+          /*
+           * Presque au ras du bord. `env()` garde la barre au-dessus de la
+           * barre de geste des iPhone recents — sans lui elle passerait
+           * dessous, la ou le doigt ne l'atteint plus.
+           */
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 5px)',
+        }}
         aria-label="Navigation principale"
       >
         <div className="glass flex items-center gap-0.5 rounded-full p-1.5">
