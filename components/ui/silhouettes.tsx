@@ -61,13 +61,14 @@ function Figure({ queue, size = 64 }: { queue: boolean; size?: number }) {
         strokeLinejoin="round"
       >
         {/*
-          La queue de cheval : une forme, posee derriere la tete qui la
-          recouvre en partie. J'avais d'abord dessine une chevelure en trois
-          pieces — bandeau, attache, meche — qui se lisait comme une anse
-          rapportee sur le cote. Une seule masse arrondie suffit, et se
-          reconnait immediatement.
+          La queue de cheval : un croissant, c'est-a-dire la difference entre
+          deux cercles. Elle part du haut du crane et descend le long de la
+          tete, epaisse au milieu et pointue aux deux bouts — la forme de la
+          reference. Deux arcs plutot qu'une courbe de Bezier tracee a la
+          main : la geometrie est exacte par construction, l'epaisseur ne
+          peut pas s'effondrer en un trait au milieu du dessin.
         */}
-        {queue && <ellipse cx="37.2" cy="18.2" rx="4.8" ry="9" transform="rotate(24 37.2 18.2)" />}
+        {queue && <path d="M30.25 4.77A9.5 9.5 0 1 1 38.25 21.93A11 11 0 0 0 30.25 4.77Z" />}
         <circle cx="26" cy="13.5" r="9.5" />
         <path d="M8 44v-3.5C8 31.4 16.1 24 26 24s18 7.4 18 16.5V44a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1Z" />
       </g>
