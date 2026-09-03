@@ -1,5 +1,6 @@
 'use client'
 
+import { fr } from '@/lib/ui/nombre'
 import { useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Stat } from '@/components/ui/stat'
@@ -126,14 +127,14 @@ export function PerfTabs({
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Stat
               label="Volume 7 jours"
-              value={`${run.km7.toFixed(1)}`}
+              value={`${fr(run.km7)}`}
               sub={`km · cible ${weeklyTarget}`}
               color="var(--run)"
             />
-            <Stat label="Volume 30 jours" value={`${run.km30.toFixed(1)}`} sub="km" />
+            <Stat label="Volume 30 jours" value={`${fr(run.km30)}`} sub="km" />
             <Stat
               label="Plus longue sortie"
-              value={run.longest === null ? 'à mesurer' : run.longest.toFixed(1)}
+              value={run.longest === null ? 'à mesurer' : fr(run.longest)}
               sub={run.longest === null ? undefined : 'km'}
             />
             <Stat

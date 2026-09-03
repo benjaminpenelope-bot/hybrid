@@ -102,18 +102,18 @@ function Hero() {
       <Aura taille="min(620px, 86vw)" className="left-1/2 top-[-110px] -translate-x-1/2" />
 
       <div className="relative z-10 mx-auto flex max-w-[760px] flex-col items-center text-center">
-        <span className="glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12.5px] text-mut">
+        <span className="entre glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12.5px] text-mut">
           <span className="h-1.5 w-1.5 rounded-full bg-ok" aria-hidden />
           Ouvert aux inscriptions
         </span>
 
-        <h1 className="dsp mt-6 text-[clamp(2.6rem,10vw,4.6rem)]">
+        <h1 className="entre dsp mt-6 text-[clamp(2.6rem,10vw,4.6rem)]" style={{ animationDelay: '80ms' }}>
           Un entraîneur.
           <br />
           Tous tes entraînements.
         </h1>
 
-        <p className="mt-5 max-w-[30rem] text-[16px] leading-7 text-mut">
+        <p className="entre mt-5 max-w-[30rem] text-[16px] leading-7 text-mut" style={{ animationDelay: '180ms' }}>
           Course, force, natation, vélo. Un seul programme, qui se réajuste à ta charge et à ta
           récupération plutôt qu'à un calendrier théorique.
         </p>
@@ -124,7 +124,12 @@ function Hero() {
           compte — un champ qui jetterait ce qu'on y ecrit ne serait qu'un
           decor, et le visiteur devrait la retaper.
         */}
-        <form action="/login" method="get" className="glass mt-9 w-full max-w-[430px] rounded-[26px] p-6">
+        <form
+          action="/login"
+          method="get"
+          className="entre glass mt-9 w-full max-w-[430px] rounded-[26px] p-6"
+          style={{ animationDelay: '280ms' }}
+        >
           <p className="dsp text-[20px]">Crée ton compte</p>
           <p className="mx-auto mt-2 max-w-[26rem] text-[13.5px] leading-6 text-mut">
             Gratuit, sans carte bancaire. Ton premier programme est construit à la fin du
@@ -155,7 +160,10 @@ function Hero() {
           </p>
         </form>
 
-        <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+        <ul
+          className="entre mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
+          style={{ animationDelay: '380ms' }}
+        >
           {SPORTS.map((s) => (
             <li key={s.nom} className="flex items-center gap-2 text-[13.5px] text-mut">
               <s.Icon size={18} />

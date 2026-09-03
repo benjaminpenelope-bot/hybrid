@@ -301,6 +301,16 @@
   }
 
   /*
+   * `backwards` est indispensable : sans lui, l'élément s'affiche a sa place
+   * definitive pendant le delai, puis saute a son etat de depart au moment ou
+   * l'animation commence. On verrait donc le texte apparaitre, disparaitre,
+   * puis remonter.
+   */
+  .entre {
+    animation: monte 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  /*
    * BOUTON
    *
    * Le style vivait dans le composant `Button`, et une dizaine de liens le
@@ -416,6 +426,28 @@
 @keyframes rotation-lente {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/*
+ * ENTRÉE DE LA PAGE PUBLIQUE
+ *
+ * Chaque élément monte de quelques pixels en apparaissant, avec un décalage
+ * qui suit l'ordre de lecture. C'est le seul mouvement d'ouverture : une
+ * animation par élément produirait une page qui gigote, pas une page qui
+ * s'installe.
+ *
+ * Douze pixels et pas davantage : au-delà, l'œil suit le déplacement au lieu
+ * de lire le texte, et l'attente devient perceptible.
+ */
+@keyframes monte {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes battement {

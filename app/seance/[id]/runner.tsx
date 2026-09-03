@@ -1,5 +1,6 @@
 'use client'
 
+import { fr } from '@/lib/ui/nombre'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -296,7 +297,7 @@ export function SessionRunner({ session }: { session: Session }) {
               <span className="num text-[22px]">
                 {estVelo
                   ? km > 0 && minutes > 0
-                    ? `${((km / minutes) * 60).toFixed(1)} km/h`
+                    ? `${fr((km / minutes) * 60)} km/h`
                     : '—'
                   : livePace}
               </span>

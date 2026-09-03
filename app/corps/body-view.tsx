@@ -1,5 +1,6 @@
 'use client'
 
+import { fr } from '@/lib/ui/nombre'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Area, AreaChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
@@ -69,11 +70,11 @@ export function BodyView({ profile, weights, measures, photos, rate, weekly }: P
   return (
     <>
       <div className="grid grid-cols-2 gap-2">
-        <Stat label="Poids actuel" value={current.toFixed(1)} sub="kg" />
+        <Stat label="Poids actuel" value={fr(current)} sub="kg" />
         <Stat
           label="Objectif"
-          value={profile.goalWeight.toFixed(1)}
-          sub={`${gain >= 0 ? '+' : ''}${gain.toFixed(1)} kg parcourus sur ${target.toFixed(1)}`}
+          value={fr(profile.goalWeight)}
+          sub={`${gain >= 0 ? '+' : ''}${fr(gain)} kg parcourus sur ${fr(target)}`}
         />
       </div>
 
@@ -155,7 +156,7 @@ export function BodyView({ profile, weights, measures, photos, rate, weekly }: P
           {weekly.length > 1 && (
             <p className="mt-1 text-[11px] leading-relaxed text-dim">
               Moyenne hebdomadaire :{' '}
-              {weekly.map((w) => `${w.kg.toFixed(1)}`).join(' → ')} kg. La ligne verte est ton
+              {weekly.map((w) => `${fr(w.kg)}`).join(' → ')} kg. La ligne verte est ton
               objectif.
             </p>
           )}
@@ -202,7 +203,7 @@ export function BodyView({ profile, weights, measures, photos, rate, weekly }: P
                     {diff !== null && diff !== 0 && (
                       <span className="num text-[11.5px] text-dim">
                         {diff > 0 ? '+' : ''}
-                        {diff.toFixed(1)}
+                        {fr(diff)}
                       </span>
                     )}
                   </span>

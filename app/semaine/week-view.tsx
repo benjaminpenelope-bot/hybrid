@@ -1,5 +1,6 @@
 'use client'
 
+import { fr } from '@/lib/ui/nombre'
 import {
   closestCenter,
   DndContext,
@@ -176,7 +177,7 @@ export function WeekView({
         <div className="rounded-card border border-line bg-card p-3">
           <div className="eyebrow text-[9.5px]">Course</div>
           <div className="num mt-1 text-[24px] leading-none text-run">
-            {stats.km.toFixed(1)}
+            {fr(stats.km)}
           </div>
           <div className="mt-1 text-[10.5px] text-dim">km</div>
         </div>

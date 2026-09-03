@@ -1,5 +1,6 @@
 'use client'
 
+import { fr } from '@/lib/ui/nombre'
 import {
   Bar,
   BarChart,
@@ -226,7 +227,7 @@ export function WeightChart({ trend, goalWeight }: { trend: WeightTrend; goalWei
   }))
 
   return (
-    <Panneau titre="Poids" detail={`${current.toFixed(1)} kg`}>
+    <Panneau titre="Poids" detail={`${fr(current)} kg`}>
       {points.length < 2 ? (
         <Vide>
           {points.length === 0
@@ -244,9 +245,9 @@ export function WeightChart({ trend, goalWeight }: { trend: WeightTrend; goalWei
               tickLine={false}
               width={38}
               domain={['dataMin - 1', 'dataMax + 1']}
-              tickFormatter={(v: number) => v.toFixed(1)}
+              tickFormatter={(v: number) => fr(v)}
             />
-            <Tooltip {...TOOLTIP} formatter={(v: number) => [`${v.toFixed(1)} kg`, 'Poids']} />
+            <Tooltip {...TOOLTIP} formatter={(v: number) => [`${fr(v)} kg`, 'Poids']} />
             <ReferenceLine y={goalWeight} stroke="var(--ok)" strokeDasharray="4 4" />
             <Line
               type="monotone"
@@ -262,7 +263,7 @@ export function WeightChart({ trend, goalWeight }: { trend: WeightTrend; goalWei
       <dl className="mt-3 flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
           <dt className="text-[12.5px] text-mut">Objectif</dt>
-          <dd className="num text-[12.5px]">{goalWeight.toFixed(1)} kg</dd>
+          <dd className="num text-[12.5px]">{fr(goalWeight)} kg</dd>
         </div>
         <div className="flex items-baseline justify-between border-t border-line pt-2">
           <dt className="text-[12.5px] text-mut">Vitesse</dt>
