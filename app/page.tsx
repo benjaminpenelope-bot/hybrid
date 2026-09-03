@@ -2,6 +2,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LogoMark } from '@/components/logo'
+import { SphereParticules } from '@/components/sphere-particules'
 import { IconBarre, IconCourse, IconNatation, IconVelo } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
@@ -52,9 +53,13 @@ function Aura({ taille, className }: { taille: number; className: string }) {
            * est majoritairement noir, donc le flouter tel quel donne un gris
            * sombre qui se perd sur le fond. Il faut lever l'argent pour que la
            * forme reste lisible une fois diffusee.
+           *
+           * Flou reduit de 52 a 34 px : la forme redevient reconnaissable
+           * sans redevenir un logo — c'est une presence, pas une signature.
            */
-          filter: 'saturate(0) brightness(2.4) blur(52px)',
-          opacity: 0.55,
+          filter: 'saturate(0) brightness(2.2) blur(34px)',
+          opacity: 0.5,
+          animation: 'rotation-lente 90s linear infinite',
         }}
       />
     </div>
@@ -241,7 +246,7 @@ function Coach() {
           </div>
 
           <div className="hidden items-center justify-center md:flex" aria-hidden>
-            <Sphere />
+            <SphereParticules taille={250} />
           </div>
 
           <div className="flex flex-col gap-4">
@@ -270,37 +275,6 @@ function CarteCoach({
       <p className="dsp mt-2.5 text-[19px]">{corps}</p>
       <p className="mt-1.5 text-[13.5px] leading-6 text-mut">{detail}</p>
     </article>
-  )
-}
-
-/*
- * La sphere. Un eclat d'argent, cercle d'un anneau irise — la meme prismatique
- * que celle qui designe la seance du jour dans l'application, pour que la
- * vitrine et le produit parlent la meme langue.
- */
-function Sphere() {
-  return (
-    <div className="relative h-[210px] w-[210px]">
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle at 34% 28%, rgb(255 255 255 / 0.62), rgb(255 255 255 / 0.1) 44%, rgb(0 0 0 / 0.92) 74%)',
-          boxShadow: '0 0 110px rgb(255 255 255 / 0.16)',
-        }}
-      />
-      <div
-        className="absolute inset-0 rounded-full opacity-80"
-        style={{
-          background:
-            'conic-gradient(from 210deg, #ff6b7a, #ffd07a, #7ff0e0, #7aa8ff, #b98aff, #ff6b7a)',
-          mask: 'radial-gradient(closest-side, transparent 74%, #000 78%, #000 85%, transparent 89%)',
-          WebkitMask:
-            'radial-gradient(closest-side, transparent 74%, #000 78%, #000 85%, transparent 89%)',
-          filter: 'blur(1.5px)',
-        }}
-      />
-    </div>
   )
 }
 

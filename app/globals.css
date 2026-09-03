@@ -404,6 +404,20 @@
  * durée à 0,01 ms : sans ce retour au repos, le logo se figerait sur une image
  * intermédiaire, à une taille arbitraire.
  */
+/*
+ * Rotation lente du triskele de fond. Quatre-vingt-dix secondes par tour :
+ * assez lent pour qu'on ne surprenne jamais le mouvement, assez present pour
+ * que la page ne paraisse pas figee quand on s'y arrete.
+ *
+ * `prefers-reduced-motion` plus bas ramene la duree a rien : la forme se fige
+ * alors dans une position quelconque, ce qui est sans consequence puisqu'elle
+ * est symetrique d'ordre trois.
+ */
+@keyframes rotation-lente {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @keyframes battement {
   0% { transform: scale(1); }
   10% { transform: scale(1.18); }
