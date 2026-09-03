@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Bienvenue · Hybrid' }
 export default async function OnboardingPage({
   searchParams,
 }: {
-  searchParams: { apercu?: string }
+  searchParams: { apercu?: string; etape?: string }
 }) {
   const userId = await currentUserId()
   if (!userId) redirect('/login?suite=/onboarding')
@@ -35,18 +35,23 @@ export default async function OnboardingPage({
 
   return (
     <main className="wrap wrap-etroit py-8">
-      <header className="mb-7">
-        <h1 className="dsp text-[26px]">
-          {aRepondreDeNouveau ? 'Compl\u00e8te ton profil' : 'Construisons ton programme'}
-        </h1>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-mut">
-          {aRepondreDeNouveau
-            ? 'Le questionnaire s\u2019est enrichi : objectifs, niveau, jours disponibles. Tes s\u00e9ances d\u00e9j\u00e0 enregistr\u00e9es sont conserv\u00e9es, seul le programme \u00e0 venir est reg\u00e9n\u00e9r\u00e9.'
-            : 'Tes r\u00e9ponses g\u00e9n\u00e8rent le programme : rien n\u2019est g\u00e9n\u00e9rique, et ce que tu n\u2019as jamais mesur\u00e9 reste marqu\u00e9 comme tel.'}
-        </p>
-      </header>
+      {/*
+        L'en-tete est rendu par le formulaire, et non ici : il ne s'affiche
+        qu'a la premiere etape. Repete sur les cinq ecrans, il repoussait les
+        choix sous la ligne de flottaison a chaque fois, pour redire ce qu'on
+        venait de lire.
 
-      <OnboardingForm />
+        `etape` n'est lu qu'en apercu de developpement : voir plus haut.
+      */}
+      <OnboardingForm
+        titre={aRepondreDeNouveau ? 'Complète ton profil' : 'Construisons ton programme'}
+        intro={
+          aRepondreDeNouveau
+            ? 'Le questionnaire s’est enrichi : objectifs, niveau, jours disponibles. Tes séances déjà enregistrées sont conservées, seul le programme à venir est regénéré.'
+            : 'Tes réponses génèrent le programme : rien n’est générique, et ce que tu n’as jamais mesuré reste marqué comme tel.'
+        }
+        etapeInitiale={apercu ? searchParams.etape : undefined}
+      />
     </main>
   )
 }

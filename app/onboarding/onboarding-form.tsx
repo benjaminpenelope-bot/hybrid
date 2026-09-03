@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Chip, ChipGroup, ChipMulti } from '@/components/ui/chip'
 import { Field, Question } from '@/components/ui/field'
@@ -262,7 +262,20 @@ const STEP_TITRES: Record<StepId, string> = {
   limites: 'Tes limitations',
 }
 
-export function OnboardingForm() {
+export function OnboardingForm({
+  titre,
+  intro,
+  /**
+   * Étape d'ouverture, uniquement en aperçu de développement : elle permet de
+   * revoir une étape précise sans avoir à cliquer tout le questionnaire.
+   * La page ne la transmet jamais en production.
+   */
+  etapeInitiale,
+}: {
+  titre: string
+  intro: string
+  etapeInitiale?: string
+}) {
   const [index, setIndex] = useState(0)
   const [d, setD] = useState<Draft>(INITIAL)
   const [error, setError] = useState<string | null>(null)
@@ -310,6 +323,14 @@ export function OnboardingForm() {
 
   // Un sport retiré peut raccourcir la liste sous l'index courant.
   const step = steps[Math.min(index, steps.length - 1)]!
+
+  useEffect(() => {
+    if (!etapeInitiale) return
+    const i = steps.indexOf(etapeInitiale as StepId)
+    if (i >= 0) setIndex(i)
+    // Une seule fois : ensuite c'est la navigation qui mene.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const pret: Record<StepId, boolean> = {
     profil:
@@ -395,6 +416,18 @@ export function OnboardingForm() {
 
   return (
     <div>
+      {/*
+        L'accueil du questionnaire ne se lit qu'une fois. Le garder sur les
+        cinq ecrans repoussait les choix sous la ligne de flottaison a chaque
+        etape, pour redire ce qu'on avait deja lu.
+      */}
+      {index === 0 && (
+        <header className="entre mb-7">
+          <h1 className="dsp text-[26px]">{titre}</h1>
+          <p className="mt-2 text-[13.5px] leading-relaxed text-mut">{intro}</p>
+        </header>
+      )}
+
       <div className="mb-6 flex gap-1.5" role="group" aria-label="Progression">
         {steps.map((s, i) => (
           <span
@@ -694,7 +727,13 @@ export function OnboardingForm() {
             partie du programme, il ne s&rsquo;y ajoute pas.
           </p>
 
-          <div className="flex gap-1.5">
+          {/*
+            Sept jours de lundi a dimanche, en toutes lettres abregees.
+            L'initiale seule donnait « L M M J V S D » : deux M identiques,
+            et rien pour distinguer mardi de mercredi. Un jour se reconnait a
+            ses trois premieres lettres, pas a la premiere.
+          */}
+          <div className="grid grid-cols-7 gap-1.5">
             {[1, 2, 3, 4, 5, 6, 0].map((jour) => {
               const actif = d.weekdays.includes(jour)
               return (
@@ -702,10 +741,9 @@ export function OnboardingForm() {
                   key={jour}
                   type="button"
                   aria-pressed={actif}
-                  aria-label={WEEKDAY_LABELS[jour]}
-                  className={`flex-1 rounded-[12px] py-3 text-[12.5px] font-semibold tracking-[-0.01em] transition-[background-color,box-shadow,color] duration-200 ${
+                  className={`flex min-h-[62px] flex-col items-center justify-center gap-1.5 rounded-[14px] text-[12px] font-semibold tracking-[-0.01em] transition-[background-color,box-shadow,color] duration-200 active:scale-[0.96] ${
                     actif
-                      ? 'bg-[rgb(255_255_255/0.11)] text-text shadow-[inset_0_1px_0_rgb(255_255_255/0.16)]'
+                      ? 'bg-[rgb(255_255_255/0.11)] text-text shadow-[inset_0_1px_0_rgb(255_255_255/0.18)]'
                       : 'bg-[rgb(255_255_255/0.035)] text-dim'
                   }`}
                   onClick={() =>
@@ -717,7 +755,15 @@ export function OnboardingForm() {
                     )
                   }
                 >
-                  {WEEKDAY_LABELS[jour]?.slice(0, 1)}
+                  {WEEKDAY_LABELS[jour]}
+                  {/* Une pastille plutot qu'une coche : elle tient dans la
+                      largeur d'un jour sur le plus petit ecran. */}
+                  <span
+                    aria-hidden
+                    className={`h-1.5 w-1.5 rounded-full transition-colors duration-200 ${
+                      actif ? 'bg-text' : 'bg-[rgb(255_255_255/0.12)]'
+                    }`}
+                  />
                 </button>
               )
             })}
@@ -731,7 +777,7 @@ export function OnboardingForm() {
               suffix="min"
               value={d.sessionMinutes}
               onChange={(e) => set('sessionMinutes', e.target.value)}
-              hint="Une moyenne suffit. Les séances longues du week-end la dépasseront."
+              hint="Une moyenne, pas un plafond : elle cale les séances courantes. La sortie longue et les séances de test la dépasseront, parce que c’est leur rôle."
             />
             <Question
               label="Deux séances le même jour ?"

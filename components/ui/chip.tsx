@@ -1,7 +1,15 @@
 'use client'
 
+/*
+ * Casse naturelle, et un fond de verre plutot qu'un aplat blanc.
+ *
+ * Les capitales espacees venaient de l'ancienne direction artistique : elles
+ * faisaient crier « Jamais » aussi fort que le bouton principal de l'ecran.
+ * Une pastille choisit une valeur, elle ne declenche rien — l'aplat blanc est
+ * reserve a l'action, et un ecran n'en porte qu'une.
+ */
 const BASE =
-  'rounded-[10px] border px-3 py-[9px] font-display text-[13px] font-semibold uppercase tracking-[0.06em] transition-colors'
+  'rounded-full px-3.5 py-[9px] font-display text-[13.5px] font-semibold tracking-[-0.01em] transition-[background-color,box-shadow,color] duration-200 active:scale-[0.97]'
 
 export function Chip({
   active,
@@ -20,7 +28,9 @@ export function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={`${BASE} ${
-        active ? 'border-text bg-text text-bg' : 'border-line2 bg-bg2 text-mut'
+        active
+          ? 'bg-[rgb(255_255_255/0.12)] text-text shadow-[inset_0_1px_0_rgb(255_255_255/0.18)]'
+          : 'bg-[rgb(255_255_255/0.035)] text-mut'
       }`}
     >
       {children}
