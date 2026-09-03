@@ -42,8 +42,20 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
 const CHAMP =
   'field'
 
-export function LoginForm({ suite, erreur }: { suite: string; erreur?: string }) {
-  const [mode, setMode] = useState<Mode>('mot-de-passe')
+export function LoginForm({
+  suite,
+  erreur,
+  inscription,
+  email,
+}: {
+  suite: string
+  erreur?: string
+  /** Arrive de la page publique : on ouvre directement la creation de compte. */
+  inscription?: boolean
+  /** Adresse deja saisie sur la page publique. */
+  email?: string
+}) {
+  const [mode, setMode] = useState<Mode>(inscription ? 'inscription' : 'mot-de-passe')
   const [mdpState, mdpAction] = useFormState(signInWithPassword, INITIAL)
   const [lienState, lienAction] = useFormState(sendMagicLink, INITIAL)
   const [oubliState, oubliAction] = useFormState(sendPasswordReset, INITIAL)
@@ -177,6 +189,7 @@ export function LoginForm({ suite, erreur }: { suite: string; erreur?: string })
             autoComplete="email"
             inputMode="email"
             required
+            defaultValue={email}
             placeholder="toi@exemple.fr"
             className={CHAMP}
           />

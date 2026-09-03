@@ -10,7 +10,15 @@ export const metadata: Metadata = { title: 'Connexion · Hybrid' }
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { suite?: string; erreur?: string; deconnexion?: string; compte?: string }
+  searchParams: {
+    suite?: string
+    erreur?: string
+    deconnexion?: string
+    compte?: string
+    /* Renseignes par la carte d'ouverture de la page publique. */
+    inscription?: string
+    email?: string
+  }
 }) {
   if (!hasSupabaseEnv()) return <ConfigurationRequise />
 
@@ -45,7 +53,17 @@ export default function LoginPage({
         actif={searchParams.deconnexion === '1' || compteSupprime}
         effacerLaFile={compteSupprime}
       />
-      <LoginForm suite={suite} erreur={searchParams.erreur} />
+      {/*
+        L'adresse saisie sur la page publique arrive ici : sans elle, le
+        visiteur devrait la retaper, et le champ de l'accueil ne serait qu'un
+        decor.
+      */}
+      <LoginForm
+        suite={suite}
+        erreur={searchParams.erreur}
+        inscription={searchParams.inscription === '1'}
+        email={searchParams.email}
+      />
     </main>
   )
 }
