@@ -102,12 +102,7 @@ function Hero() {
       <Aura taille="min(620px, 86vw)" className="left-1/2 top-[-110px] -translate-x-1/2" />
 
       <div className="relative z-10 mx-auto flex max-w-[760px] flex-col items-center text-center">
-        <span className="entre glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12.5px] text-mut">
-          <span className="h-1.5 w-1.5 rounded-full bg-ok" aria-hidden />
-          Ouvert aux inscriptions
-        </span>
-
-        <h1 className="entre dsp mt-6 text-[clamp(2.6rem,10vw,4.6rem)]" style={{ animationDelay: '80ms' }}>
+        <h1 className="entre dsp text-[clamp(2.6rem,10vw,4.6rem)]">
           Un entraîneur.
           <br />
           Tous tes entraînements.
