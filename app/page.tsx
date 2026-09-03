@@ -2,6 +2,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LogoMark } from '@/components/logo'
+import { DemoSemaine } from '@/components/landing/demo-semaine'
 import { SphereParticules } from '@/components/sphere-particules'
 import { IconBarre, IconCourse, IconNatation, IconVelo } from '@/components/ui/icons'
 
@@ -23,6 +24,7 @@ export default function LandingPage() {
     <main className="relative overflow-hidden">
       <Header />
       <Hero />
+      <Demonstration />
       <Coach />
       <Tarifs />
       <Pied />
@@ -167,28 +169,33 @@ function Hero() {
           ))}
         </ul>
       </div>
+    </section>
+  )
+}
 
-      {/*
-        Le mot de la marque en fantome, coupe par le bas de la section. Il
-        ancre l'ouverture sans rien disputer au texte : sa lisibilite n'a
-        aucune importance, seule sa presence compte.
-      */}
-      <div
-        className="pointer-events-none relative z-0 mt-16 select-none text-center"
-        aria-hidden
-      >
-        <span
-          className="dsp block text-[clamp(4rem,22vw,12rem)] leading-[0.8]"
-          style={{
-            color: 'transparent',
-            backgroundImage:
-              'linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.01))',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-          }}
-        >
-          HYBRID
-        </span>
+/* ── La demonstration ─────────────────────────────────────────
+ *
+ * Entre la promesse et le coach : on annonce un programme qui s'adapte, on le
+ * montre, puis on explique qui l'arbitre. Cette place etait occupee par le mot
+ * de la marque en filigrane — trois cent cinquante pixels pour redire ce que
+ * l'en-tete affiche deja.
+ */
+function Demonstration() {
+  return (
+    <section className="relative px-4 pb-4 pt-2 sm:px-6">
+      <div className="relative z-10 mx-auto max-w-[760px]">
+        <div className="mx-auto mb-8 max-w-[560px] text-center">
+          <p className="eyebrow">La forme de ta semaine</p>
+          <h2 className="dsp mt-3 text-[clamp(1.7rem,5.5vw,2.4rem)]">
+            Chaque objectif donne une semaine différente.
+          </h2>
+          <p className="mt-4 text-[14.5px] leading-7 text-mut">
+            Ce ne sont pas des exemples dessinés pour la vitrine : ces sept cases lisent le
+            générateur du produit. La semaine affichée est celle qu&rsquo;il construirait.
+          </p>
+        </div>
+
+        <DemoSemaine />
       </div>
     </section>
   )
@@ -255,8 +262,21 @@ function Coach() {
             ))}
           </div>
 
-          <div className="hidden items-center justify-center md:flex" aria-hidden>
-            <SphereParticules taille={250} />
+          {/*
+            Sur grand ecran la sphere occupe la colonne mediane ; sur mobile
+            elle passe au-dessus des cartes. Elle etait jusqu'ici en
+            `hidden md:flex`, c'est-a-dire absente de la majorite des visites.
+          */}
+          <div
+            className="order-first flex items-center justify-center pb-5 md:order-none md:pb-0"
+            aria-hidden
+          >
+            <span className="md:hidden">
+              <SphereParticules taille={190} />
+            </span>
+            <span className="hidden md:block">
+              <SphereParticules taille={250} />
+            </span>
           </div>
 
           <div className="flex flex-col gap-4">
