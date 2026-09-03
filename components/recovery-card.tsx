@@ -1,3 +1,4 @@
+import { teinte } from '@/lib/ui/session-meta'
 import Link from 'next/link'
 import { ZONES } from '@/lib/engine/recovery'
 import type { Recovery, RecoveryZone } from '@/lib/engine/types'
@@ -7,6 +8,14 @@ export const ZONE_COLOR: Record<RecoveryZone, string> = {
   YELLOW: 'var(--warn)',
   RED: 'var(--bad)',
   UNKNOWN: 'var(--dim)',
+}
+
+/** Canal RVB de la zone, pour teinter un fond ou une bordure. Voir `teinte`. */
+export const ZONE_CHANNEL: Record<RecoveryZone, string> = {
+  GREEN: '--ok-c',
+  YELLOW: '--warn-c',
+  RED: '--bad-c',
+  UNKNOWN: '--dim-c',
 }
 
 /**
@@ -22,7 +31,7 @@ export function RecoveryCard({ recovery }: { recovery: Recovery }) {
     <Link
       href="/recuperation"
       className="mt-2.5 flex items-center justify-between rounded-card border bg-card p-4"
-      style={{ borderColor: `${color}40` }}
+      style={{ borderColor: teinte(ZONE_CHANNEL[recovery.zone], 0.28) }}
     >
       <span className="flex items-center gap-2.5">
         <span

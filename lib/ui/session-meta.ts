@@ -17,3 +17,29 @@ export const STATUS_LABEL = {
   done: 'Réalisée',
   skipped: 'Sautée',
 } as const
+
+/**
+ * Couleur d'un jeton avec opacité.
+ *
+ * `var(--run)` ne se laisse pas suffixer : écrire `` `${couleur}55` `` produit
+ * `var(--run)55`, qui n'est pas une couleur valide. Le navigateur l'ignore en
+ * silence, et la règle disparaît sans qu'aucune erreur ne le signale — neuf
+ * bordures et fonds teintés étaient dans ce cas.
+ *
+ * Les canaux le permettent : `rgb(var(--run-c) / 0.33)` est valide et lisible.
+ */
+export function teinte(jeton: string, opacite: number): string {
+  return `rgb(var(${jeton}) / ${opacite})`
+}
+
+/** Canal RVB d'une discipline, pour `teinte`. */
+export const SESSION_CHANNEL: Record<SessionType, string> = {
+  RUN: '--run-c',
+  LONG: '--run-c',
+  SWIM: '--swim-c',
+  BIKE: '--bike-c',
+  RIDE: '--bike-c',
+  UPPER: '--street-c',
+  LOWER: '--legs-c',
+  REST: '--rest-c',
+}

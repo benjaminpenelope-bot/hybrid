@@ -1,3 +1,4 @@
+import { teinte } from '@/lib/ui/session-meta'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { loadState } from '@/lib/db/queries'
@@ -5,7 +6,7 @@ import { formatDate, todayISO } from '@/lib/engine/date'
 import { computeRecovery, ZONES } from '@/lib/engine/recovery'
 import { summarize } from '@/lib/engine/summary'
 import { currentUserId } from '@/lib/supabase/server'
-import { ZONE_COLOR } from '@/components/recovery-card'
+import { ZONE_CHANNEL, ZONE_COLOR } from '@/components/recovery-card'
 import { SESSION_META } from '@/lib/ui/session-meta'
 import { CompleterRpe } from './completer-rpe'
 
@@ -112,7 +113,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         <h2 className="eyebrow mb-2.5">Récupération recommandée</h2>
         <div
           className="rounded-card border p-4"
-          style={{ borderColor: `${ZONE_COLOR[recovery.zone]}40` }}
+          style={{ borderColor: teinte(ZONE_CHANNEL[recovery.zone], 0.28) }}
         >
           <div className="flex items-center justify-between">
             <span className="dsp text-[17px]">{ZONES[recovery.zone].label}</span>
@@ -137,7 +138,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
       <Link
         href="/aujourdhui"
-        className="mt-6 flex w-full items-center justify-center rounded-[13px] bg-text p-[15px] font-display text-base font-bold uppercase tracking-[0.09em] text-bg"
+        className="mt-6 btn btn-solid w-full"
       >
         Retour à l&apos;accueil
       </Link>

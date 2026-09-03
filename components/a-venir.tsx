@@ -24,7 +24,7 @@ export function AVenir({
       </p>
       <Link
         href="/aujourdhui"
-        className="mt-6 flex w-full items-center justify-center rounded-[13px] border border-line2 p-3 font-display text-[13px] font-bold uppercase tracking-[0.09em] text-text"
+        className="btn btn-sm btn-ghost mt-6 w-full"
       >
         Retour à l&apos;accueil
       </Link>

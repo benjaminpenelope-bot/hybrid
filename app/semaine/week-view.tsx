@@ -20,7 +20,7 @@ import { sessionLoad } from '@/lib/engine/load'
 import { sum } from '@/lib/engine/math'
 import type { ExerciseRef } from '@/lib/ui/exercises'
 import type { Session } from '@/lib/engine/types'
-import { SESSION_META } from '@/lib/ui/session-meta'
+import { SESSION_CHANNEL, SESSION_META, teinte } from '@/lib/ui/session-meta'
 import { AjoutSeance } from './ajout-seance'
 import {
   markDone,
@@ -36,15 +36,15 @@ function deplacable(session: Session): boolean {
 }
 
 /** Ce qui a bougé sur une séance, dit en un mot. */
-function badges(session: Session): { label: string; color: string }[] {
-  const out: { label: string; color: string }[] = []
-  if (session.status === 'done') out.push({ label: 'Réalisée', color: 'var(--ok)' })
-  if (session.status === 'skipped') out.push({ label: 'Sautée', color: 'var(--bad)' })
-  if (session.moved) out.push({ label: 'Déplacée', color: 'var(--mut)' })
-  if (session.edited) out.push({ label: 'Modifiée', color: 'var(--mut)' })
-  if (session.adapted) out.push({ label: session.adapted, color: 'var(--warn)' })
+function badges(session: Session): { label: string; color: string; canal: string }[] {
+  const out: { label: string; color: string; canal: string }[] = []
+  if (session.status === 'done') out.push({ label: 'Réalisée', color: 'var(--ok)', canal: '--ok-c' })
+  if (session.status === 'skipped') out.push({ label: 'Sautée', color: 'var(--bad)', canal: '--bad-c' })
+  if (session.moved) out.push({ label: 'Déplacée', color: 'var(--mut)', canal: '--mut-c' })
+  if (session.edited) out.push({ label: 'Modifiée', color: 'var(--mut)', canal: '--mut-c' })
+  if (session.adapted) out.push({ label: session.adapted, color: 'var(--warn)', canal: '--warn-c' })
   if (session.status === 'done' && !session.log)
-    out.push({ label: 'Détails manquants', color: 'var(--warn)' })
+    out.push({ label: 'Détails manquants', color: 'var(--warn)', canal: '--warn-c' })
   return out
 }
 
@@ -312,7 +312,7 @@ export function WeekView({
                 {selected.type !== 'REST' && selected.status !== 'done' && (
                   <Link
                     href={`/seance/${selected.id}`}
-                    className="flex w-full items-center justify-center rounded-[13px] bg-text p-[15px] font-display text-base font-bold uppercase tracking-[0.09em] text-bg"
+                    className="btn btn-solid w-full"
                   >
                     Commencer la séance
                   </Link>
@@ -321,7 +321,7 @@ export function WeekView({
                 {selected.status === 'done' && !selected.log && (
                   <Link
                     href={`/seance/${selected.id}`}
-                    className="flex w-full items-center justify-center rounded-[13px] bg-text p-[15px] font-display text-base font-bold uppercase tracking-[0.09em] text-bg"
+                    className="btn btn-solid w-full"
                   >
                     Ajouter les détails
                   </Link>
@@ -330,7 +330,7 @@ export function WeekView({
                 {selected.status === 'done' && selected.log && (
                   <Link
                     href={`/seance/${selected.id}/resume`}
-                    className="flex w-full items-center justify-center rounded-[13px] border border-line2 p-3 font-display text-[13px] font-bold uppercase tracking-[0.09em] text-text"
+                    className="btn btn-sm btn-ghost mt-6 w-full"
                   >
                     Voir le résumé
                   </Link>
@@ -370,7 +370,7 @@ export function WeekView({
                   )}
                   <Link
                     href={`/seance/${selected.id}/modifier`}
-                    className="flex items-center justify-center rounded-[10px] border border-line2 p-2.5 font-display text-[13px] font-bold uppercase tracking-[0.09em] text-text"
+                    className="btn btn-sm btn-ghost"
                   >
                     Modifier
                   </Link>
@@ -492,7 +492,7 @@ function CarteSeance({
       className={`flex w-full items-center gap-3 rounded-[13px] border border-line bg-card px-3 py-[11px] text-left ${
         poignee ? 'touch-manipulation' : ''
       }`}
-      style={{ borderColor: isToday ? `${meta.color}55` : undefined }}
+      style={{ borderColor: isToday ? teinte(SESSION_CHANNEL[seance.type], 0.34) : undefined }}
       {...poignee}
     >
       <span
@@ -520,7 +520,7 @@ function CarteSeance({
               <span
                 key={b.label}
                 className="rounded-full border px-1.5 py-px font-display text-[9.5px] uppercase tracking-[0.08em]"
-                style={{ color: b.color, borderColor: `${b.color}55` }}
+                style={{ color: b.color, borderColor: teinte(b.canal, 0.34) }}
               >
                 {b.label}
               </span>

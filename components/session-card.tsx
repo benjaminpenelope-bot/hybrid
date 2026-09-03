@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { SESSION_META } from '@/lib/ui/session-meta'
+import { SESSION_CHANNEL, SESSION_META, teinte } from '@/lib/ui/session-meta'
 import type { Session } from '@/lib/engine/types'
 
 /** Séance du jour, dépliée : ce qu'on fait, pourquoi, et de quoi la commencer. */
@@ -31,18 +31,47 @@ export function SessionCard({ session }: { session: Session | undefined }) {
   }
 
   const meta = SESSION_META[session.type]
+  const canal = SESSION_CHANNEL[session.type]
   const done = session.status === 'done'
 
+  /*
+   * L'anneau irise ne s'allume que sur une seance a faire.
+   *
+   * C'est le seul element irise de l'ecran, et c'est ce qui lui donne son
+   * sens : il ne decore pas, il designe. Une seance deja realisee n'a plus
+   * rien a designer — l'eteindre est ce qui fait qu'allume, il veut dire
+   * quelque chose.
+   */
+  const designe = !done
+
+  /*
+   * Deux elements imbriques, et c'est necessaire : l'anneau deborde de deux
+   * pixels hors de la carte, donc le `overflow-hidden` qui arrondit le
+   * contenu le decouperait. L'enveloppe porte l'anneau, l'interieur porte la
+   * decoupe.
+   */
   return (
-    <div className="overflow-hidden rounded-card border border-line bg-card">
+    <div
+      className={`rounded-card ${designe ? 'iris' : ''}`}
+      style={
+        designe
+          ? { boxShadow: `0 0 48px ${teinte(canal, 0.18)}, 0 14px 44px rgb(0 0 0 / 0.55)` }
+          : undefined
+      }
+    >
+      <div className="glass overflow-hidden rounded-card">
       <div
         className="px-4 pb-4 pt-[18px]"
-        style={{ background: `linear-gradient(160deg, ${meta.color}1F, transparent 70%)` }}
+        style={{ background: `linear-gradient(160deg, ${teinte(canal, 0.14)}, transparent 70%)` }}
       >
         <div className="mb-3 flex items-center justify-between">
           <span
             className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-display text-[10.5px] font-semibold uppercase tracking-[0.09em]"
-            style={{ color: meta.color, borderColor: `${meta.color}55`, background: `${meta.color}14` }}
+            style={{
+              color: meta.color,
+              borderColor: teinte(canal, 0.34),
+              background: teinte(canal, 0.1),
+            }}
           >
             <span aria-hidden>{meta.icon}</span>
             {meta.label}
@@ -121,18 +150,19 @@ export function SessionCard({ session }: { session: Session | undefined }) {
 
           <Link
             href={`/seance/${session.id}`}
-            className="flex w-full items-center justify-center rounded-[13px] bg-text p-[15px] font-display text-base font-bold uppercase tracking-[0.09em] text-bg transition-transform active:scale-[0.98]"
+            className="btn btn-solid w-full"
           >
             Commencer la séance
           </Link>
           <Link
             href={`/seance/${session.id}/modifier`}
-            className="mt-2 flex w-full items-center justify-center rounded-[10px] border border-line2 p-2.5 font-display text-[13px] font-bold uppercase tracking-[0.09em] text-text"
+            className="btn btn-sm btn-ghost mt-2 w-full"
           >
             Modifier la séance
           </Link>
         </div>
       )}
+      </div>
     </div>
   )
 }

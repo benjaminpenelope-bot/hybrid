@@ -1,3 +1,4 @@
+import { teinte } from '@/lib/ui/session-meta'
 import Link from 'next/link'
 import type { Alert, AlertLevel, AlertTarget } from '@/lib/engine/alerts'
 
@@ -5,6 +6,12 @@ const LEVEL_COLOR: Record<AlertLevel, string> = {
   critical: 'var(--bad)',
   warn: 'var(--warn)',
   info: 'var(--mut)',
+}
+
+const LEVEL_CHANNEL: Record<AlertLevel, string> = {
+  critical: '--bad-c',
+  warn: '--warn-c',
+  info: '--mut-c',
 }
 
 const TARGET_HREF: Record<AlertTarget, string> = {
@@ -35,7 +42,7 @@ export function Alerts({ alerts, hasHistory }: { alerts: Alert[]; hasHistory: bo
           key={a.id}
           href={TARGET_HREF[a.target]}
           className="block rounded-card border bg-card p-4"
-          style={{ borderColor: `${LEVEL_COLOR[a.level]}40` }}
+          style={{ borderColor: teinte(LEVEL_CHANNEL[a.level], 0.28) }}
         >
           <span className="flex items-center gap-2">
             <span

@@ -41,7 +41,7 @@ export function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => 
       <button
         type="button"
         onClick={onDone}
-        className="mt-4 flex w-full items-center justify-center rounded-[13px] bg-text p-[15px] font-display text-base font-bold uppercase tracking-[0.09em] text-bg"
+        className="mt-4 btn btn-solid w-full"
       >
         {left > 0 ? 'Passer le repos' : 'Série suivante'}
       </button>

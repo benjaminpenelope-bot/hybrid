@@ -1,5 +1,7 @@
 'use client'
 
+import { teinte } from '@/lib/ui/session-meta'
+
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { NumPad, Scale } from '@/components/ui/numpad'
@@ -25,9 +27,9 @@ interface LigneExercice {
  */
 
 const DISCIPLINES = [
-  { kind: 'run' as const, label: 'Course', color: 'var(--run)', titre: 'Course' },
-  { kind: 'swim' as const, label: 'Natation', color: 'var(--swim)', titre: 'Natation' },
-  { kind: 'strength' as const, label: 'Renfo', color: 'var(--street)', titre: 'Renforcement' },
+  { kind: 'run' as const, label: 'Course', color: 'var(--run)', canal: '--run-c', titre: 'Course' },
+  { kind: 'swim' as const, label: 'Natation', color: 'var(--swim)', canal: '--swim-c', titre: 'Natation' },
+  { kind: 'strength' as const, label: 'Renfo', color: 'var(--street)', canal: '--street-c', titre: 'Renforcement' },
 ]
 
 export function AjoutSeance({
@@ -138,7 +140,7 @@ export function AjoutSeance({
                 style={{
                   borderColor: kind === d.kind ? d.color : 'var(--line2)',
                   color: kind === d.kind ? d.color : 'var(--mut)',
-                  background: kind === d.kind ? `${d.color}14` : 'transparent',
+                  background: kind === d.kind ? teinte(d.canal, 0.1) : 'transparent',
                 }}
               >
                 {d.label}

@@ -296,6 +296,43 @@
   }
 
   /*
+   * BOUTON
+   *
+   * Le style vivait dans le composant `Button`, et une dizaine de liens le
+   * recopiaient a la main pour ressembler a un bouton sans en etre un. Deux
+   * definitions du meme objet derivent toujours : c'est ainsi que la moitie
+   * des boutons de l'application criaient encore en capitales quand l'autre
+   * moitie avait deja change.
+   *
+   * Une seule definition, que le composant et les liens partagent.
+   */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full font-display font-semibold tracking-[-0.01em] transition-[transform,box-shadow] duration-200 active:scale-[0.985];
+    padding: 15px 20px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .btn-sm {
+    padding: 10px 16px;
+    font-size: 13.5px;
+  }
+
+  /* Principal : blanc sur noir, avec un halo. Un seul par ecran. */
+  .btn-solid {
+    @apply bg-text text-bg;
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.5),
+      0 0 34px rgb(255 255 255 / 0.18),
+      0 10px 30px rgb(0 0 0 / 0.6);
+  }
+
+  /* Secondaire : du verre. Present, mais qui ne dispute rien. */
+  .btn-ghost {
+    @apply glass text-text;
+  }
+
+  /*
    * CHAMP DE SAISIE
    *
    * Le style etait recopie a la main a vingt-trois endroits, ce qui garantit
