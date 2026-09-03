@@ -46,7 +46,20 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const isPublic = PUBLIC_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`))
+
+  /*
+   * Apercu de travail du questionnaire, borne au developpement : il se rend
+   * sans session, sinon relire un ecran demanderait de creer un compte. En
+   * production la condition est fausse quoi qu'on mette dans l'adresse, donc
+   * la porte n'existe pas — la page applique la meme borne de son cote.
+   */
+  const apercuOnboarding =
+    process.env.NODE_ENV === 'development' &&
+    pathname === '/onboarding' &&
+    request.nextUrl.searchParams.get('apercu') === '1'
+
+  const isPublic =
+    apercuOnboarding || PUBLIC_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`))
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()

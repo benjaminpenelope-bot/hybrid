@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Chip, ChipGroup, ChipMulti } from '@/components/ui/chip'
 import { Field, Question } from '@/components/ui/field'
+import { SilhouetteFemme, SilhouetteHomme } from '@/components/ui/silhouettes'
 import {
   EQUIPMENT_LABELS,
   OBJECTIFS,
@@ -26,9 +27,6 @@ import { ApercuSemaine } from '@/components/apercu-semaine'
 import { ChoixDefilant } from '@/components/choix-defilant'
 import {
   IconAucun,
-  IconAutreSexe,
-  IconFemme,
-  IconHomme,
   IconBarre,
   IconCourse,
   IconJambes,
@@ -87,6 +85,7 @@ interface Draft {
   equipment: NonNullable<OnboardingInput['force']>['equipment']
   claims: Record<ClaimKey, ClaimDraft>
 
+  limitEtat: 'aucune' | 'gene' | null
   limitZone: string
   limitDescription: string
 }
@@ -121,6 +120,7 @@ const INITIAL: Draft = {
     muscleups: { ...EMPTY_CLAIM },
     legraises: { ...EMPTY_CLAIM },
   },
+  limitEtat: null,
   limitZone: '',
   limitDescription: '',
 }
@@ -443,7 +443,8 @@ export function OnboardingForm({
     natation: d.swimFrequency !== null && d.swimStroke !== null && d.swimPoolAccess !== null,
     force: Object.values(d.claims).every(claimReady),
     apercu: true,
-    limites: true,
+    // Une gene declaree sans zone ne dit rien de plus qu'une case vide.
+    limites: d.limitEtat === 'aucune' || (d.limitEtat === 'gene' && d.limitZone.trim().length > 0),
   }
 
   const submit = async () => {
@@ -470,9 +471,10 @@ export function OnboardingForm({
       },
       // Une seule limitation au questionnaire : au-delà, c'est une
       // consultation, pas un formulaire d'inscription.
-      limitations: d.limitZone.trim()
-        ? [{ zone: d.limitZone.trim(), description: d.limitDescription.trim() }]
-        : [],
+      limitations:
+        d.limitEtat === 'gene' && d.limitZone.trim()
+          ? [{ zone: d.limitZone.trim(), description: d.limitDescription.trim() }]
+          : [],
       running: d.sports.includes('running')
         ? {
             frequency: d.runFrequency!,
@@ -569,20 +571,25 @@ export function OnboardingForm({
 
               <div className="grid grid-cols-2 gap-2.5">
                 {([
-                  ['homme', 'Homme', IconHomme],
-                  ['femme', 'Femme', IconFemme],
-                ] as const).map(([valeur, libelle, Icone], i) => (
+                  ['homme', 'Homme', SilhouetteHomme],
+                  ['femme', 'Femme', SilhouetteFemme],
+                ] as const).map(([valeur, libelle, Figure], i) => (
                   <button
                     key={valeur}
                     type="button"
-                    className="choix entre flex-col items-center gap-3 py-7"
+                    className="choix entre flex-col items-center gap-1.5 py-6"
                     style={{ animationDelay: `${i * 70}ms` }}
                     data-actif={d.sex === valeur}
                     aria-pressed={d.sex === valeur}
                     onClick={() => set('sex', valeur)}
                   >
-                    <span className={d.sex === valeur ? 'text-text' : 'text-mut'}>
-                      <Icone size={30} />
+                    {/* La figure choisie retrouve sa pleine lumiere ; l'autre
+                        reste en retrait, sans changer de forme. */}
+                    <span
+                      className="transition-opacity duration-300"
+                      style={{ opacity: d.sex === null || d.sex === valeur ? 1 : 0.45 }}
+                    >
+                      <Figure size={78} />
                     </span>
                     <span className="text-[15px] font-semibold tracking-[-0.01em]">{libelle}</span>
                   </button>
@@ -601,9 +608,8 @@ export function OnboardingForm({
                 aria-pressed={d.sex === 'autre'}
                 onClick={() => set('sex', 'autre')}
               >
-                <span className={d.sex === 'autre' ? 'text-text' : 'text-mut'}>
-                  <IconAutreSexe size={17} />
-                </span>
+                {/* Pas de pictogramme ici : un glyphe isole au milieu de deux
+                    figures dessinees ferait tache, et la ligne se lit sans. */}
                 <span className="font-medium">Autre, ou je préfère ne pas préciser</span>
               </button>
             </div>
@@ -1144,29 +1150,88 @@ export function OnboardingForm({
 
       {step === 'limites' && (
         <section>
-          <Question
-            label="Une blessure ou une gêne en cours ?"
-            hint="Facultatif. Le coach allégera ce qui sollicite la zone, et ne posera jamais de diagnostic."
-          >
-            <Field
-              label="Zone concernée"
-              value={d.limitZone}
-              onChange={(e) => set('limitZone', e.target.value)}
-              placeholder="genou droit, épaule gauche…"
-            />
-            {d.limitZone.trim() && (
+          <p className="mb-5 text-[13.5px] leading-relaxed text-mut">
+            Dernière question. Ta réponse ne modifie pas le programme —
+            je te dis exactement ce qu&rsquo;elle fait juste en dessous.
+          </p>
+
+          {/*
+            Deux reponses explicites plutot qu'un champ qu'on laisse vide.
+            « Rien a signaler » est une information, l'absence de saisie n'en
+            est pas une : on ne sait pas si la personne va bien ou si elle a
+            saute la question. Et c'est le dernier geste avant le bouton qui
+            genere le programme — autant que ce soit une decision.
+          */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {([
+              ['aucune', 'Rien à signaler'],
+              ['gene', 'Une gêne en cours'],
+            ] as const).map(([valeur, libelle], i) => (
+              <button
+                key={valeur}
+                type="button"
+                className="choix entre items-center justify-center py-4 text-center"
+                style={{ animationDelay: `${i * 70}ms` }}
+                data-actif={d.limitEtat === valeur}
+                aria-pressed={d.limitEtat === valeur}
+                onClick={() => set('limitEtat', valeur)}
+              >
+                <span className="text-[14px] font-semibold tracking-[-0.01em]">{libelle}</span>
+              </button>
+            ))}
+          </div>
+
+          {d.limitEtat === 'gene' && (
+            <div className="entre mt-6">
               <Field
-                label="Précision"
-                value={d.limitDescription}
-                onChange={(e) => set('limitDescription', e.target.value)}
-                placeholder="depuis quand, ce qui déclenche"
+                label="Zone concernée"
+                value={d.limitZone}
+                onChange={(e) => set('limitZone', e.target.value)}
+                placeholder="genou droit, épaule gauche…"
               />
-            )}
-          </Question>
-          <p className="rounded-[11px] border border-line bg-bg2 p-3 text-[12.5px] leading-relaxed text-mut">
-            Cette application ne pose aucun diagnostic. Une douleur qui augmente
-            à l’effort ou dure plus de quelques jours doit t’amener à consulter
-            un professionnel de santé.
+              {d.limitZone.trim() && (
+                <Field
+                  label="Précision"
+                  value={d.limitDescription}
+                  onChange={(e) => set('limitDescription', e.target.value)}
+                  placeholder="depuis quand, ce qui déclenche"
+                />
+              )}
+
+              {/*
+                Ce que la declaration fait reellement.
+                
+                L'ecran promettait jusqu'ici que « le coach allegera ce qui
+                sollicite la zone ». Le moteur fait l'inverse, et le dit dans
+                son propre code : une limitation en cours ne change aucune
+                action, parce que relier une zone a des exercices demanderait
+                une correspondance que personne n'a etablie. Promettre un
+                allegement qui n'arrive pas est pire que ne rien promettre :
+                on se croit protege.
+              */}
+              <p className="entre rounded-[12px] bg-[rgb(255_255_255/0.035)] px-3.5 py-3 text-[12.5px] leading-5 text-mut">
+                Ce qu&rsquo;elle fait : la zone part au coach, qui en tient compte dans ce
+                qu&rsquo;il te propose, et elle est rappelée dans les preuves de chaque décision.
+                Ce qu&rsquo;elle ne fait pas : baisser la charge toute seule.{' '}
+                <span className="text-text">
+                  C&rsquo;est le jour où tu signales une douleur que la séance s&rsquo;allège.
+                </span>
+              </p>
+            </div>
+          )}
+
+          {d.limitEtat === 'aucune' && (
+            <p className="entre mt-6 rounded-[12px] bg-[rgb(255_255_255/0.035)] px-3.5 py-3 text-[12.5px] leading-5 text-mut">
+              Noté. Tu pourras signaler une douleur n&rsquo;importe quel jour depuis
+              l&rsquo;écran Récupération : c&rsquo;est ce signalement, et lui seul, qui allège
+              une séance.
+            </p>
+          )}
+
+          <p className="mt-6 rounded-[12px] border border-line bg-bg2 p-3.5 text-[12px] leading-relaxed text-dim">
+            Hybrid ne pose aucun diagnostic. Une douleur qui augmente à l&rsquo;effort ou qui
+            dure plus de quelques jours doit t&rsquo;amener à consulter un professionnel de
+            santé.
           </p>
         </section>
       )}
