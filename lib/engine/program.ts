@@ -995,9 +995,17 @@ export function buildSession(
    * porte sur le type reellement place la, pas sur le seul numero de slot,
    * pour que les repartitions sans nage n'en heritent pas.
    */
-  const duSlot = micro[slot]
-  const voulu: SessionType =
-    forcedType ?? (slot === 5 && duSlot === 'SWIM' && allowDoubles ? 'LOWER' : duSlot)
+  /*
+   * Le type vient de la repartition effective, pas d'une substitution
+   * calculee ici.
+   *
+   * Les deux coexistaient : `microcycleEffectif` servait aux roles du velo et
+   * du footing, tandis que le type de la seance passait directement par
+   * `typeRetenu`. L'alternance haut/bas ajoutee dans la premiere ne touchait
+   * donc que l'apercu de l'inscription — le plan reellement genere gardait
+   * ses cinq seances hautes d'affilee. Un seul chemin desormais.
+   */
+  const voulu: SessionType = forcedType ?? effectif[slot]
 
   /*
    * Un type impose vient de l'editeur : l'athlete a choisi, on n'y touche pas.
@@ -1010,7 +1018,7 @@ export function buildSession(
     ? forcedType
     : availableWeekdays.length > 0 && !availableWeekdays.includes(weekday)
       ? 'REST'
-      : typeRetenu(voulu, sports)
+      : voulu
 
   switch (type) {
     case 'REST':

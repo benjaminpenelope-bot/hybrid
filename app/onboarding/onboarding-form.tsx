@@ -674,47 +674,79 @@ export function OnboardingForm() {
 
       {step === 'dispo' && (
         <section>
-          <Question
-            label="Tes jours d’entraînement"
-            hint="Entre deux et six jours. Les jours non retenus deviennent tes coupures."
-          >
-            <div className="flex flex-wrap gap-2">
-              {WEEKDAY_LABELS.map((label, jour) => (
-                <Chip
+          {/*
+            Troisieme et derniere fois que la semaine se recompose : apres
+            l'objectif qui lui donne sa forme et les sports qui la rendent
+            realisable, les jours la posent enfin sur un calendrier.
+          */}
+          <div className="glass rounded-card p-4">
+            <p className="eyebrow mb-3">Ta semaine</p>
+            <ApercuSemaine objectif={d.goalMain} sports={d.sports} jours={d.weekdays} />
+            <p className="mt-3 text-[12px] leading-5 text-dim">
+              {d.weekdays.length < 2
+                ? 'Choisis au moins deux jours.'
+                : `${d.weekdays.length} jours d’entraînement, ${7 - d.weekdays.length} de coupure. Le premier jour libre devient ton repos, et c’est lui qui cale toute la semaine.`}
+            </p>
+          </div>
+
+          <p className="mb-3 mt-7 text-[13.5px] leading-relaxed text-mut">
+            Entre deux et six jours. Les jours non retenus deviennent tes coupures — le repos fait
+            partie du programme, il ne s&rsquo;y ajoute pas.
+          </p>
+
+          <div className="flex gap-1.5">
+            {[1, 2, 3, 4, 5, 6, 0].map((jour) => {
+              const actif = d.weekdays.includes(jour)
+              return (
+                <button
                   key={jour}
-                  active={d.weekdays.includes(jour)}
+                  type="button"
+                  aria-pressed={actif}
+                  aria-label={WEEKDAY_LABELS[jour]}
+                  className={`flex-1 rounded-[12px] py-3 text-[12.5px] font-semibold tracking-[-0.01em] transition-[background-color,box-shadow,color] duration-200 ${
+                    actif
+                      ? 'bg-[rgb(255_255_255/0.11)] text-text shadow-[inset_0_1px_0_rgb(255_255_255/0.16)]'
+                      : 'bg-[rgb(255_255_255/0.035)] text-dim'
+                  }`}
                   onClick={() =>
                     set(
                       'weekdays',
-                      d.weekdays.includes(jour)
+                      actif
                         ? d.weekdays.filter((j) => j !== jour)
                         : [...d.weekdays, jour].sort((a, b) => a - b),
                     )
                   }
                 >
-                  {label}
-                </Chip>
-              ))}
-            </div>
-          </Question>
-          <Field
-            label="Durée par séance"
-            type="number"
-            inputMode="numeric"
-            suffix="min"
-            value={d.sessionMinutes}
-            onChange={(e) => set('sessionMinutes', e.target.value)}
-          />
-          <Question label="Deux séances le même jour ?">
-            <ChipGroup
-              options={[
-                { value: 'non' as const, label: 'Jamais' },
-                { value: 'oui' as const, label: 'Possible' },
-              ]}
-              value={d.allowDoubles ? 'oui' : 'non'}
-              onChange={(v) => set('allowDoubles', v === 'oui')}
+                  {WEEKDAY_LABELS[jour]?.slice(0, 1)}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-7">
+            <Field
+              label="Durée par séance"
+              type="number"
+              inputMode="numeric"
+              suffix="min"
+              value={d.sessionMinutes}
+              onChange={(e) => set('sessionMinutes', e.target.value)}
+              hint="Une moyenne suffit. Les séances longues du week-end la dépasseront."
             />
-          </Question>
+            <Question
+              label="Deux séances le même jour ?"
+              hint="Si tu l’autorises, la natation du samedi devient une séance jambes complète, doublée."
+            >
+              <ChipGroup
+                options={[
+                  { value: 'non' as const, label: 'Jamais' },
+                  { value: 'oui' as const, label: 'Possible' },
+                ]}
+                value={d.allowDoubles ? 'oui' : 'non'}
+                onChange={(v) => set('allowDoubles', v === 'oui')}
+              />
+            </Question>
+          </div>
         </section>
       )}
 
