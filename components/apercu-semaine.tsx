@@ -1,9 +1,9 @@
 'use client'
 
-import { microcycleDe, type Slot } from '@/lib/engine/program'
+import { microcycleDe, microcycleEffectif, type Slot } from '@/lib/engine/program'
 import { SESSION_CHANNEL, SESSION_META } from '@/lib/ui/session-meta'
 import { teinte } from '@/lib/ui/session-meta'
-import type { GoalType } from '@/lib/engine/types'
+import type { GoalType, Sport } from '@/lib/engine/types'
 
 /**
  * APERÇU DE LA SEMAINE
@@ -23,8 +23,22 @@ import type { GoalType } from '@/lib/engine/types'
 
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] as const
 
-export function ApercuSemaine({ objectif }: { objectif: GoalType | null }) {
-  const micro = microcycleDe(objectif)
+export function ApercuSemaine({
+  objectif,
+  sports = [],
+}: {
+  objectif: GoalType | null
+  /**
+   * Sports déclarés. Vide, la semaine reste celle de l'objectif : un tableau
+   * vide veut dire « on ne sait pas encore », pas « aucun sport ».
+   *
+   * Renseigné, les disciplines qu'on ne pratique pas sont remplacées, comme
+   * le générateur le fera. C'est ce qui rend l'étape des sports lisible : on
+   * voit les nages devenir des sorties de course avant même d'avoir validé.
+   */
+  sports?: Sport[]
+}) {
+  const micro = microcycleEffectif(microcycleDe(objectif), sports)
 
   return (
     <div>

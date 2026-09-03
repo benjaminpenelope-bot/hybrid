@@ -25,6 +25,10 @@ import { ChoixDefilant } from '@/components/choix-defilant'
 import {
   IconAucun,
   IconBarre,
+  IconCourse,
+  IconJambes,
+  IconNatation,
+  IconVelo,
   IconDixKm,
   IconEndurance,
   IconForce,
@@ -217,6 +221,31 @@ const OBJECTIF_EFFET: Record<(typeof OBJECTIFS)[number], string> = {
   street_workout: 'Tirage prioritaire, deux séances hautes au plus, jamais rapprochées.',
   endurance: 'Le volume avant l’intensité, sur toutes tes disciplines.',
   hybride: 'Course, nage et barre qui se répondent au lieu de s’additionner.',
+}
+
+/** Pictogramme de chaque sport. */
+const SPORT_ICONES: Record<(typeof SPORTS)[number], (p: { size?: number }) => React.ReactElement> = {
+  running: IconCourse,
+  cycling: IconVelo,
+  swimming: IconNatation,
+  strength: IconBarre,
+  street_workout: IconJambes,
+}
+
+/**
+ * Ce que declarer un sport fait apparaitre dans la semaine.
+ *
+ * Comme pour les objectifs, ces phrases decrivent ce que le generateur
+ * produit reellement — pas une promesse. Le velo se dose en minutes, la nage
+ * suit une echelle de distances, la force ouvre par une semaine de tests :
+ * tout cela est dans le moteur.
+ */
+const SPORT_EFFET: Record<(typeof SPORTS)[number], string> = {
+  running: 'Footings, endurance fondamentale et sortie longue.',
+  cycling: 'Tempo, endurance et sortie longue, dosées en durée plutôt qu’en kilomètres.',
+  swimming: 'Technique et endurance, sur une échelle qui va de 25 à 1 500 m.',
+  strength: 'Haut et bas du corps, avec une semaine de tests pour situer tes repères.',
+  street_workout: 'Tractions, dips et muscle-ups, au poids du corps.',
 }
 
 /** Valeur du carrousel pour « pas de second objectif ». */
@@ -447,16 +476,64 @@ export function OnboardingForm() {
 
       {step === 'sports' && (
         <section>
-          <Question
-            label="Ce que tu pratiques"
-            hint="On ne te posera de questions que sur ces disciplines."
-          >
-            <ChipMulti
-              options={SPORTS.map((s) => ({ value: s, label: SPORT_LABELS[s] }))}
-              value={d.sports}
-              onChange={(v) => set('sports', v)}
-            />
-          </Question>
+          {/*
+            La meme semaine qu'a l'etape precedente, mais qui tient compte des
+            sports declares : le generateur remplace les disciplines qu'on ne
+            pratique pas, et on le voit ici avant de valider. C'est
+            l'explication la plus courte de ce qu'est une substitution.
+          */}
+          <div className="glass rounded-card p-4">
+            <p className="eyebrow mb-3">La forme de ta semaine</p>
+            <ApercuSemaine objectif={d.goalMain} sports={d.sports} />
+            <p className="mt-3 text-[12px] leading-5 text-dim">
+              {d.sports.length === 0
+                ? 'Coche ce que tu pratiques : les disciplines que tu ne fais pas seront remplacées.'
+                : 'Ce que tu ne déclares pas est remplacé par un sport que tu pratiques, jamais laissé vide.'}
+            </p>
+          </div>
+
+          <p className="mb-4 mt-7 text-[13.5px] leading-relaxed text-mut">
+            On ne te posera de questions que sur ces disciplines.
+          </p>
+
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {SPORTS.map((sp, i) => {
+              const actif = d.sports.includes(sp)
+              const S = SPORT_ICONES[sp]
+              return (
+                <button
+                  key={sp}
+                  type="button"
+                  className="choix entre"
+                  style={{ animationDelay: `${i * 45}ms` }}
+                  data-actif={actif}
+                  aria-pressed={actif}
+                  onClick={() =>
+                    set('sports', actif ? d.sports.filter((x) => x !== sp) : [...d.sports, sp])
+                  }
+                >
+                  <span className={actif ? 'text-text' : 'text-mut'}>
+                    <S size={20} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[14.5px] font-semibold tracking-[-0.01em]">
+                      {SPORT_LABELS[sp]}
+                    </span>
+                    <span className="mt-1 block text-[12.5px] leading-5 text-mut">
+                      {SPORT_EFFET[sp]}
+                    </span>
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {d.sports.length > 0 && !sportPlanifiable && (
+            <p className="entre mt-5 rounded-[14px] border border-bad/40 bg-bad/10 p-3 text-[12.5px] leading-relaxed text-text">
+              Avec le cyclisme seul, ton programme serait vide : aucune séance de vélo n&rsquo;est
+              encore générée. Ajoute la course, la natation ou la force pour recevoir un plan.
+            </p>
+          )}
         </section>
       )}
 

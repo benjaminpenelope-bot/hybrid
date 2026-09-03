@@ -738,6 +738,34 @@ export function microcycleEffectif(
       slot === 5 && micro[slot] === 'SWIM' && allowDoubles ? 'LOWER' : micro[slot]
     out[slot] = typeRetenu(voulu, sports)
   }
+
+  /*
+   * Alternance du haut et du bas apres substitution.
+   *
+   * `typeRetenu` remplace un creneau a la fois, sans regard sur ses voisins.
+   * Quelqu'un qui ne declare que du street workout voyait donc ses cinq
+   * creneaux de course et de nage devenir cinq seances de haut du corps
+   * d'affilee — ce qui contredit la regle que les repartitions respectent
+   * toutes par construction, et qui mene au coude et a l'epaule.
+   *
+   * On repasse donc sur la semaine pour alterner des qu'un groupe se repete
+   * a moins de trois jours. C'est le generateur qu'on corrige ici, pas
+   * seulement l'apercu de l'inscription.
+   */
+  const FORCE: SessionType[] = ['UPPER', 'LOWER']
+  let dernier: { type: SessionType; slot: Slot } | null = null
+  for (const slot of [0, 1, 2, 3, 4, 5, 6] as Slot[]) {
+    const t = out[slot]
+    if (!FORCE.includes(t)) continue
+    if (dernier && dernier.type === t && slot - dernier.slot < 3) {
+      const autre: SessionType = t === 'UPPER' ? 'LOWER' : 'UPPER'
+      // On ne bascule que si l'autre groupe est realisable : sinon on
+      // laisserait une seance qu'aucun sport declare ne permet.
+      if (typePraticable(autre, sports)) out[slot] = autre
+    }
+    dernier = { type: out[slot]!, slot }
+  }
+
   return out
 }
 

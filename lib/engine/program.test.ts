@@ -19,6 +19,7 @@ import {
   estFootingSouple,
   kmDesCourses,
   microcycleDe,
+  microcycleEffectif,
   bikeMinutes,
   swimTarget,
   typePraticable,
@@ -515,5 +516,34 @@ describe('volume vélo', () => {
     const semaine = p.find((s) => s.type === 'BIKE')
     const longue = p.find((s) => s.type === 'RIDE')
     expect(longue!.duration).toBeGreaterThan(semaine!.duration)
+  })
+})
+
+describe('alternance apres substitution', () => {
+  it('ne repete jamais le meme groupe deux jours de suite', () => {
+    /*
+     * `typeRetenu` remplace un creneau a la fois, sans regard sur ses
+     * voisins : quelqu'un qui ne declarait que du street workout recevait
+     * cinq seances de haut du corps d'affilee. Vu en affichant la semaine,
+     * pas en relisant le code.
+     */
+    for (const sports of [['street_workout'], ['strength'], ['strength', 'street_workout']] as Sport[][]) {
+      for (const goal of ['marathon', 'endurance', 'hybride'] as GoalType[]) {
+        const micro = microcycleEffectif(microcycleDe(goal), sports)
+        const slots = [0, 1, 2, 3, 4, 5, 6] as const
+        for (let i = 1; i < slots.length; i++) {
+          const a = micro[slots[i - 1]!]
+          const b = micro[slots[i]!]
+          if (a === 'UPPER' || a === 'LOWER') expect(b).not.toBe(a)
+        }
+      }
+    }
+  })
+
+  it('laisse intactes les repartitions qui respectent deja la regle', () => {
+    // Sans sport declare, rien n'est substitue, donc rien n'est reordonne.
+    for (const goal of ['force', 'hyrox', 'street_workout'] as GoalType[]) {
+      expect(microcycleEffectif(microcycleDe(goal), [])).toEqual(microcycleDe(goal))
+    }
   })
 })
