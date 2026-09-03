@@ -425,6 +425,30 @@
   }
 
   /*
+   * RANGEE DE NOMBRES
+   *
+   * Pour choisir une frequence : zero a sept seances. Des pastilles a
+   * ecoulement libre se repartissaient sur deux lignes inegales selon la
+   * largeur ; une grille les garde alignees et fait de la rangee une echelle
+   * qu'on lit d'un coup.
+   */
+  .nombres {
+    @apply grid gap-1.5;
+  }
+
+  .nombres > button {
+    @apply flex min-h-[46px] items-center justify-center rounded-[12px] text-[14px] font-semibold tracking-[-0.01em] transition-[background-color,box-shadow,color] duration-200 active:scale-[0.96];
+    background: rgb(255 255 255 / 0.035);
+    color: var(--dim);
+  }
+
+  .nombres > button[data-actif='true'] {
+    background: rgb(255 255 255 / 0.11);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18);
+    color: var(--text);
+  }
+
+  /*
    * SELECTEUR SEGMENTE
    *
    * Une piste creusee, et une capsule de verre qui glisse dessus. L'actif

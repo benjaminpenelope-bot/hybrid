@@ -20,6 +20,8 @@ import {
   type OnboardingInput,
 } from '@/lib/validation/onboarding'
 import { libellesDesJalons } from '@/lib/engine/goals'
+import { ABSOLUTE_MIN_BASE, baseWeeklyKm, weekVolume } from '@/lib/engine/program'
+import { fr } from '@/lib/ui/nombre'
 import { ApercuProgramme } from '@/components/apercu-programme'
 import { ApercuSemaine } from '@/components/apercu-semaine'
 import { ChoixDefilant } from '@/components/choix-defilant'
@@ -144,6 +146,40 @@ function claimOf(draft: ClaimDraft): BenchmarkClaim {
 }
 
 /** Un repère est valide s'il est déclaré inconnu, ou chiffré. */
+/** Un volume s'écrit « 31 km », pas « 31,0 km » : le demi-kilomètre ne se lit que s'il existe. */
+function km(v: number): string {
+  return Number.isInteger(v) ? String(v) : fr(v)
+}
+
+/** Rangée de nombres : une fréquence se choisit sur une échelle, pas dans une liste. */
+function Nombres({
+  valeurs,
+  valeur,
+  onChange,
+  colonnes,
+}: {
+  valeurs: number[]
+  valeur: number | null
+  onChange: (n: number) => void
+  colonnes: number
+}) {
+  return (
+    <div className="nombres" style={{ gridTemplateColumns: `repeat(${colonnes}, minmax(0, 1fr))` }}>
+      {valeurs.map((n) => (
+        <button
+          key={n}
+          type="button"
+          data-actif={valeur === n}
+          aria-pressed={valeur === n}
+          onClick={() => onChange(n)}
+        >
+          {n}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function claimReady(draft: ClaimDraft): boolean {
   return draft.mode === 'untested' || (num(draft.value) >= 1 && num(draft.value) <= 999)
 }
@@ -158,17 +194,23 @@ function BenchmarkPicker({
   onChange: (d: ClaimDraft) => void
 }) {
   return (
-    <div className="mb-4 border-t border-line pt-4 first:border-0 first:pt-0">
-      <div className="mb-[9px] text-[13.5px]">{label}</div>
+    /*
+      Un bloc par mouvement plutot qu'un filet horizontal : les trois choix
+      appartiennent visiblement au repere qu'ils qualifient, et la liste se
+      parcourt d'un coup d'oeil au lieu de se lire ligne a ligne.
+    */
+    <div className="mb-2.5 rounded-[16px] bg-[rgb(255_255_255/0.028)] p-3.5">
+      <div className="mb-2.5 text-[13.5px] font-medium tracking-[-0.01em]">{label}</div>
       <div className="flex flex-wrap gap-2">
         <Chip active={draft.mode === 'untested'} onClick={() => onChange({ mode: 'untested', value: '' })}>
           À tester
         </Chip>
+        {/* Libellés courts : les trois tiennent alors sur une ligne, et le nom du mouvement juste au-dessus porte déjà le contexte. */}
         <Chip active={draft.mode === 'atleast'} onClick={() => onChange({ ...draft, mode: 'atleast' })}>
-          J&apos;en fais au moins
+          Au moins
         </Chip>
         <Chip active={draft.mode === 'max'} onClick={() => onChange({ ...draft, mode: 'max' })}>
-          Mon max testé
+          Max testé
         </Chip>
       </div>
       {draft.mode !== 'untested' && (
@@ -288,7 +330,25 @@ export function OnboardingForm({
   etapeInitiale?: string
 }) {
   const [index, setIndex] = useState(0)
-  const [d, setD] = useState<Draft>(INITIAL)
+  /*
+   * En apercu de developpement, le brouillon part rempli d'un athlete
+   * representatif : sans sports declares, les etapes de calibrage n'existent
+   * pas dans la liste et sont donc inatteignables. Ce prereglage ne sert qu'a
+   * relire les ecrans, il n'est jamais transmis en production.
+   */
+  const [d, setD] = useState<Draft>(() =>
+    etapeInitiale
+      ? {
+          ...INITIAL,
+          goalMain: 'marathon',
+          sports: ['running', 'swimming', 'street_workout'],
+          weekdays: [1, 2, 3, 4, 5, 6],
+          runFrequency: 3,
+          runWeeklyKm: '28',
+          runLongestKm: '12',
+        }
+      : INITIAL,
+  )
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -822,77 +882,131 @@ export function OnboardingForm({
 
       {step === 'course' && (
         <section>
-          <Question label="Séances de course par semaine, aujourd’hui">
-            <ChipGroup
-              options={[0, 1, 2, 3, 4, 5, 6, 7].map((n) => ({ value: String(n), label: String(n) }))}
-              value={d.runFrequency === null ? null : String(d.runFrequency)}
-              onChange={(v) => set('runFrequency', Number(v))}
+          <p className="mb-5 text-[13.5px] leading-relaxed text-mut">
+            Ces chiffres calent le point de départ. Le programme part de ce que tu fais
+            aujourd&rsquo;hui, pas de ce qu&rsquo;il faudrait faire.
+          </p>
+
+          <p className="eyebrow mb-2">Séances de course par semaine</p>
+          <Nombres
+            valeurs={[0, 1, 2, 3, 4, 5, 6, 7]}
+            valeur={d.runFrequency}
+            onChange={(n) => set('runFrequency', n)}
+            colonnes={8}
+          />
+
+          <div className="mt-6">
+            <Field
+              label="Volume hebdomadaire actuel"
+              type="number"
+              inputMode="decimal"
+              suffix="km"
+              value={d.runWeeklyKm}
+              onChange={(e) => set('runWeeklyKm', e.target.value)}
+              hint="Mets 0 si tu ne cours pas encore : le programme démarrera au minimum sûr."
             />
-          </Question>
-          <Field
-            label="Volume hebdomadaire actuel"
-            type="number"
-            inputMode="decimal"
-            suffix="km"
-            value={d.runWeeklyKm}
-            onChange={(e) => set('runWeeklyKm', e.target.value)}
-            hint="C’est ce chiffre qui fixe le point de départ. Mets 0 si tu ne cours pas encore."
-          />
-          <Field
-            label="Ta plus longue sortie récente"
-            type="number"
-            inputMode="decimal"
-            suffix="km"
-            value={d.runLongestKm}
-            onChange={(e) => set('runLongestKm', e.target.value)}
-          />
+
+            {/*
+              Ce que le chiffre saisi produit, en direct.
+              
+              La premiere semaine ne reprend pas le volume declare : elle
+              l'augmente de 10 %, plancher a huit kilometres. Le dire en
+              chiffres plutot qu'en phrase evite la surprise a l'ouverture du
+              programme, et montre que la progression est bornee.
+            */}
+            {d.runWeeklyKm.trim() !== '' && (
+              <p className="entre -mt-1 mb-4 rounded-[12px] bg-[rgb(255_255_255/0.035)] px-3.5 py-2.5 text-[12.5px] leading-5 text-mut">
+                {num(d.runWeeklyKm) > 0 ? (
+                  <>
+                    Ta semaine 1 partira sur{' '}
+                    <b className="text-text">{km(weekVolume(1, baseWeeklyKm(num(d.runWeeklyKm))))} km</b>{' '}
+                    — ton volume actuel plus 10 %, jamais davantage.
+                  </>
+                ) : (
+                  <>
+                    Ta semaine 1 partira sur <b className="text-text">{km(ABSOLUTE_MIN_BASE)} km</b>, le
+                    plancher pour une reprise. La progression viendra ensuite.
+                  </>
+                )}
+              </p>
+            )}
+
+            <Field
+              label="Ta plus longue sortie récente"
+              type="number"
+              inputMode="decimal"
+              suffix="km"
+              value={d.runLongestKm}
+              onChange={(e) => set('runLongestKm', e.target.value)}
+              hint="Elle sert de repère à tes objectifs de distance. Laisse 0 si tu n’en as pas."
+            />
+          </div>
         </section>
       )}
 
       {step === 'natation' && (
         <section>
-          <Question label="Séances de natation par semaine, aujourd’hui">
-            <ChipGroup
-              options={[0, 1, 2, 3, 4].map((n) => ({ value: String(n), label: String(n) }))}
-              value={d.swimFrequency === null ? null : String(d.swimFrequency)}
-              onChange={(v) => set('swimFrequency', Number(v))}
-            />
-          </Question>
-          <Question label="Ta nage">
-            <ChipGroup
-              options={(Object.keys(STROKE_LABELS) as (keyof typeof STROKE_LABELS)[]).map((k) => ({
-                value: k,
-                label: STROKE_LABELS[k],
-              }))}
-              value={d.swimStroke}
-              onChange={(v) => set('swimStroke', v)}
-            />
-          </Question>
-          <Field
-            label="Distance nagée sans pause"
-            type="number"
-            inputMode="numeric"
-            suffix="m"
-            value={d.swimContinuousM}
-            onChange={(e) => set('swimContinuousM', e.target.value)}
-            hint="Laisse vide si tu ne l’as jamais mesurée. Elle s’affichera « À TESTER » plutôt que d’être devinée."
+          <p className="mb-5 text-[13.5px] leading-relaxed text-mut">
+            La natation progresse par paliers, de 25 à 1 500 m sans pause. Ces réponses situent
+            ton départ sur cette échelle.
+          </p>
+
+          <p className="eyebrow mb-2">Séances de natation par semaine</p>
+          <Nombres
+            valeurs={[0, 1, 2, 3, 4]}
+            valeur={d.swimFrequency}
+            onChange={(n) => set('swimFrequency', n)}
+            colonnes={5}
           />
-          <Question label="Accès à la piscine">
-            <ChipGroup
-              options={(Object.keys(POOL_LABELS) as (keyof typeof POOL_LABELS)[]).map((k) => ({
-                value: k,
-                label: POOL_LABELS[k],
-              }))}
-              value={d.swimPoolAccess}
-              onChange={(v) => set('swimPoolAccess', v)}
+
+          <div className="mt-6">
+            <Question label="Ta nage">
+              <ChipGroup
+                options={(Object.keys(STROKE_LABELS) as (keyof typeof STROKE_LABELS)[]).map((k) => ({
+                  value: k,
+                  label: STROKE_LABELS[k],
+                }))}
+                value={d.swimStroke}
+                onChange={(v) => set('swimStroke', v)}
+              />
+            </Question>
+
+            <Field
+              label="Distance nagée sans pause"
+              type="number"
+              inputMode="numeric"
+              suffix="m"
+              value={d.swimContinuousM}
+              onChange={(e) => set('swimContinuousM', e.target.value)}
+              hint="Laisse vide si tu ne l’as jamais mesurée. Elle s’affichera « À TESTER » plutôt que d’être devinée — c’est la règle partout dans l’app."
             />
-          </Question>
+
+            <Question
+              label="Accès à la piscine"
+              hint="Une contrainte, pas une excuse : le programme s’y adapte au lieu de te proposer ce que tu ne peux pas faire."
+            >
+              <ChipGroup
+                options={(Object.keys(POOL_LABELS) as (keyof typeof POOL_LABELS)[]).map((k) => ({
+                  value: k,
+                  label: POOL_LABELS[k],
+                }))}
+                value={d.swimPoolAccess}
+                onChange={(v) => set('swimPoolAccess', v)}
+              />
+            </Question>
+          </div>
         </section>
       )}
 
       {step === 'force' && (
         <section>
-          <Question label="Ton matériel">
+          <p className="mb-5 text-[13.5px] leading-relaxed text-mut">
+            La semaine 1 s&rsquo;ouvre sur des tests : le programme a besoin de savoir où tu en es
+            avant de prescrire quoi que ce soit. Ce que tu déclares ici évite d&rsquo;en tester
+            trop, rien de plus.
+          </p>
+
+          <Question label="Ton matériel" hint="Ce que tu n’as pas ne sera jamais programmé.">
             <ChipMulti
               options={(Object.keys(EQUIPMENT_LABELS) as (keyof typeof EQUIPMENT_LABELS)[]).map((k) => ({
                 value: k,
@@ -905,8 +1019,8 @@ export function OnboardingForm({
           <div className="mt-6">
             <p className="eyebrow mb-1">Tes repères</p>
             <p className="mb-4 text-[11.5px] leading-relaxed text-dim">
-              Un repère déclaré n’est pas un repère testé. « J’en fais au moins »
-              reste marqué comme partiel jusqu’à ce que tu passes un vrai test.
+              Un repère déclaré n’est pas un repère testé. « Au moins » reste marqué comme
+              partiel jusqu’à ce que tu passes un vrai test.
             </p>
             {(Object.keys(CLAIM_LABELS) as ClaimKey[]).map((k) => (
               <BenchmarkPicker

@@ -11,9 +11,6 @@ export default async function OnboardingPage({
 }: {
   searchParams: { apercu?: string; etape?: string }
 }) {
-  const userId = await currentUserId()
-  if (!userId) redirect('/login?suite=/onboarding')
-
   /*
    * Apercu de travail : permet de revoir le questionnaire alors qu'on l'a
    * deja rempli, sans avoir a creer un compte jetable a chaque retouche.
@@ -26,11 +23,21 @@ export default async function OnboardingPage({
   const apercu = process.env.NODE_ENV === 'development' && searchParams.apercu === '1'
 
   /*
+   * En apercu, on n'exige pas de session : relire les ecrans ne doit pas
+   * demander de se connecter. L'envoi du formulaire echouera faute de
+   * compte, ce qui est exactement le bon comportement pour un aperçu.
+   */
+  const userId = await currentUserId()
+  if (!userId && !apercu) redirect('/login?suite=/onboarding')
+
+  /*
    * On ne renvoie que les profils reellement complets. Un compte cree avant
    * l'ajout des objectifs porte `onboarded_at` sans y avoir repondu : il doit
    * pouvoir repasser le questionnaire.
    */
-  const { complet, aRepondreDeNouveau } = await etatProfil(userId)
+  const { complet, aRepondreDeNouveau } = userId
+    ? await etatProfil(userId)
+    : { complet: false, aRepondreDeNouveau: false }
   if (complet && !apercu) redirect('/aujourdhui')
 
   return (
