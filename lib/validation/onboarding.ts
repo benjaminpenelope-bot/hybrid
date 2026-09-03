@@ -95,16 +95,24 @@ export const onboardingSchema = z
   .object({
     profil: z.object({
       name: z.string().trim().min(1, 'Renseigne un prénom.').max(60),
-      /** Facultatif et libre de le rester : « sexe si renseigné ». */
-      sex: z.enum(['homme', 'femme', 'autre']).nullable(),
-      birthDate: z
-        .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date attendue au format AAAA-MM-JJ.')
-        .nullable(),
       heightCm: z.number().int().min(100).max(250),
       currentKg: z.number().min(30).max(250),
       goalKg: z.number().min(30).max(250),
-      level: z.enum(NIVEAUX),
+      /*
+       * Sexe, date de naissance et niveau declare ne sont plus demandes a
+       * l'inscription : rien ne les lisait. Le niveau etait meme obligatoire,
+       * et un « avance » coche soi-meme n'apprenait rien de plus que les
+       * quarante kilometres et les douze tractions saisis deux ecrans plus
+       * tot. Les colonnes restent, nullables : le jour ou un calcul en aura
+       * besoin, l'ecran Reglages pourra les redemander sans migration.
+       */
+      sex: z.enum(['homme', 'femme', 'autre']).nullable().default(null),
+      birthDate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date attendue au format AAAA-MM-JJ.')
+        .nullable()
+        .default(null),
+      level: z.enum(NIVEAUX).nullable().default(null),
     }),
 
     sports: z.array(z.enum(SPORTS)).min(1, 'Choisis au moins un sport.'),
@@ -184,7 +192,16 @@ export const onboardingSchema = z
     }
   })
 
-export type OnboardingInput = z.infer<typeof onboardingSchema>
+/*
+ * Ce que le formulaire envoie, et non ce que le schema produit : les champs
+ * pourvus d'un `default` sont facultatifs a l'entree et garantis a la sortie.
+ * `z.infer` renverrait le second, et exigerait du client qu'il transmette
+ * les trois champs qu'on a justement cesse de demander.
+ */
+export type OnboardingInput = z.input<typeof onboardingSchema>
+
+/** Ce que le schema garantit apres validation. */
+export type OnboardingValide = z.infer<typeof onboardingSchema>
 
 /* ── Libellés ──────────────────────────────────────────────── */
 

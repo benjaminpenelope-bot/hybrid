@@ -6,12 +6,9 @@ function reponses(over: Partial<OnboardingInput> = {}): unknown {
   return {
     profil: {
       name: 'Test',
-      sex: null,
-      birthDate: null,
       heightCm: 180,
       currentKg: 75,
       goalKg: 75,
-      level: 'intermediaire',
     },
     sports: ['running'],
     objectifs: {
@@ -26,6 +23,31 @@ function reponses(over: Partial<OnboardingInput> = {}): unknown {
     ...over,
   }
 }
+
+describe('profil', () => {
+  /*
+   * Le questionnaire ne demande plus le sexe, la date de naissance ni le
+   * niveau declare : rien ne les lisait. Le schema doit donc les accepter
+   * absents — sans quoi l'inscription echouerait pour tout le monde — et les
+   * ramener a null, pour que la colonne se vide au lieu de garder une
+   * ancienne valeur.
+   */
+  it('accepte un profil sans sexe, date de naissance ni niveau', () => {
+    const r = onboardingSchema.safeParse(reponses())
+    expect(r.success).toBe(true)
+    expect(r.data?.profil.sex).toBeNull()
+    expect(r.data?.profil.birthDate).toBeNull()
+    expect(r.data?.profil.level).toBeNull()
+  })
+
+  it('les accepte encore s’ils sont fournis', () => {
+    const r = onboardingSchema.safeParse(
+      reponses({ profil: { name: 'Test', heightCm: 180, currentKg: 75, goalKg: 75, level: 'avance' } }),
+    )
+    expect(r.success).toBe(true)
+    expect(r.data?.profil.level).toBe('avance')
+  })
+})
 
 describe('détail par discipline', () => {
   it('accepte un coureur sans détail de nage', () => {

@@ -25,9 +25,9 @@ export async function etatProfil(userId: string): Promise<EtatProfil> {
   const [{ data: profil }, { count: objectifs }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('onboarded_at, level, available_weekdays')
+      .select('onboarded_at, available_weekdays')
       .eq('id', userId)
-      .maybeSingle<{ onboarded_at: string | null; level: string | null; available_weekdays: number[] }>(),
+      .maybeSingle<{ onboarded_at: string | null; available_weekdays: number[] }>(),
     supabase
       .from('goals')
       .select('*', { count: 'exact', head: true })
@@ -38,7 +38,6 @@ export async function etatProfil(userId: string): Promise<EtatProfil> {
   const dejaPasse = Boolean(profil?.onboarded_at)
   const complet =
     dejaPasse &&
-    profil?.level !== null &&
     (profil?.available_weekdays?.length ?? 0) > 0 &&
     (objectifs ?? 0) > 0
 

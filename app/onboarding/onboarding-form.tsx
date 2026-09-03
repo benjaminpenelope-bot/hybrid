@@ -6,8 +6,6 @@ import { Chip, ChipGroup, ChipMulti } from '@/components/ui/chip'
 import { Field, Question } from '@/components/ui/field'
 import {
   EQUIPMENT_LABELS,
-  NIVEAUX,
-  NIVEAU_LABELS,
   OBJECTIFS,
   OBJECTIF_LABELS,
   PLANIFIABLES,
@@ -20,6 +18,7 @@ import {
   type OnboardingInput,
 } from '@/lib/validation/onboarding'
 import { libellesDesJalons } from '@/lib/engine/goals'
+import { GAIN_MAX_KG_SEMAINE } from '@/lib/engine/body'
 import { ABSOLUTE_MIN_BASE, baseWeeklyKm, weekVolume } from '@/lib/engine/program'
 import { fr } from '@/lib/ui/nombre'
 import { ApercuProgramme } from '@/components/apercu-programme'
@@ -45,7 +44,6 @@ import { completeOnboarding } from './actions'
 
 type Sport = (typeof SPORTS)[number]
 type Objectif = (typeof OBJECTIFS)[number]
-type Niveau = (typeof NIVEAUX)[number]
 type ClaimKey = 'pullups' | 'dips' | 'muscleups' | 'legraises'
 type ClaimDraft = { mode: BenchmarkClaim['mode']; value: string }
 
@@ -58,12 +56,9 @@ type ClaimDraft = { mode: BenchmarkClaim['mode']; value: string }
  */
 interface Draft {
   name: string
-  sex: 'homme' | 'femme' | 'autre' | null
-  birthDate: string
   heightCm: string
   currentKg: string
   goalKg: string
-  level: Niveau | null
 
   sports: Sport[]
 
@@ -96,12 +91,9 @@ const EMPTY_CLAIM: ClaimDraft = { mode: 'untested', value: '' }
 
 const INITIAL: Draft = {
   name: '',
-  sex: null,
-  birthDate: '',
   heightCm: '',
   currentKg: '',
   goalKg: '',
-  level: null,
   sports: [],
   goalMain: null,
   goalMainDate: '',
@@ -346,6 +338,10 @@ export function OnboardingForm({
           runFrequency: 3,
           runWeeklyKm: '28',
           runLongestKm: '12',
+          name: 'Alex',
+          heightCm: '180',
+          currentKg: '78',
+          goalKg: '73',
         }
       : INITIAL,
   )
@@ -415,10 +411,17 @@ export function OnboardingForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  /*
+   * Ecart entre le poids vise et le poids actuel, en kilos, ou `null` tant
+   * que les deux ne sont pas saisis. Un ecart ne se lit pas avant d'avoir
+   * ses deux bornes.
+   */
+  const ecartDePoids =
+    num(d.currentKg) >= 30 && num(d.goalKg) >= 30 ? num(d.goalKg) - num(d.currentKg) : null
+
   const pret: Record<StepId, boolean> = {
     profil:
       d.name.trim().length > 0 &&
-      d.level !== null &&
       num(d.heightCm) >= 100 &&
       num(d.heightCm) <= 250 &&
       num(d.currentKg) >= 30 &&
@@ -443,12 +446,9 @@ export function OnboardingForm({
     const payload: OnboardingInput = {
       profil: {
         name: d.name.trim(),
-        sex: d.sex,
-        birthDate: d.birthDate || null,
         heightCm: Math.round(num(d.heightCm)),
         currentKg: num(d.currentKg),
         goalKg: num(d.goalKg),
-        level: d.level!,
       },
       sports: d.sports,
       objectifs: {
@@ -529,56 +529,40 @@ export function OnboardingForm({
 
       {step === 'profil' && (
         <section>
+          <p className="mb-5 text-[13.5px] leading-relaxed text-mut">
+            Ton programme est calé, ces réponses n&rsquo;y touchent plus. Elles servent au suivi de
+            ton corps et au coach, qui te répond avec tes chiffres plutôt qu&rsquo;avec des
+            généralités. On ne demande que ce qui sert.
+          </p>
+
           <Field
             label="Prénom"
             value={d.name}
             onChange={(e) => set('name', e.target.value)}
             placeholder="Ton prénom"
           />
-          <Question label="Ton niveau">
-            <ChipGroup
-              options={NIVEAUX.map((n) => ({ value: n, label: NIVEAU_LABELS[n] }))}
-              value={d.level}
-              onChange={(v) => set('level', v)}
+
+          {/* Taille et poids cote a cote : deux nombres courts n'ont pas besoin
+              d'une ligne chacun, et les rapprocher montre qu'ils vont ensemble. */}
+          <div className="grid grid-cols-2 gap-x-3">
+            <Field
+              label="Taille"
+              type="number"
+              inputMode="numeric"
+              suffix="cm"
+              value={d.heightCm}
+              onChange={(e) => set('heightCm', e.target.value)}
             />
-          </Question>
-          <Question
-            label="Sexe"
-            hint="Facultatif. Il n’entre dans aucun calcul pour l’instant, et tu peux le laisser vide."
-          >
-            <ChipGroup
-              options={[
-                { value: 'homme' as const, label: 'Homme' },
-                { value: 'femme' as const, label: 'Femme' },
-                { value: 'autre' as const, label: 'Autre' },
-              ]}
-              value={d.sex}
-              onChange={(v) => set('sex', v)}
+            <Field
+              label="Poids actuel"
+              type="number"
+              inputMode="decimal"
+              suffix="kg"
+              value={d.currentKg}
+              onChange={(e) => set('currentKg', e.target.value)}
             />
-          </Question>
-          <Field
-            label="Date de naissance"
-            type="date"
-            value={d.birthDate}
-            onChange={(e) => set('birthDate', e.target.value)}
-            hint="Facultative."
-          />
-          <Field
-            label="Taille"
-            type="number"
-            inputMode="numeric"
-            suffix="cm"
-            value={d.heightCm}
-            onChange={(e) => set('heightCm', e.target.value)}
-          />
-          <Field
-            label="Poids actuel"
-            type="number"
-            inputMode="decimal"
-            suffix="kg"
-            value={d.currentKg}
-            onChange={(e) => set('currentKg', e.target.value)}
-          />
+          </div>
+
           <Field
             label="Poids visé"
             type="number"
@@ -588,6 +572,35 @@ export function OnboardingForm({
             onChange={(e) => set('goalKg', e.target.value)}
             hint="Mets le même que ton poids actuel si tu ne cherches pas à le changer."
           />
+
+          {/*
+            Le meme principe qu'a l'etape course : ce que la reponse produit,
+            affiche pendant qu'on la donne. Le rythme vient de la constante
+            que l'ecran Corps utilise pour alerter — la duree annoncee ici est
+            donc exactement celle au bout de laquelle l'app cessera de dire
+            que ca va trop vite.
+          */}
+          {ecartDePoids !== null && (
+            <p className="entre -mt-1 rounded-[12px] bg-[rgb(255_255_255/0.035)] px-3.5 py-2.5 text-[12.5px] leading-5 text-mut">
+              {ecartDePoids === 0 ? (
+                <>
+                  Poids stable : l&rsquo;app suivra ta tendance sans jamais te pousser à la faire
+                  bouger.
+                </>
+              ) : (
+                <>
+                  {ecartDePoids > 0 ? 'Prendre' : 'Perdre'}{' '}
+                  <b className="text-text">{km(Math.abs(ecartDePoids))} kg</b> — au-delà de{' '}
+                  {fr(GAIN_MAX_KG_SEMAINE, 2)} kg par semaine, l&rsquo;app te signale que ça va trop
+                  vite. Compte donc{' '}
+                  <b className="text-text">
+                    {Math.ceil(Math.abs(ecartDePoids) / GAIN_MAX_KG_SEMAINE)} semaines
+                  </b>{' '}
+                  au minimum.
+                </>
+              )}
+            </p>
+          )}
         </section>
       )}
 
