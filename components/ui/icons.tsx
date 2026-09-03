@@ -40,6 +40,7 @@ import {
   Medal,
   Route,
   Timer,
+  CircleDashed,
   type LucideProps,
 } from 'lucide-react'
 
@@ -82,3 +83,6 @@ export const IconForce = fabrique(Dumbbell)
 export const IconHypertrophie = fabrique(Layers)
 export const IconEndurance = fabrique(Activity)
 export const IconHybride = fabrique(Gauge)
+
+/** « Aucun » : un cercle en pointilles, forme la plus proche d'une absence. */
+export const IconAucun = fabrique(CircleDashed)

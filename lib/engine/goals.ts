@@ -135,6 +135,19 @@ const JALONS: Record<GoalType, Jalon[]> = {
   ],
 }
 
+/**
+ * Jalons qu'un objectif ajoute, en clair.
+ *
+ * Sert à l'inscription : un objectif secondaire ne change pas la forme de la
+ * semaine — seul le principal la décide — il ajoute des cibles à suivre.
+ * Annoncer autre chose serait faux, et la liste vient d'ici plutôt que d'être
+ * réécrite à la main dans le formulaire, pour qu'elle ne puisse pas s'en
+ * écarter.
+ */
+export function libellesDesJalons(type: GoalType): string[] {
+  return JALONS[type].map((j) => j.label)
+}
+
 /** Nom lisible d'un type d'objectif, tel qu'il a été proposé à l'inscription. */
 export const LIBELLE_OBJECTIF: Record<GoalType, string> = {
   marathon: 'Marathon',

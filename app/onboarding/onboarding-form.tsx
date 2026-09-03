@@ -19,9 +19,11 @@ import {
   type BenchmarkClaim,
   type OnboardingInput,
 } from '@/lib/validation/onboarding'
+import { libellesDesJalons } from '@/lib/engine/goals'
 import { ApercuSemaine } from '@/components/apercu-semaine'
 import { ChoixDefilant } from '@/components/choix-defilant'
 import {
+  IconAucun,
   IconBarre,
   IconDixKm,
   IconEndurance,
@@ -217,6 +219,9 @@ const OBJECTIF_EFFET: Record<(typeof OBJECTIFS)[number], string> = {
   hybride: 'Course, nage et barre qui se répondent au lieu de s’additionner.',
 }
 
+/** Valeur du carrousel pour « pas de second objectif ». */
+const AUCUN = 'aucun'
+
 const STEP_TITRES: Record<StepId, string> = {
   profil: 'Toi',
   sports: 'Tes sports',
@@ -239,6 +244,16 @@ export function OnboardingForm() {
   const faitDeLaForce = d.sports.includes('strength') || d.sports.includes('street_workout')
   /* Au moins un sport dont le generateur sait deduire des seances. */
   const sportPlanifiable = d.sports.some((s) => PLANIFIABLES.includes(s))
+
+  /*
+   * « Aucun » en tete, puis tous les objectifs sauf le principal : un
+   * secondaire identique au principal ne veut rien dire, et le schema le
+   * refuse de toute facon.
+   */
+  const secondaires = useMemo(
+    () => [AUCUN, ...OBJECTIFS.filter((o) => o !== d.goalMain)],
+    [d.goalMain],
+  )
 
   /*
    * Les étapes propres à une discipline n'existent que si elle est déclarée.
@@ -526,21 +541,55 @@ export function OnboardingForm() {
                 hint="Facultative. Sans date, la progression se fait sans compte à rebours."
               />
 
-              <Question
-                label="Un objectif secondaire ?"
-                hint="Facultatif. Il sera poursuivi tant qu’il ne compromet pas le principal."
-              >
-                <div className="flex flex-wrap gap-2">
-                  <Chip active={d.goalSecond === null} onClick={() => set('goalSecond', null)}>
-                    Aucun
-                  </Chip>
-                  {OBJECTIFS.filter((o) => o !== d.goalMain).map((o) => (
-                    <Chip key={o} active={d.goalSecond === o} onClick={() => set('goalSecond', o)}>
-                      {OBJECTIF_LABELS[o]}
-                    </Chip>
-                  ))}
+              <div className="mt-6">
+                <p className="eyebrow mb-1.5">Un objectif secondaire ?</p>
+                <p className="mb-3 text-[12.5px] leading-5 text-mut">
+                  Facultatif. Il ne change pas la forme de ta semaine &mdash; c&rsquo;est le
+                  principal qui la d&eacute;cide &mdash; mais il ajoute des jalons &agrave;
+                  suivre, poursuivis tant qu&rsquo;ils ne compromettent pas l&rsquo;objectif
+                  principal.
+                </p>
+
+                {/*
+                  Meme carrousel que le principal. Les jalons affiches viennent
+                  du moteur : ce sont exactement ceux que l'ecran Objectifs
+                  suivra, donc la promesse ne peut pas s'en ecarter.
+                */}
+                <div className="-mx-4">
+                  <ChoixDefilant
+                    valeurs={secondaires}
+                    valeur={d.goalSecond ?? AUCUN}
+                    onChange={(v) =>
+                      set('goalSecond', v === AUCUN ? null : (v as typeof d.goalSecond))
+                    }
+                  >
+                    {(v, actif) => {
+                      const aucun = v === AUCUN
+                      const o = v as (typeof OBJECTIFS)[number]
+                      const O = aucun ? IconAucun : OBJECTIF_ICONES[o]
+                      return (
+                        <span
+                          className="choix flex-col gap-2.5 transition-opacity duration-300"
+                          data-actif={actif}
+                          style={{ opacity: actif ? 1 : 0.5 }}
+                        >
+                          <span className={actif ? 'text-text' : 'text-mut'}>
+                            <O size={22} />
+                          </span>
+                          <span className="block text-[15px] font-semibold tracking-[-0.01em]">
+                            {aucun ? 'Aucun' : OBJECTIF_LABELS[o]}
+                          </span>
+                          <span className="block text-[12.5px] leading-5 text-mut">
+                            {aucun
+                              ? 'Un seul objectif, poursuivi sans compromis.'
+                              : `Ajoute : ${libellesDesJalons(o).slice(0, 2).join(' · ')}`}
+                          </span>
+                        </span>
+                      )
+                    }}
+                  </ChoixDefilant>
                 </div>
-              </Question>
+              </div>
             </div>
           )}
         </section>
