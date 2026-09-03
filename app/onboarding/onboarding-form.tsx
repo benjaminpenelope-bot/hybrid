@@ -19,6 +19,17 @@ import {
   type BenchmarkClaim,
   type OnboardingInput,
 } from '@/lib/validation/onboarding'
+import {
+  IconBarre,
+  IconDixKm,
+  IconEndurance,
+  IconForce,
+  IconHybride,
+  IconHypertrophie,
+  IconHyrox,
+  IconMarathon,
+  IconSemi,
+} from '@/components/ui/icons'
 import { completeOnboarding } from './actions'
 
 type Sport = (typeof SPORTS)[number]
@@ -171,10 +182,43 @@ function BenchmarkPicker({
 /** Identifiants d'étape. La liste affichée se compose selon les sports déclarés. */
 type StepId = 'profil' | 'sports' | 'objectifs' | 'dispo' | 'course' | 'natation' | 'force' | 'limites'
 
+/** Pictogramme de chaque objectif. */
+const OBJECTIF_ICONES: Record<(typeof OBJECTIFS)[number], (p: { size?: number }) => React.ReactElement> = {
+  marathon: IconMarathon,
+  semi: IconSemi,
+  dix_km: IconDixKm,
+  hyrox: IconHyrox,
+  force: IconForce,
+  hypertrophie: IconHypertrophie,
+  street_workout: IconBarre,
+  endurance: IconEndurance,
+  hybride: IconHybride,
+}
+
+/**
+ * Ce que l'objectif change concretement dans le programme.
+ *
+ * Ces phrases ne sont pas des arguments de vente : elles decrivent la
+ * repartition de la semaine et le dosage que le generateur applique
+ * reellement pour chaque objectif. Annoncer le resultat avant de le livrer
+ * n'a d'interet que si les deux coincident.
+ */
+const OBJECTIF_EFFET: Record<(typeof OBJECTIFS)[number], string> = {
+  marathon: 'Une sortie longue par semaine, volume qui monte de 8 % puis décharge.',
+  semi: 'Même structure, calée sur 21 km au lieu de 42.',
+  dix_km: 'Moins de volume, davantage de régularité.',
+  hyrox: 'Deux séances de jambes pour une de haut du corps, et la sortie longue reste.',
+  force: 'Séries courtes, repos allongés de moitié, quatre séances de barre.',
+  hypertrophie: 'Séries longues, repos courts, une répétition en réserve.',
+  street_workout: 'Tirage prioritaire, deux séances hautes au plus, jamais rapprochées.',
+  endurance: 'Le volume avant l’intensité, sur toutes tes disciplines.',
+  hybride: 'Course, nage et barre qui se répondent au lieu de s’additionner.',
+}
+
 const STEP_TITRES: Record<StepId, string> = {
   profil: 'Toi',
   sports: 'Tes sports',
-  objectifs: 'Tes objectifs',
+  objectifs: 'Ce que tu vises',
   dispo: 'Ta disponibilité',
   course: 'Ta course',
   natation: 'Ta natation',
@@ -200,10 +244,20 @@ export function OnboardingForm() {
    * de demander les sports avant le détail.
    */
   const steps = useMemo<StepId[]>(() => {
-    const s: StepId[] = ['profil', 'sports', 'objectifs', 'dispo']
+    /*
+     * L'objectif d'abord, le profil en dernier.
+     *
+     * Le formulaire commencait par le prenom, la taille et les deux poids :
+     * sept champs, dont les deux plus intimes, demandes avant d'avoir dit a
+     * quoi ils servaient. On commence desormais par ce qui a fait venir la
+     * personne, et on garde l'administratif pour le moment ou elle est
+     * engagee.
+     */
+    const s: StepId[] = ['objectifs', 'sports', 'dispo']
     if (d.sports.includes('running')) s.push('course')
     if (d.sports.includes('swimming')) s.push('natation')
     if (faitDeLaForce) s.push('force')
+    s.push('profil')
     s.push('limites')
     return s
   }, [d.sports, faitDeLaForce])
@@ -391,35 +445,75 @@ export function OnboardingForm() {
 
       {step === 'objectifs' && (
         <section>
-          <Question label="Ton objectif principal" hint="Celui qui tranche quand deux besoins s’opposent.">
-            <ChipGroup
-              options={OBJECTIFS.map((o) => ({ value: o, label: OBJECTIF_LABELS[o] }))}
-              value={d.goalMain}
-              onChange={(v) => set('goalMain', v)}
-            />
-          </Question>
-          <Field
-            label="Échéance"
-            type="date"
-            value={d.goalMainDate}
-            onChange={(e) => set('goalMainDate', e.target.value)}
-            hint="Facultative. Sans date, la progression se fait sans compte à rebours."
-          />
-          <Question
-            label="Un objectif secondaire ?"
-            hint="Facultatif. Il sera poursuivi tant qu’il ne compromet pas le principal."
-          >
-            <div className="flex flex-wrap gap-2">
-              <Chip active={d.goalSecond === null} onClick={() => set('goalSecond', null)}>
-                Aucun
-              </Chip>
-              {OBJECTIFS.filter((o) => o !== d.goalMain).map((o) => (
-                <Chip key={o} active={d.goalSecond === o} onClick={() => set('goalSecond', o)}>
-                  {OBJECTIF_LABELS[o]}
-                </Chip>
-              ))}
+          <p className="mb-4 text-[13.5px] leading-relaxed text-mut">
+            C&rsquo;est lui qui tranche quand deux besoins s&rsquo;opposent. Chaque objectif change
+            la forme de ta semaine, pas seulement son intitulé.
+          </p>
+
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {OBJECTIFS.map((o) => {
+              const O = OBJECTIF_ICONES[o]
+              return (
+                <button
+                  key={o}
+                  type="button"
+                  className="choix"
+                  data-actif={d.goalMain === o}
+                  aria-pressed={d.goalMain === o}
+                  onClick={() => {
+                    set('goalMain', o)
+                    // Un secondaire identique au principal ne veut rien dire.
+                    if (d.goalSecond === o) set('goalSecond', null)
+                  }}
+                >
+                  <span className={d.goalMain === o ? 'text-text' : 'text-mut'}>
+                    <O size={20} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[14.5px] font-semibold tracking-[-0.01em]">
+                      {OBJECTIF_LABELS[o]}
+                    </span>
+                    {/*
+                      Ce que le programme fera, et non une promesse : les
+                      phrases decrivent la repartition et le dosage que le
+                      generateur applique reellement pour cet objectif.
+                    */}
+                    <span className="mt-1 block text-[12.5px] leading-5 text-mut">
+                      {OBJECTIF_EFFET[o]}
+                    </span>
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {d.goalMain && (
+            <div className="entre mt-6">
+              <Field
+                label="Une échéance ?"
+                type="date"
+                value={d.goalMainDate}
+                onChange={(e) => set('goalMainDate', e.target.value)}
+                hint="Facultative. Sans date, la progression se fait sans compte à rebours."
+              />
+
+              <Question
+                label="Un objectif secondaire ?"
+                hint="Facultatif. Il sera poursuivi tant qu’il ne compromet pas le principal."
+              >
+                <div className="flex flex-wrap gap-2">
+                  <Chip active={d.goalSecond === null} onClick={() => set('goalSecond', null)}>
+                    Aucun
+                  </Chip>
+                  {OBJECTIFS.filter((o) => o !== d.goalMain).map((o) => (
+                    <Chip key={o} active={d.goalSecond === o} onClick={() => set('goalSecond', o)}>
+                      {OBJECTIF_LABELS[o]}
+                    </Chip>
+                  ))}
+                </div>
+              </Question>
             </div>
-          </Question>
+          )}
         </section>
       )}
 

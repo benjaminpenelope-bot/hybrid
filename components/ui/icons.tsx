@@ -33,6 +33,13 @@ import {
   Settings2,
   Target,
   Waves,
+  Activity,
+  Flame,
+  Gauge,
+  Layers,
+  Medal,
+  Route,
+  Timer,
   type LucideProps,
 } from 'lucide-react'
 
@@ -65,3 +72,13 @@ export const IconVelo = fabrique(Bike)
 export const IconBarre = fabrique(Dumbbell)
 export const IconJambes = fabrique(PersonStanding)
 export const IconRepos = fabrique(Moon)
+
+/* ── Objectifs ── */
+export const IconMarathon = fabrique(Route)
+export const IconSemi = fabrique(Medal)
+export const IconDixKm = fabrique(Timer)
+export const IconHyrox = fabrique(Flame)
+export const IconForce = fabrique(Dumbbell)
+export const IconHypertrophie = fabrique(Layers)
+export const IconEndurance = fabrique(Activity)
+export const IconHybride = fabrique(Gauge)

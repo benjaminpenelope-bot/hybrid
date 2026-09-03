@@ -348,6 +348,31 @@
   }
 
   /*
+   * CARTE À CHOISIR
+   *
+   * Une pastille suffit pour trancher entre deux mots, pas pour choisir ce
+   * qu'on va faire des trois prochains mois. La carte a la place de dire ce
+   * que le choix entraîne, ce qu'une pastille ne peut pas.
+   *
+   * L'état choisi se lit à trois signes plutôt qu'à un seul : le fond
+   * s'éclaircit, le filet du haut s'allume, et une pastille cochée apparaît.
+   * Sur un écran noir, un simple changement de bordure passe inaperçu.
+   */
+  .choix {
+    @apply relative flex w-full items-start gap-3 rounded-[18px] p-4 text-left transition-[background-color,box-shadow] duration-200;
+    background: rgb(255 255 255 / 0.035);
+    border: 1px solid rgb(255 255 255 / 0.07);
+  }
+
+  .choix[data-actif='true'] {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(255 255 255 / 0.2);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      0 0 30px rgb(255 255 255 / 0.06);
+  }
+
+  /*
    * SELECTEUR SEGMENTE
    *
    * Une piste creusee, et une capsule de verre qui glisse dessus. L'actif

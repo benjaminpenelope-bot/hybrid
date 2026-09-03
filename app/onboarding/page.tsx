@@ -6,9 +6,24 @@ import { OnboardingForm } from './onboarding-form'
 
 export const metadata: Metadata = { title: 'Bienvenue · Hybrid' }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: { apercu?: string }
+}) {
   const userId = await currentUserId()
   if (!userId) redirect('/login?suite=/onboarding')
+
+  /*
+   * Apercu de travail : permet de revoir le questionnaire alors qu'on l'a
+   * deja rempli, sans avoir a creer un compte jetable a chaque retouche.
+   *
+   * Explicitement borne au developpement. En production la condition est
+   * fausse quoi qu'on mette dans l'adresse, donc la porte n'existe pas :
+   * autrement, n'importe qui pourrait relancer le questionnaire d'un compte
+   * complet et ecraser son programme.
+   */
+  const apercu = process.env.NODE_ENV === 'development' && searchParams.apercu === '1'
 
   /*
    * On ne renvoie que les profils reellement complets. Un compte cree avant
@@ -16,7 +31,7 @@ export default async function OnboardingPage() {
    * pouvoir repasser le questionnaire.
    */
   const { complet, aRepondreDeNouveau } = await etatProfil(userId)
-  if (complet) redirect('/aujourdhui')
+  if (complet && !apercu) redirect('/aujourdhui')
 
   return (
     <main className="wrap wrap-etroit py-8">
