@@ -2,6 +2,7 @@ import { computeAlerts, type Alert } from '@/lib/engine/alerts'
 import { addDays } from '@/lib/engine/date'
 import { decide } from '@/lib/engine/decide'
 import { limitationsActives, LIBELLE_OBJECTIF, objectifsActifs } from '@/lib/engine/goals'
+import { weightTrend } from '@/lib/engine/body'
 import { acuteChronic } from '@/lib/engine/load'
 import { runStats, swimStats } from '@/lib/engine/perf'
 import { computeRecovery } from '@/lib/engine/recovery'
@@ -17,6 +18,9 @@ import type { AthleteState, ISODate } from '@/lib/engine/types'
  * pouvoir confondre une absence de mesure avec une contre-performance.
  */
 
+/** Pesées transmises : de quoi voir une tendance sans noyer le contexte. */
+const FENETRE_PESEES = 12
+
 export interface CoachContext {
   profil: Record<string, unknown>
   score_global: number
@@ -27,6 +31,17 @@ export interface CoachContext {
   reperes_force: Record<string, string>
   natation: Record<string, unknown>
   course: Record<string, unknown>
+  /**
+   * Le suivi du corps : pesees, tendance, mensurations.
+   *
+   * Il manquait entierement. Le coach ne recevait que le poids de depart et
+   * le poids vise, tous deux figes au questionnaire — il ne pouvait donc ni
+   * lire une pesee recente, ni voir une tendance, et repondait « je n'ai pas
+   * ces donnees » a quelqu'un qui les avait saisies la veille.
+   */
+  corps: Record<string, unknown>
+  /** Records personnels enregistres. Absents eux aussi jusqu'ici. */
+  records: { repere: string; valeur: string; date: string }[]
   seances_recentes: Record<string, unknown>[]
   seances_a_venir: Record<string, unknown>[]
   /** Ce que l'athlete a declare viser. Le coach ne le remplace jamais. */
@@ -48,6 +63,23 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
   const load = acuteChronic(state, today)
   const run = runStats(state, today)
   const swim = swimStats(state, today)
+  const poids = weightTrend(state, today)
+
+  /*
+   * Les pesees brutes des huit dernieres semaines, et non la moyenne
+   * hebdomadaire seule : quelqu'un qui demande « combien je faisais lundi »
+   * attend sa pesee de lundi, pas la moyenne de sa semaine.
+   */
+  const peseesRecentes = [...state.weights]
+    .filter((w) => w.date <= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-FENETRE_PESEES)
+    .map((w) => ({ date: w.date, kg: w.kg }))
+
+  const derniereMesure = [...state.measures]
+    .filter((m) => m.date <= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .at(-1)
 
   const verdict = decide(state, today)
   const done = state.sessions
@@ -72,9 +104,6 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
     profil: {
       prenom: state.profile.name,
       sexe: state.profile.sex ?? 'non précisé',
-      taille_cm: state.profile.heightCm,
-      poids_depart_kg: state.profile.startWeight,
-      poids_objectif_kg: state.profile.goalWeight,
       jour_de_repos: state.profile.restWeekday,
       doubles_autorises: state.profile.allowDoubles,
       date_de_course: state.profile.raceDate ?? 'non renseignée',
@@ -118,6 +147,28 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
       meilleure_allure_min_par_km: run.bestPace === null ? UNTESTED : Number(run.bestPace.toFixed(2)),
       fc_moyenne: run.avgHr ?? 'non mesurée',
     },
+    corps: {
+      poids_actuel_kg: state.weights.length > 0 ? poids.current : 'aucune pesée',
+      poids_depart_kg: state.profile.startWeight,
+      poids_objectif_kg: state.profile.goalWeight,
+      taille_cm: state.profile.heightCm,
+      variation_depuis_le_depart_kg: Number(poids.gain.toFixed(1)),
+      reste_a_parcourir_kg: Number((poids.target - poids.gain).toFixed(1)),
+      /*
+       * `rate` est nul tant que deux pesees ne sont pas espacees d'une
+       * semaine : le dire en toutes lettres evite que le modele lise un zero
+       * comme un poids stable.
+       */
+      vitesse_kg_par_semaine:
+        poids.rate === null ? 'pas assez de pesées pour le dire' : Number(poids.rate.toFixed(2)),
+      trop_rapide: poids.tooFast,
+      pesees_recentes: peseesRecentes,
+      moyennes_hebdomadaires: poids.weekly.slice(-8),
+      dernieres_mensurations_cm: derniereMesure ?? 'aucune mesure',
+    },
+    records: state.records
+      .slice(-10)
+      .map((r) => ({ repere: r.label, valeur: r.value, date: r.date })),
     objectifs: objectifsActifs(state).map((g) => ({
       objectif: LIBELLE_OBJECTIF[g.type],
       priorite: g.priority,
