@@ -86,7 +86,12 @@ export const config = {
      * Le service worker, le manifeste et les icônes sont demandés par le
      * navigateur ou le système, parfois sans cookie : les rediriger vers
      * /login casserait l'installation de l'app.
+     *
+     * Les vidéos et les polices sont exclues pour la même raison que les
+     * images : elles sont chargées par des balises, pas par une navigation.
+     * Sans elles dans cette liste, une vidéo de la page d'accueil recevait
+     * une redirection HTML vers /login à la place de ses octets.
      */
-    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|icon|apple-icon|api/strava/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|icon|apple-icon|api/strava/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm|woff2?)$).*)',
   ],
 }

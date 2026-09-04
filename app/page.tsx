@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LogoMark } from '@/components/logo'
 import { DemoSemaine } from '@/components/landing/demo-semaine'
-import { SphereParticules } from '@/components/sphere-particules'
+import { AnneauVideo } from '@/components/anneau-video'
 import { IconBarre, IconCourse, IconNatation, IconVelo } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
@@ -271,12 +271,7 @@ function Coach() {
             className="order-first flex items-center justify-center pb-5 md:order-none md:pb-0"
             aria-hidden
           >
-            <span className="md:hidden">
-              <SphereParticules taille={190} />
-            </span>
-            <span className="hidden md:block">
-              <SphereParticules taille={250} />
-            </span>
+            <AnneauVideo className="w-[210px] md:w-[290px]" />
           </div>
 
           <div className="flex flex-col gap-4">
