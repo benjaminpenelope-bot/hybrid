@@ -134,9 +134,7 @@ export function ImportAuto({
       </a>
       <p className="mt-2 text-[11.5px] leading-relaxed text-dim">
         À ouvrir depuis l&rsquo;iPhone. Il demande ton jeton à l&rsquo;import, puis il reste à le
-        déclencher chaque soir depuis <b className="text-mut">Automatisation</b>. Si iOS refuse de
-        l&rsquo;ouvrir, active <b className="text-mut">Raccourcis non fiables</b> dans Réglages →
-        Raccourcis : un raccourci qui ne vient pas d&rsquo;Apple est bloqué par défaut.
+        déclencher chaque soir depuis <b className="text-mut">Automatisation</b>.
       </p>
 
       <details className="mt-4">
