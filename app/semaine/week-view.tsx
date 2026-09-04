@@ -309,6 +309,22 @@ export function WeekView({
                 </p>
               )}
 
+              {/*
+                Ce que « Faite, sans detail » laisse derriere lui.
+                
+                Le bouton n'ecrit que le statut : ni duree, ni RPE, ni
+                repetitions. La seance existe donc, mais elle ne pese rien —
+                la charge se calcule sur ce qui a ete saisi, et rien n'est
+                jamais devine. Le dire avant le clic vaut mieux que de laisser
+                decouvrir « Details manquants » le lendemain.
+              */}
+              {selected.status === 'done' && !selected.log && (
+                <p className="mt-4 rounded-[12px] border border-warn/35 bg-warn/10 p-3 text-[12.5px] leading-relaxed text-text">
+                  Cette séance est marquée faite, sans détail : elle ne compte ni dans ta charge, ni
+                  dans tes volumes, ni dans ton score. Ajoute-les pour qu&rsquo;elle pèse.
+                </p>
+              )}
+
               <div className="mt-4 flex flex-col gap-2">
                 {selected.type !== 'REST' && selected.status !== 'done' && (
                   <Link
@@ -340,7 +356,7 @@ export function WeekView({
                 <div className="grid grid-cols-2 gap-2">
                   {selected.status === 'planned' && selected.type !== 'REST' && (
                     <Button variant="ghost" small onClick={() => run(() => markDone(selected.id))} disabled={pending}>
-                      Fait
+                      Faite, sans détail
                     </Button>
                   )}
                   {selected.status === 'planned' && (
