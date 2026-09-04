@@ -364,6 +364,18 @@
   }
 
   /*
+   * CURSEUR DE FRAPPE
+   *
+   * Un trait qui clignote a la fin du texte. Sans lui, le texte qui s'ecrit
+   * ressemble a un texte qui s'affiche mal ; avec lui, on voit quelqu'un
+   * taper.
+   */
+  .curseur {
+    @apply ml-0.5 inline-block h-[1em] w-px translate-y-[0.16em] bg-text align-baseline;
+    animation: clignote 1.05s steps(2, start) infinite;
+  }
+
+  /*
    * MOT EN ARGENT
    *
    * Un degrade clair vers gris froid, decoupe a la forme des lettres. C'est
@@ -656,6 +668,12 @@
 @keyframes tour-lisere {
   to {
     --tour: 360deg;
+  }
+}
+
+@keyframes clignote {
+  to {
+    visibility: hidden;
   }
 }
 

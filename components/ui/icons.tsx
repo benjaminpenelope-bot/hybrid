@@ -20,7 +20,11 @@
  * sans effort.
  */
 import {
+  AudioLines,
   Bike,
+  Mic,
+  Plus,
+  X,
   CalendarDays,
   ChartNoAxesColumn,
   ClipboardList,
@@ -83,6 +87,12 @@ export const IconForce = fabrique(Dumbbell)
 export const IconHypertrophie = fabrique(Layers)
 export const IconEndurance = fabrique(Activity)
 export const IconHybride = fabrique(Gauge)
+
+/* ── Barre du coach ── */
+export const IconPlus = fabrique(Plus)
+export const IconMicro = fabrique(Mic)
+export const IconOndes = fabrique(AudioLines)
+export const IconFermer = fabrique(X)
 
 /** « Aucun » : un cercle en pointilles, forme la plus proche d'une absence. */
 export const IconAucun = fabrique(CircleDashed)

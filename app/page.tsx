@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { LogoMark } from '@/components/logo'
 import { DemoSemaine } from '@/components/landing/demo-semaine'
 import { AnneauVideo } from '@/components/anneau-video'
+import { BarreCoach } from '@/components/landing/barre-coach'
 import { BandeVideo } from '@/components/bande-video'
 import { Vitrine } from '@/components/landing/vitrine'
 import { IconBarre, IconCourse, IconNatation, IconVelo } from '@/components/ui/icons'
@@ -318,6 +319,19 @@ function Coach() {
               <CarteCoach key={c.titre} {...c} />
             ))}
           </div>
+        </div>
+
+        {/*
+          Sous l'anneau, ce qu'on lui dit. Les quatre cartes disent comment il
+          decide ; celle-ci dit par ou on lui parle, et c'est la seule chose
+          qui manquait pour que la section soit complete.
+        */}
+        <div className="mx-auto mt-10 max-w-[560px] md:mt-14">
+          <BarreCoach />
+          <p className="mt-4 text-center text-[12.5px] leading-6 text-dim">
+            Il répond avec tes chiffres, jamais avec des généralités — et ne modifie jamais rien
+            sans ta confirmation.
+          </p>
         </div>
       </div>
     </section>
