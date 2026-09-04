@@ -10,7 +10,7 @@ import { Vitrine } from '@/components/landing/vitrine'
 import {
   IconAllege,
   IconAucun,
-  IconBarre,
+  IconForce,
   IconCourse,
   IconNatation,
   IconRecuperation,
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 const SPORTS = [
   { nom: 'Course', Icon: IconCourse },
-  { nom: 'Force', Icon: IconBarre },
+  { nom: 'Force', Icon: IconForce },
   { nom: 'Natation', Icon: IconNatation },
   { nom: 'Vélo', Icon: IconVelo },
 ] as const

@@ -30,7 +30,6 @@ import {
   IconAucun,
   IconBarre,
   IconCourse,
-  IconJambes,
   IconNatation,
   IconVelo,
   IconDixKm,
@@ -278,8 +277,12 @@ const SPORT_ICONES: Record<(typeof SPORTS)[number], (p: { size?: number }) => Re
   running: IconCourse,
   cycling: IconVelo,
   swimming: IconNatation,
-  strength: IconBarre,
-  street_workout: IconJambes,
+  // Musculation : l'haltere, on y souleve des poids. Street workout : le bras
+  // flechi, on y souleve son corps. Les deux portaient le meme pictogramme
+  // pour la premiere, et une silhouette debout pour la seconde — celle des
+  // seances de jambes, donc doublement fausse.
+  strength: IconForce,
+  street_workout: IconBarre,
 }
 
 /**
@@ -322,10 +325,13 @@ export function OnboardingForm({
    * La page ne la transmet jamais en production.
    */
   etapeInitiale,
+  /** Arrivee directe depuis l'inscription : le compte vient d'etre cree. */
+  bienvenue = false,
 }: {
   titre: string
   intro: string
   etapeInitiale?: string
+  bienvenue?: boolean
 }) {
   const [index, setIndex] = useState(0)
   /*
@@ -518,6 +524,17 @@ export function OnboardingForm({
       */}
       {index === 0 && (
         <header className="entre mb-7">
+          {/*
+            La confirmation que l'inscription ne donnait pas. Aucun mail ne
+            part — la confirmation par adresse est desactivee sur le projet —
+            donc c'est le seul endroit ou l'on peut dire que le compte existe.
+          */}
+          {bienvenue && (
+            <p className="mb-4 rounded-[12px] border border-ok/35 bg-ok/10 p-3 text-[12.5px] leading-relaxed text-text">
+              Ton compte est créé, et tu es connecté. Il ne reste qu&rsquo;à construire ton
+              programme.
+            </p>
+          )}
           <h1 className="dsp text-[26px]">{titre}</h1>
           <p className="mt-2 text-[13.5px] leading-relaxed text-mut">{intro}</p>
         </header>

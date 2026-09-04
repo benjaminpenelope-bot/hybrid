@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Bienvenue · Hybrid' }
 export default async function OnboardingPage({
   searchParams,
 }: {
-  searchParams: { apercu?: string; etape?: string }
+  searchParams: { apercu?: string; etape?: string; bienvenue?: string }
 }) {
   /*
    * Apercu de travail : permet de revoir le questionnaire alors qu'on l'a
@@ -58,6 +58,7 @@ export default async function OnboardingPage({
             : 'Tes réponses génèrent le programme : rien n’est générique, et ce que tu n’as jamais mesuré reste marqué comme tel.'
         }
         etapeInitiale={apercu ? searchParams.etape : undefined}
+        bienvenue={searchParams.bienvenue === '1'}
       />
     </main>
   )

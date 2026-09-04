@@ -21,14 +21,16 @@
  */
 import {
   AudioLines,
+  BicepsFlexed,
   Bike,
+  TrendingUp,
+  Weight,
   CircleCheck,
   TrendingDown,
   Mic,
   Plus,
   X,
   CalendarDays,
-  ChartNoAxesColumn,
   ClipboardList,
   Dumbbell,
   Footprints,
@@ -64,8 +66,13 @@ function fabrique(Source: React.ComponentType<LucideProps>) {
 /* ── Navigation ── */
 export const IconAccueil = fabrique(House)
 export const IconSemaine = fabrique(CalendarDays)
-export const IconPerfs = fabrique(ChartNoAxesColumn)
-export const IconCorps = fabrique(PersonStanding)
+/* « Perfs » suit une progression, pas un inventaire : une courbe qui monte
+   plutot qu'un histogramme, qui disait « statistiques ». */
+export const IconPerfs = fabrique(TrendingUp)
+/* « Corps » : un poids d'etalon. La silhouette qu'on y avait mise etait celle
+   des seances de jambes — deux ecrans, un seul pictogramme — et un bonhomme
+   trace au trait fin se lit mal a dix-huit pixels. */
+export const IconCorps = fabrique(Weight)
 export const IconCoach = fabrique(MessageCircle)
 export const IconObjectifs = fabrique(Target)
 export const IconRecuperation = fabrique(Moon)
@@ -76,7 +83,11 @@ export const IconReglages = fabrique(Settings2)
 export const IconCourse = fabrique(Footprints)
 export const IconNatation = fabrique(Waves)
 export const IconVelo = fabrique(Bike)
-export const IconBarre = fabrique(Dumbbell)
+/* Street workout : un bras flechi, et non l'haltere. L'haltere sert deja a
+   l'objectif « force » — les deux disciplines portaient donc le meme
+   pictogramme, alors que l'une se pratique avec des poids et l'autre avec son
+   propre corps. */
+export const IconBarre = fabrique(BicepsFlexed)
 export const IconJambes = fabrique(PersonStanding)
 export const IconRepos = fabrique(Moon)
 

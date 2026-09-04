@@ -95,7 +95,7 @@ export async function signUpWithPassword(
   const suite = parsed.data.suite?.startsWith('/') ? parsed.data.suite : '/aujourdhui'
 
   const supabase = createClient()
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -111,6 +111,28 @@ export async function signUpWithPassword(
         ? "Trop d'inscriptions sur la dernière heure. Attends quelques minutes — c'est une limite du service d'envoi, pas un problème avec ton adresse."
         : "L'inscription a échoué. Réessaie dans un instant.",
     }
+  }
+
+  /*
+   * Deux issues, selon le reglage du projet.
+   *
+   * Confirmation par e-mail desactivee — le cas ici : `signUp` ouvre
+   * directement une session, le compte existe et la personne est connectee.
+   * L'ecran « regarde tes mails » qu'on affichait alors etait faux sur toute
+   * la ligne : il annoncait un mail qui ne partirait jamais, et laissait
+   * attendre quelqu'un qui etait deja entre. On l'emmene ou il allait.
+   *
+   * Confirmation activee : pas de session, le mail fait foi, et l'ecran
+   * d'attente est le bon.
+   */
+  if (data.session) {
+    /*
+     * Un compte tout juste cree n'a pas de programme : `/aujourdhui` le
+     * renverrait au questionnaire en perdant le drapeau. On l'y emmene
+     * directement, avec de quoi dire que le compte existe — c'est la seule
+     * confirmation qu'on puisse donner quand aucun mail ne part.
+     */
+    redirect(suite === '/aujourdhui' ? '/onboarding?bienvenue=1' : suite)
   }
 
   /*
