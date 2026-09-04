@@ -582,3 +582,33 @@ describe('la semaine 1 ne remesure pas ce qui est connu', () => {
     expect(testsDe(buildStrength('LOWER', 1))).toEqual([])
   })
 })
+
+describe('plafond de volume', () => {
+  /*
+   * Le programme ne s'arretant plus au bout de huit semaines, la composition
+   * de 8 % n'avait plus de fin : 126 km en semaine 26, 656 en semaine 52.
+   */
+  it('ne dépasse jamais trois fois le volume de départ', () => {
+    for (const w of [20, 26, 40, 52, 104]) {
+      expect(weekVolume(w, 18.5)).toBeLessThanOrEqual(18.5 * 3)
+    }
+  })
+
+  it('ne dépasse jamais 90 km, même en partant de haut', () => {
+    for (const w of [30, 52, 104]) {
+      expect(weekVolume(w, 45)).toBeLessThanOrEqual(90)
+    }
+  })
+
+  it('ne change rien tant qu’on est sous le plafond', () => {
+    // 18,5 km de base : le plafond est a 55,5 km, atteint bien apres.
+    expect(weekVolume(1, 18.5)).toBe(18.5)
+    expect(weekVolume(9, 18.5)).toBe(34)
+  })
+
+  it('la décharge reste une baisse, même au plafond', () => {
+    const pleine = weekVolume(51, 18.5)
+    const decharge = weekVolume(52, 18.5)
+    expect(decharge).toBeLessThan(pleine)
+  })
+})

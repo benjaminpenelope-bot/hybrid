@@ -32,6 +32,28 @@ export const SAFE_FIRST_STEP = 1.1
 /** Volume de première semaine pour qui ne court pas encore. */
 export const ABSOLUTE_MIN_BASE = 8
 
+/**
+ * PLAFOND DE VOLUME
+ *
+ * Huit pour cent par semaine, c'est raisonnable sur un bloc et absurde sur une
+ * annee : le programme ne s'arretant plus au bout de huit semaines, la
+ * composition n'a plus de fin. Elle menait a cent vingt-six kilometres en
+ * semaine 26 et six cent cinquante-six en semaine 52 — des chiffres qu'aucun
+ * corps ne suit et qu'aucun coureur ne lirait sans fermer l'application.
+ *
+ * Le plafond est le plus bas des deux : trois fois le volume de depart, ou
+ * quatre-vingt-dix kilometres. Le facteur protege celui qui part de peu — un
+ * coureur a dix kilometres ne doit pas se voir proposer quatre-vingt-dix ; la
+ * borne absolue protege celui qui part de beaucoup, pour qui trois fois
+ * quarante ferait cent vingt.
+ *
+ * C'est un garde-fou, pas un objectif : la progression reste de huit pour
+ * cent tant qu'elle est sous le plafond, et la decharge continue de s'y
+ * appliquer.
+ */
+export const PLAFOND_FACTEUR = 3
+export const PLAFOND_KM = 90
+
 export interface PlanOptions {
   /** 0 = dimanche. Défaut 1 = lundi. */
   restWeekday?: number
@@ -80,7 +102,10 @@ function defaultId(): string {
  * `baseKm` est le volume de la semaine 1, propre à chaque athlète.
  */
 export function weekVolume(w: number, baseKm: number = RUN_KM_W1): number {
-  let v = baseKm * Math.pow(RUN_GROWTH, w - 1)
+  const plafond = Math.min(baseKm * PLAFOND_FACTEUR, PLAFOND_KM)
+  // Le plafond s'applique avant la decharge : une semaine de decharge doit
+  // rester une baisse par rapport a la semaine pleine, meme au plafond.
+  let v = Math.min(baseKm * Math.pow(RUN_GROWTH, w - 1), plafond)
   if (w % DELOAD_EVERY === 0) v *= 0.7
   return half(v)
 }

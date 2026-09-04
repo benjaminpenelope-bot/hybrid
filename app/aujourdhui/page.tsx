@@ -16,6 +16,7 @@ import {
   WeightChart,
 } from '@/components/weekly-charts'
 import { etatProfil } from '@/lib/db/profil-complet'
+import { prolongerSiNecessaire } from '@/lib/db/prolonger'
 import { loadState } from '@/lib/db/queries'
 import { VerdictCard } from '@/components/verdict-card'
 import { computeAlerts } from '@/lib/engine/alerts'
@@ -43,6 +44,15 @@ export default async function Page() {
   // Un profil incomplet ne peut pas alimenter le coach : on le complete avant.
   const { complet } = await etatProfil(userId)
   if (!complet) redirect('/onboarding')
+
+  /*
+   * Le programme se prolonge avant d'etre lu, des que l'avance passe sous
+   * trois semaines. Le declenchement se fait ici, et non par une tache
+   * planifiee : une tache peut ne pas s'executer sans que personne le sache,
+   * alors que cet appel a lieu exactement au moment ou quelqu'un a besoin de
+   * ses seances. Sans effet et sans cout quand l'horizon suffit.
+   */
+  await prolongerSiNecessaire(userId)
 
   const state = await loadState(userId)
   if (!state || state.sessions.length === 0) redirect('/onboarding')

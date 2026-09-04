@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { loadExercises } from '@/lib/db/exercises'
+import { prolongerSiNecessaire } from '@/lib/db/prolonger'
 import { loadState } from '@/lib/db/queries'
 import { todayISO } from '@/lib/engine/date'
 import { currentUserId } from '@/lib/supabase/server'
@@ -11,6 +12,10 @@ export const metadata = { title: 'Semaine · Hybrid' }
 export default async function Page() {
   const userId = await currentUserId()
   if (!userId) redirect('/login')
+
+  // Meme raison qu'a l'ecran du jour : voir sa semaine, c'est le moment ou
+  // l'absence de seances se remarquerait.
+  await prolongerSiNecessaire(userId)
 
   const state = await loadState(userId)
   if (!state || state.sessions.length === 0) redirect('/onboarding')
