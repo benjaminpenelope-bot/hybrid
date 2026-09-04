@@ -20,6 +20,7 @@
  * sans effort.
  */
 import {
+  ArrowUp,
   AudioLines,
   BicepsFlexed,
   Bike,
@@ -106,6 +107,7 @@ export const IconVerdict = fabrique(CircleCheck)
 export const IconAllege = fabrique(TrendingDown)
 
 /* ── Barre du coach ── */
+export const IconEnvoyer = fabrique(ArrowUp)
 export const IconPlus = fabrique(Plus)
 export const IconMicro = fabrique(Mic)
 export const IconOndes = fabrique(AudioLines)

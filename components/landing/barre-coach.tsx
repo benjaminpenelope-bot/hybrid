@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { IconMicro, IconOndes, IconPlus } from '@/components/ui/icons'
+import { IconEnvoyer, IconMicro, IconOndes, IconPlus } from '@/components/ui/icons'
 
 /**
  * BARRE DU COACH
@@ -110,6 +110,19 @@ export function BarreCoach() {
         <span className="hidden shrink-0 items-center gap-3 text-dim sm:flex" aria-hidden>
           <IconMicro size={18} />
           <IconOndes size={18} />
+        </span>
+
+        {/*
+          La fleche d'envoi. Elle ne fait rien — la barre est une
+          demonstration — mais sans elle on ne reconnait pas un champ de
+          conversation : c'est le geste qui identifie l'objet, pas le curseur
+          qui clignote.
+        */}
+        <span
+          className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-text text-bg"
+          aria-hidden
+        >
+          <IconEnvoyer size={16} />
         </span>
       </div>
 
