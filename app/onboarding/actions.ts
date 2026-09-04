@@ -167,12 +167,35 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
     .like('note', 'Déclaré à l%')
   if (benchCleanup) return { ok: false, message: benchCleanup.message }
 
+  /*
+   * Ce qui a ete mesure en seance, et qui survit donc au nettoyage ci-dessus.
+   *
+   * Deux choses en dependent. D'abord, une declaration ne doit pas ecraser
+   * une mesure : le repere courant est la ligne la plus recente, si bien
+   * qu'un « 25 tractions » coche au questionnaire prenait le pas sur un test
+   * reellement passe la semaine d'avant. On dit ce qu'on croit savoir, on
+   * mesure ce qu'on sait — la seconde gagne toujours.
+   *
+   * Ensuite, le plan ne doit pas reposer la seance de tests a quelqu'un qui
+   * l'a deja passee.
+   */
+  const { data: mesures } = await supabase
+    .from('benchmarks')
+    .select('key')
+    .eq('user_id', user.id)
+    .eq('partial', false)
+  const mesure = new Set((mesures ?? []).map((m: { key: string }) => m.key))
+
   const benchmarkRows = [
-    force ? claimToRow(force.pullups, 'pullups', user.id, today) : null,
-    force ? claimToRow(force.dips, 'dips', user.id, today) : null,
-    force ? claimToRow(force.muscleups, 'muscleups', user.id, today) : null,
-    force ? claimToRow(force.legraises, 'legraises', user.id, today) : null,
-    swimming && swimming.continuousM > 0
+    force && !mesure.has('pullups') ? claimToRow(force.pullups, 'pullups', user.id, today) : null,
+    force && !mesure.has('dips') ? claimToRow(force.dips, 'dips', user.id, today) : null,
+    force && !mesure.has('muscleups')
+      ? claimToRow(force.muscleups, 'muscleups', user.id, today)
+      : null,
+    force && !mesure.has('legraises')
+      ? claimToRow(force.legraises, 'legraises', user.id, today)
+      : null,
+    swimming && swimming.continuousM > 0 && !mesure.has('swim_continuous')
       ? {
           user_id: user.id,
           key: 'swim_continuous' as const,
@@ -214,6 +237,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
     goal: objectifs.principal.type,
     sports,
     availableWeekdays: disponibilites.availableWeekdays,
+    reperesConnus: [...mesure],
     ...(baseKm !== null ? { baseKm } : {}),
   })
 

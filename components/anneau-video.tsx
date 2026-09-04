@@ -74,16 +74,21 @@ export function AnneauVideo({ className = '' }: { className?: string }) {
          * sombre que ce qu'il recouvre — ce gris suffisait donc a dessiner un
          * carre plat au milieu du degrade de la page. Le contraste le ramene
          * a zero sans toucher aux traits blancs.
+         *
+         * Il ecrase aussi le halo diffus que la source entoure de l'anneau :
+         * tres sombre mais pas nul, il eclaircissait un disque autour de la
+         * video, et c'est ce disque qu'on voyait comme un changement de
+         * couleur.
          */
-        filter: 'contrast(1.45) brightness(1.06)',
+        filter: 'contrast(2.1) brightness(0.96)',
         /*
          * Et le masque efface les angles : meme noire, une image reste un
          * rectangle, et l'oeil finit toujours par le trouver.
          */
         WebkitMaskImage:
-          'radial-gradient(circle at 50% 50%, #000 52%, rgb(0 0 0 / 0.55) 68%, transparent 80%)',
+          'radial-gradient(circle at 50% 50%, #000 40%, rgb(0 0 0 / 0.35) 62%, transparent 76%)',
         maskImage:
-          'radial-gradient(circle at 50% 50%, #000 52%, rgb(0 0 0 / 0.55) 68%, transparent 80%)',
+          'radial-gradient(circle at 50% 50%, #000 40%, rgb(0 0 0 / 0.35) 62%, transparent 76%)',
       }}
     />
   )

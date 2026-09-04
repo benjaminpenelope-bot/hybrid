@@ -263,10 +263,13 @@ const AUTOUR = [
 ] as const
 
 function Coach() {
+  /*
+   * Pas d'aura dans cette section : le logo flou tournait derriere la video,
+   * et deux formes circulaires animees au meme endroit se disputaient le
+   * regard sans qu'aucune ne gagne.
+   */
   return (
     <section className="relative px-4 py-20 sm:px-6">
-      <Aura taille="min(520px, 80vw)" className="left-1/2 top-1/4 -translate-x-1/2" />
-
       <div className="relative z-10 mx-auto max-w-[1120px]">
         <div className="mx-auto max-w-[640px] text-center">
           <p className="eyebrow">Le coach</p>

@@ -56,6 +56,16 @@ export interface PlanOptions {
    * Absent = la repartition d'origine, dominee par la course.
    */
   goal?: GoalType | null
+  /**
+   * Reperes de force deja mesures : `pullups`, `dips`, `muscleups`,
+   * `legraises`. La semaine 1 ne re-teste pas ce qu'on connait deja.
+   *
+   * Sans cette liste, chaque regeneration du plan — un objectif qu'on
+   * change, un jour de repos qu'on deplace — reposait la seance de tests a
+   * quelqu'un qui l'avait passee quinze jours plus tot. Le programme
+   * demandait de remesurer un chiffre qu'il avait deja.
+   */
+  reperesConnus?: string[]
 }
 
 function defaultId(): string {
@@ -295,11 +305,15 @@ export function noteDeDosage(objectif?: GoalType | null): string {
   return (objectif && DOSAGES[objectif]?.note) ?? ''
 }
 
-export function buildStrength(kind: 'UPPER' | 'LOWER', w: number): Exercise[] {
+export function buildStrength(
+  kind: 'UPPER' | 'LOWER',
+  w: number,
+  reperesConnus: readonly string[] = [],
+): Exercise[] {
   const prog = Math.floor((w - 1) / 3) // +1 rep toutes les 3 semaines
   if (kind === 'UPPER') {
     if (w === 1) {
-      return [
+      const tests: Exercise[] = [
         {
           n: 'TEST — Tractions max strictes',
           sets: 1,
@@ -336,15 +350,27 @@ export function buildStrength(kind: 'UPPER' | 'LOWER', w: number): Exercise[] {
           cue: "Suspendu à la barre, jambes tendues, orteils au niveau de la barre. Aucun élan : dès que tu balances, la série est finie.",
           test: 'legraises',
         },
-        {
-          n: 'Tractions — volume léger',
-          sets: 3,
-          reps: '50 % du max',
-          rest: 90,
-          rir: 3,
-          cue: "Tu viens de tester : on reste loin de l'échec.",
-        },
       ]
+
+      /*
+       * Un repere deja mesure ne se remesure pas a l'inscription suivante.
+       * Si les quatre sont connus, la seance n'a plus rien a tester : elle
+       * devient la seance ordinaire, plutot qu'une serie unique orpheline.
+       */
+      const aTester = tests.filter((e) => !reperesConnus.includes(e.test as string))
+      if (aTester.length > 0) {
+        return [
+          ...aTester,
+          {
+            n: 'Tractions — volume léger',
+            sets: 3,
+            reps: '50 % du max',
+            rest: 90,
+            rir: 3,
+            cue: "Tu viens de tester : on reste loin de l'échec.",
+          },
+        ]
+      }
     }
     return [
       {
@@ -1066,7 +1092,7 @@ export function buildSession(
           'Échauffe les épaules et les coudes 5 min avant la première traction',
           'Repos complet entre les séries : la qualité prime sur la densite',
         ],
-        exercises: doserPourObjectif(buildStrength('UPPER', w), goal),
+        exercises: doserPourObjectif(buildStrength('UPPER', w, opts.reperesConnus), goal),
       }
 
     case 'RUN': {
@@ -1191,7 +1217,7 @@ export function buildSession(
           'Place 24 h avant la sortie longue : reste à RIR 2–3',
           'Si les cuisses tirent encore demain matin, tu es alle trop loin',
         ],
-        exercises: doserPourObjectif(buildStrength('LOWER', w), goal),
+        exercises: doserPourObjectif(buildStrength('LOWER', w, opts.reperesConnus), goal),
         extra:
           allowDoubles && slot === 5
             ? {

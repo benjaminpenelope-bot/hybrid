@@ -547,3 +547,38 @@ describe('alternance apres substitution', () => {
     }
   })
 })
+
+describe('la semaine 1 ne remesure pas ce qui est connu', () => {
+  const testsDe = (ex: { test?: string }[]) => ex.filter((e) => e.test).map((e) => e.test)
+
+  it('teste les quatre repères quand on ne sait rien', () => {
+    expect(testsDe(buildStrength('UPPER', 1))).toEqual([
+      'pullups',
+      'dips',
+      'muscleups',
+      'legraises',
+    ])
+  })
+
+  /*
+   * Le cas qui a motivé la correction : un athlète qui repasse le
+   * questionnaire — un objectif changé, un jour de repos déplacé — recevait
+   * une nouvelle séance de tests alors qu'il les avait passés quinze jours
+   * plus tôt.
+   */
+  it('ne re-teste pas un repère déjà mesuré', () => {
+    const ex = buildStrength('UPPER', 1, ['pullups', 'dips'])
+    expect(testsDe(ex)).toEqual(['muscleups', 'legraises'])
+  })
+
+  it('rend la séance ordinaire quand les quatre sont connus', () => {
+    const ex = buildStrength('UPPER', 1, ['pullups', 'dips', 'muscleups', 'legraises'])
+    expect(testsDe(ex)).toEqual([])
+    // Et non la seule série de volume qui accompagnait les tests.
+    expect(ex).toEqual(buildStrength('UPPER', 2))
+  })
+
+  it('laisse le bas du corps intact : il ne porte aucun test', () => {
+    expect(testsDe(buildStrength('LOWER', 1))).toEqual([])
+  })
+})
