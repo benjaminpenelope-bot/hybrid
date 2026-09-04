@@ -2,7 +2,7 @@
 
 import { fr } from '@/lib/ui/nombre'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ChipGroup } from '@/components/ui/chip'
 import { NumPad, Scale } from '@/components/ui/numpad'
@@ -82,6 +82,29 @@ export function SessionRunner({ session }: { session: Session }) {
   const isTest = !!current?.exercise.test
   const elapsedMinutes = () => Math.max(1, Math.round((Date.now() - startedAt) / 60000))
 
+  /*
+   * DUREE D'UNE SEANCE DE FORCE
+   *
+   * Elle etait deduite du temps passe sur l'ecran, sans jamais etre montree.
+   * Une seance ouverte pour etre completee apres coup, ou parcourue jusqu'au
+   * bout par le raccourci, s'enregistrait donc a une minute — et une minute
+   * pour dix-sept series ecrase la charge, le ratio aigu/chronique et tout ce
+   * qui en depend.
+   *
+   * La mesure reste la proposition, mais elle s'affiche et se corrige. En
+   * dessous de cinq minutes elle n'est pas croyable : le programme reprend
+   * alors la duree prevue, qui n'est pas plus vraie mais qui est visible et
+   * modifiable — la course et la natation demandaient deja leur duree.
+   */
+  const [strengthMinutes, setStrengthMinutes] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (phase !== 'wrap' || !isStrength || strengthMinutes !== null) return
+    const mesure = elapsedMinutes()
+    setStrengthMinutes(mesure >= 5 ? mesure : session.duration || 45)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase])
+
   const validateSet = () => {
     if (!current) return
     setLogged((prev) => [
@@ -140,7 +163,7 @@ export function SessionRunner({ session }: { session: Session }) {
           }
         : {}),
       ...(isStrength
-        ? { strength: { sets: logged, minutes: elapsedMinutes() } }
+        ? { strength: { sets: logged, minutes: strengthMinutes ?? elapsedMinutes() } }
         : {}),
     }
 
@@ -408,6 +431,16 @@ export function SessionRunner({ session }: { session: Session }) {
               onChange={setFatigue}
               hint="Ton état général, pas celui de la séance."
             />
+            {isStrength && (
+              <NumPad
+                label="Durée de la séance"
+                value={strengthMinutes ?? 0}
+                onChange={setStrengthMinutes}
+                unit="min"
+                step={5}
+              />
+            )}
+
             <NumPad label="Sommeil de la nuit" value={sleep} onChange={setSleep} unit="h" step={0.5} />
 
             <div className="mb-4">
