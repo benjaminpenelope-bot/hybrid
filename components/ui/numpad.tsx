@@ -1,6 +1,6 @@
 'use client'
 
-import { useId } from 'react'
+import { useId, useState } from 'react'
 
 /** Saisie numérique avec incréments : plus rapide qu'un clavier, entre deux séries. */
 export function NumPad({
@@ -105,5 +105,91 @@ export function Scale({
       </div>
       {hint && <p className="mt-[7px] text-[11.5px] leading-relaxed text-dim">{hint}</p>}
     </fieldset>
+  )
+}
+
+/**
+ * CHOIX D'UN NOMBRE PARMI DES VALEURS COURANTES
+ *
+ * Une rangée de pastilles, et le pavé numérique derrière « Autre ».
+ *
+ * Le pavé seul demandait, pour une distance de bassin, entre quatre et
+ * seize appuis sur `+`. Or ces valeurs ne sont pas quelconques : on nage 50,
+ * 100, 200 ou 400 mètres, rarement 175. La pastille rend le cas courant
+ * instantané, et le pavé reste là pour tous les autres — on ne perd donc
+ * aucune précision, on économise les gestes.
+ */
+export function ChoixNombre({
+  label,
+  value,
+  onChange,
+  options,
+  unit,
+  step = 1,
+  hint,
+}: {
+  label: string
+  value: number
+  onChange: (v: number) => void
+  options: number[]
+  unit?: string
+  step?: number
+  hint?: string
+}) {
+  /*
+   * Le pavé s'ouvre de lui-même quand la valeur ne figure pas dans les
+   * pastilles : sans cela, une valeur saisie à la main disparaissait de
+   * l'écran au retour sur l'étape.
+   */
+  const [libre, setLibre] = useState(value > 0 && !options.includes(value))
+
+  return (
+    <div className="mb-4">
+      <div className="eyebrow mb-[7px]">{label}</div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((n) => (
+          <button
+            key={n}
+            type="button"
+            aria-pressed={!libre && value === n}
+            onClick={() => {
+              setLibre(false)
+              onChange(n)
+            }}
+            className={`min-h-[38px] select-none rounded-full px-3.5 text-[13.5px] font-semibold tracking-[-0.01em] transition-[background-color,color,box-shadow] duration-200 active:scale-[0.97] ${
+              !libre && value === n
+                ? 'bg-[rgb(255_255_255/0.12)] text-text shadow-[inset_0_1px_0_rgb(255_255_255/0.18)]'
+                : 'bg-[rgb(255_255_255/0.04)] text-mut'
+            }`}
+          >
+            {n}
+            {unit ? ` ${unit}` : ''}
+          </button>
+        ))}
+        <button
+          type="button"
+          aria-pressed={libre}
+          onClick={() => setLibre(true)}
+          className={`min-h-[38px] select-none rounded-full px-3.5 text-[13.5px] font-semibold tracking-[-0.01em] transition-[background-color,color,box-shadow] duration-200 active:scale-[0.97] ${
+            libre
+              ? 'bg-[rgb(255_255_255/0.12)] text-text shadow-[inset_0_1px_0_rgb(255_255_255/0.18)]'
+              : 'bg-[rgb(255_255_255/0.04)] text-mut'
+          }`}
+        >
+          Autre
+        </button>
+      </div>
+
+      {libre && (
+        <div className="mt-2.5">
+          <NumPad label={label} value={value} onChange={onChange} unit={unit} step={step} />
+        </div>
+      )}
+
+      {hint && !libre && (
+        <p className="mt-[7px] text-[11.5px] leading-relaxed text-dim">{hint}</p>
+      )}
+    </div>
   )
 }

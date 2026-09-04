@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Alerts } from '@/components/alerts'
 import { LogoMark } from '@/components/logo'
+import { MenuProfil } from '@/components/menu-profil'
 import { LoadChart } from '@/components/load-chart'
 import { RecoveryCard } from '@/components/recovery-card'
 import { ScoreRing } from '@/components/score-ring'
@@ -82,16 +83,17 @@ export default async function Page() {
 
   return (
     <main className="wrap wrap-large py-[18px]">
-      <header className="flex items-start justify-between">
+      <header className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <LogoMark size={26} />
           <div>
-          <h1 className="dsp text-[22px] tracking-[0.06em]">Hybrid</h1>
-          <p className="mt-0.5 text-xs text-dim">
-            {formatDate(today)} · {state.profile.name}
-          </p>
+            <h1 className="dsp text-[22px] tracking-[0.06em]">Hybrid</h1>
+            {/* Le prenom quitte l'en-tete : il est desormais sur le bouton de
+                compte, a droite, ou on le cherche. */}
+            <p className="mt-0.5 text-xs text-dim">{formatDate(today)}</p>
           </div>
         </div>
+        <MenuProfil nom={state.profile.name} />
       </header>
 
       {/*
@@ -226,14 +228,6 @@ export default async function Page() {
         <SecondaryNav />
       </div>
 
-      <div className="mt-7 flex items-center justify-between gap-4">
-        <p className="text-[11.5px] leading-relaxed text-dim">Étape 8 sur 9.</p>
-        <form action="/auth/signout" method="post">
-          <button type="submit" className="eyebrow whitespace-nowrap text-dim">
-            Déconnexion
-          </button>
-        </form>
-      </div>
     </main>
   )
 }

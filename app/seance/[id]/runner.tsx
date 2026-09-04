@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ChipGroup } from '@/components/ui/chip'
-import { NumPad, Scale } from '@/components/ui/numpad'
+import { ChoixNombre, NumPad, Scale } from '@/components/ui/numpad'
 import { Ressenti } from '@/components/ui/ressenti'
 import { RestTimer } from '@/components/ui/rest-timer'
 import { pace } from '@/lib/engine/math'
@@ -64,7 +64,6 @@ export function SessionRunner({ session }: { session: Session }) {
   const [swimMinutes, setSwimMinutes] = useState(session.duration || 45)
   const [distance, setDistance] = useState(0)
   const [continuous, setContinuous] = useState(0)
-  const [pauses, setPauses] = useState(0)
   const [stroke, setStroke] = useState<string | null>(null)
 
   // Ressenti
@@ -156,7 +155,6 @@ export function SessionRunner({ session }: { session: Session }) {
               minutes: swimMinutes,
               distance: distance > 0 ? distance : null,
               continuous,
-              pauses: pauses > 0 ? pauses : null,
               stroke,
               crawl: stroke === 'Crawl' || stroke === 'Les deux',
             },
@@ -370,23 +368,44 @@ export function SessionRunner({ session }: { session: Session }) {
           )}
 
           <div className="card">
-            <NumPad label="Durée" value={swimMinutes} onChange={setSwimMinutes} unit="min" />
-            <NumPad
+            {/*
+              Trois questions au lieu de cinq, et des pastilles au lieu du
+              pave.
+              
+              On sortait d'une seance en devant taper cinq nombres, dont un —
+              le nombre de pauses — que rien ne lisait : ni le score, ni la
+              charge, ni le coach. Une question qui ne sert a rien coute
+              pourtant autant qu'une autre.
+              
+              Les distances de bassin ne sont pas quelconques : 50, 100, 200,
+              400. La pastille rend le cas courant instantane, « Autre » garde
+              le pave pour le reste.
+            */}
+            <ChoixNombre
+              label="Durée"
+              value={swimMinutes}
+              onChange={setSwimMinutes}
+              options={[30, 45, 60]}
+              unit="min"
+              step={5}
+            />
+            <ChoixNombre
               label="Plus longue distance sans pause"
               value={continuous}
               onChange={setContinuous}
+              options={[25, 50, 100, 200, 400]}
               unit="m"
               step={25}
-              hint="C'est le chiffre qui décide de ton score natation, pas le total."
+              hint="C'est ce chiffre qui décide de ton score natation, pas le total."
             />
-            <NumPad
+            <ChoixNombre
               label="Distance totale"
               value={distance}
               onChange={setDistance}
+              options={[500, 750, 1000, 1500, 2000]}
               unit="m"
-              step={25}
+              step={50}
             />
-            <NumPad label="Nombre de pauses" value={pauses} onChange={setPauses} />
 
             <div className="mb-4">
               <div className="eyebrow mb-1.5">Nage</div>
