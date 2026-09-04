@@ -41,7 +41,7 @@ export function BandeVideo() {
 
   return (
     <div
-      className="pointer-events-none relative h-[180px] w-full sm:h-[250px] md:h-[320px] lg:h-[400px]"
+      className="pointer-events-none relative aspect-[1216/576] w-full"
       aria-hidden
     >
       {/*
@@ -49,15 +49,23 @@ export function BandeVideo() {
         hauteur de la bande en largeur, et au moins la largeur de l'ecran en
         hauteur. Une fois pivote, il couvre donc exactement la bande.
 
-        `cover`, et la bande grandit avec l'ecran.
-        
-        `contain` laissait l'helice au milieu d'une bande deux fois plus
-        large qu'elle : sur un ecran de 1280 pixels, elle n'en occupait que la
-        moitie et le reste etait vide. La source est verticale et deux fois
-        plus longue que large — pour qu'elle traverse toute la largeur une
-        fois couchee, il faut la recadrer sur son epaisseur, donc lui donner
-        assez de hauteur pour que le recadrage tombe dans les marges de
-        l'image plutot que dans le brin.
+        LA HAUTEUR SUIT LA LARGEUR, AU RATIO EXACT DE LA SOURCE.
+
+        Mesure faite image par image sur la video : l'helice occupe 99,7 % de
+        la largeur du cadre. Il n'y a donc aucune marge a sacrifier — tout
+        recadrage coupe les branches, et tout boitage laisse du noir sur les
+        cotes. Les deux defauts sont le meme, vus de deux hauteurs
+        differentes.
+
+        La seule geometrie qui n'ait ni l'un ni l'autre est le ratio de la
+        source elle-meme, une fois couchee : 1216 sur 576, soit une bande
+        haute de 47,4 % de sa largeur. L'element mesure alors exactement la
+        bande apres rotation, et `cover` comme `contain` donnent le meme
+        resultat — il n'y a plus rien a recadrer.
+
+        Les 100vw comptent la barre de defilement, que la bande n'a pas :
+        l'element deborde donc d'environ six pixels dans sa longueur.
+        `cover` les rogne, la ou `contain` aurait laisse un jour.
       */}
       <video
         ref={ref}
@@ -67,7 +75,7 @@ export function BandeVideo() {
         loop
         playsInline
         preload="metadata"
-        className="absolute left-1/2 top-1/2 h-[100vw] w-[180px] object-cover sm:w-[250px] md:w-[320px] lg:w-[400px]"
+        className="absolute left-1/2 top-1/2 h-[100vw] w-[47.37vw] object-cover"
         style={{
           transform: 'translate(-50%, -50%) rotate(90deg)',
           mixBlendMode: 'screen',

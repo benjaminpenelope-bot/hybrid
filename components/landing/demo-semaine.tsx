@@ -80,7 +80,11 @@ export function DemoSemaine() {
       {/* Les onglets débordent plutôt que de se replier sur deux lignes : la
           hauteur du bloc ne doit pas changer quand on en choisit un. */}
       <div className="-mx-5 mb-5 overflow-x-auto px-5 sm:-mx-6 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="flex w-max gap-2">
+        {/* `mx-auto` sur une rangee en `w-max` : elle se centre tant qu'elle
+            tient dans la carte, et se laisse faire defiler des qu'elle
+            deborde. Alignee a gauche, elle laissait un vide a droite qui
+            faisait croire la carte mal centree. */}
+        <div className="mx-auto flex w-max gap-2">
           {DEMOS.map((d, n) => (
             <button
               key={d.objectif}
