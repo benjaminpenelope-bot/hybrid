@@ -120,9 +120,28 @@ export function ImportAuto({
         pousserait le bouton qui la precede hors de l'ecran, et personne ne
         lit un mode d'emploi avant d'avoir le jeton.
       */}
+      {/*
+        Le raccourci pret a importer. Il ne contient aucun jeton — ce fichier
+        est servi publiquement, un jeton dedans donnerait a n'importe qui de
+        quoi ecrire dans le compte. Il le demande a l'import.
+      */}
+      <a
+        href="/raccourci/hybrid-pas.shortcut"
+        download
+        className="mt-3 block w-full rounded-[11px] border border-line px-3 py-2.5 text-center text-[12.5px] text-mut active:bg-[rgb(255_255_255/0.05)]"
+      >
+        Télécharger le raccourci iOS
+      </a>
+      <p className="mt-2 text-[11.5px] leading-relaxed text-dim">
+        À ouvrir depuis l&rsquo;iPhone. Il demande ton jeton à l&rsquo;import, puis il reste à le
+        déclencher chaque soir depuis <b className="text-mut">Automatisation</b>. Si iOS refuse de
+        l&rsquo;ouvrir, active <b className="text-mut">Raccourcis non fiables</b> dans Réglages →
+        Raccourcis : un raccourci qui ne vient pas d&rsquo;Apple est bloqué par défaut.
+      </p>
+
       <details className="mt-4">
         <summary className="cursor-pointer list-none text-[12.5px] text-mut">
-          Comment brancher le raccourci iOS
+          Le monter à la main, si le fichier ne passe pas
         </summary>
         <ol className="mt-2.5 flex list-decimal flex-col gap-2 pl-4 text-[12.5px] leading-relaxed text-mut">
           <li>
