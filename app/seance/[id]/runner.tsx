@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ChipGroup } from '@/components/ui/chip'
 import { ChoixNombre, NumPad, Scale } from '@/components/ui/numpad'
+import { propositionsDeReps } from '@/lib/ui/propositions'
 import { Ressenti } from '@/components/ui/ressenti'
 import { RestTimer } from '@/components/ui/rest-timer'
 import { pace } from '@/lib/engine/math'
@@ -58,6 +59,8 @@ export function SessionRunner({ session }: { session: Session }) {
   const [minutes, setMinutes] = useState(session.duration || 0)
   const [hr, setHr] = useState(0)
   const [elev, setElev] = useState(0)
+  /** Mesures facultatives d'une sortie : repliees tant qu'on ne les demande pas. */
+  const [detail, setDetail] = useState(false)
   const [finisherDone, setFinisherDone] = useState<boolean | null>(null)
 
   // Natation
@@ -79,6 +82,7 @@ export function SessionRunner({ session }: { session: Session }) {
 
   const current = flat[cursor]
   const isTest = !!current?.exercise.test
+  const propositions = current ? propositionsDeReps(current.exercise.reps, current.exercise.unit) : []
   const elapsedMinutes = () => Math.max(1, Math.round((Date.now() - startedAt) / 60000))
 
   /*
@@ -244,18 +248,40 @@ export function SessionRunner({ session }: { session: Session }) {
               </p>
             )}
 
+            {/*
+              La prescription est ecrite juste au-dessus : on la propose en
+              pastilles. Aucune n'est preselectionnee — l'athlete en choisit
+              une, personne ne decide a sa place — mais la serie se saisit en
+              un appui au lieu d'une dizaine. Sur dix-sept series, c'est la
+              difference entre garder son telephone a la main et le ranger.
+              
+              Rien a proposer sur un test : le nombre a saisir est justement
+              celui qu'on ne connait pas.
+            */}
             <div className="mt-4">
-              <NumPad
-                label={current.exercise.unit === 's' ? 'Secondes tenues' : 'Répétitions réalisées'}
-                value={reps}
-                onChange={setReps}
-                unit={current.exercise.unit === 's' ? 's' : 'reps'}
-              />
+              {propositions.length > 0 ? (
+                <ChoixNombre
+                  key={cursor}
+                  label={current.exercise.unit === 's' ? 'Secondes tenues' : 'Répétitions réalisées'}
+                  value={reps}
+                  onChange={setReps}
+                  options={propositions}
+                  unit={current.exercise.unit === 's' ? 's' : undefined}
+                />
+              ) : (
+                <NumPad
+                  label={current.exercise.unit === 's' ? 'Secondes tenues' : 'Répétitions réalisées'}
+                  value={reps}
+                  onChange={setReps}
+                  unit={current.exercise.unit === 's' ? 's' : 'reps'}
+                />
+              )}
               {!isTest && (
                 <Scale
                   label="Répétitions encore en réserve"
                   value={rir}
                   onChange={setRir}
+                  min={0}
                   max={5}
                   hint="0 = tu ne pouvais plus en faire une seule."
                 />
@@ -324,14 +350,34 @@ export function SessionRunner({ session }: { session: Session }) {
               </span>
             </div>
 
-            <NumPad
-              label="FC moyenne"
-              value={hr}
-              onChange={setHr}
-              unit="bpm"
-              hint="Laisse à 0 si tu n'as pas de cardio : la donnée restera non mesurée plutôt que fausse."
-            />
-            <NumPad label="Dénivelé positif" value={elev} onChange={setElev} unit="m" step={5} />
+            {/*
+              Deux mesures facultatives, repliees. Elles ne servent qu'au
+              resume de la seance et au contexte du coach — ni au score, ni a
+              la charge, ni au programme — et la plupart des sorties se
+              declarent sans elles. Les laisser depliees faisait quatre
+              champs la ou deux suffisent, et donnait a croire qu'on attendait
+              quelque chose.
+            */}
+            {detail ? (
+              <>
+                <NumPad
+                  label="FC moyenne"
+                  value={hr}
+                  onChange={setHr}
+                  unit="bpm"
+                  hint="Laisse à 0 si tu n'as pas de cardio : la donnée restera non mesurée plutôt que fausse."
+                />
+                <NumPad label="Dénivelé positif" value={elev} onChange={setElev} unit="m" step={5} />
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setDetail(true)}
+                className="mb-4 w-full rounded-[11px] border border-line px-3 py-2.5 text-[12.5px] text-mut active:bg-[rgb(255_255_255/0.05)]"
+              >
+                Ajouter la FC moyenne et le dénivelé
+              </button>
+            )}
 
             {session.finisher && (
               <div className="mb-4">

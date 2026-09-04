@@ -74,12 +74,15 @@ export function Scale({
   label,
   value,
   onChange,
+  min = 1,
   max = 10,
   hint,
 }: {
   label: string
   value: number | null
   onChange: (v: number) => void
+  /** Premiere graduation. Zero pour une reserve : voir ci-dessous. */
+  min?: number
   max?: number
   hint?: string
 }) {
@@ -87,7 +90,7 @@ export function Scale({
     <fieldset className="mb-4">
       <legend className="eyebrow mb-[7px]">{label}</legend>
       <div className="flex gap-1.5">
-        {Array.from({ length: max }, (_, i) => i + 1).map((n) => (
+        {Array.from({ length: max - min + 1 }, (_, i) => min + i).map((n) => (
           <button
             key={n}
             type="button"
