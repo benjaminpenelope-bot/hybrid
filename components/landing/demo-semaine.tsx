@@ -76,7 +76,7 @@ export function DemoSemaine() {
   const demo = DEMOS[i]!
 
   return (
-    <div className="glass mx-auto w-full max-w-[560px] rounded-[26px] p-5 sm:p-6">
+    <div className="lisere glass mx-auto w-full max-w-[560px] rounded-[26px] p-5 sm:max-w-[700px] sm:p-7">
       {/* Les onglets débordent plutôt que de se replier sur deux lignes : la
           hauteur du bloc ne doit pas changer quand on en choisit un. */}
       <div className="-mx-5 mb-5 overflow-x-auto px-5 sm:-mx-6 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -106,7 +106,9 @@ export function DemoSemaine() {
         remontée à chaque changement, donc rejouée. Sans cela, le texte
         changeait sèchement au milieu d'une semaine qui, elle, se recompose.
       */}
-      <p key={demo.objectif} className="entre mt-4 text-[12.5px] leading-6 text-mut">
+      {/* La legende ne suit pas la largeur de la carte : au-dela d'une
+          soixantaine de caracteres, l'oeil perd la ligne suivante. */}
+      <p key={demo.objectif} className="entre mt-4 max-w-[58ch] text-[12.5px] leading-6 text-mut">
         {demo.legende}
       </p>
     </div>

@@ -41,7 +41,7 @@ export function BandeVideo() {
 
   return (
     <div
-      className="pointer-events-none relative h-[180px] w-full sm:h-[250px] md:h-[320px]"
+      className="pointer-events-none relative h-[180px] w-full sm:h-[250px] md:h-[320px] lg:h-[400px]"
       aria-hidden
     >
       {/*
@@ -49,10 +49,15 @@ export function BandeVideo() {
         hauteur de la bande en largeur, et au moins la largeur de l'ecran en
         hauteur. Une fois pivote, il couvre donc exactement la bande.
 
-        `contain` et non `cover` : recadrer rognait l'helice sur sa largeur,
-        c'est-a-dire son epaisseur une fois couchee, et il n'en restait que
-        des fragments. Les marges que `contain` laisse sur les cotes sont
-        noires, donc invisibles sous `screen`.
+        `cover`, et la bande grandit avec l'ecran.
+        
+        `contain` laissait l'helice au milieu d'une bande deux fois plus
+        large qu'elle : sur un ecran de 1280 pixels, elle n'en occupait que la
+        moitie et le reste etait vide. La source est verticale et deux fois
+        plus longue que large — pour qu'elle traverse toute la largeur une
+        fois couchee, il faut la recadrer sur son epaisseur, donc lui donner
+        assez de hauteur pour que le recadrage tombe dans les marges de
+        l'image plutot que dans le brin.
       */}
       <video
         ref={ref}
@@ -62,7 +67,7 @@ export function BandeVideo() {
         loop
         playsInline
         preload="metadata"
-        className="absolute left-1/2 top-1/2 h-[100vw] w-[180px] object-contain sm:w-[250px] md:w-[320px]"
+        className="absolute left-1/2 top-1/2 h-[100vw] w-[180px] object-cover sm:w-[250px] md:w-[320px] lg:w-[400px]"
         style={{
           transform: 'translate(-50%, -50%) rotate(90deg)',
           mixBlendMode: 'screen',
