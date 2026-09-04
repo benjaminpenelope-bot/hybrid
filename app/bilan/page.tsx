@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { UNITE_CHARGE } from '@/lib/engine/load'
 import { Stat } from '@/components/ui/stat'
 import { loadState } from '@/lib/db/queries'
 import {
@@ -77,7 +78,7 @@ export default async function Page() {
           value={weight?.value === 'aucune pesée' ? '—' : (weight?.value.replace(' kg', '') ?? '—')}
           sub={weight?.value === 'aucune pesée' ? 'aucune pesée' : 'kg'}
         />
-        <Stat label="Charge" value={`${recovery.l7}`} sub="unités sRPE" />
+        <Stat label="Charge" value={`${recovery.l7}`} sub={UNITE_CHARGE} />
       </div>
 
       <div className="colonnes mt-6">

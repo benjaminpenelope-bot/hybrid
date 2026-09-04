@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { addDays, DAYS_FR_LONG, formatDate, mondayOf, weekday } from '@/lib/engine/date'
-import { sessionLoad } from '@/lib/engine/load'
+import { sessionLoad, UNITE_CHARGE } from '@/lib/engine/load'
 import { sum } from '@/lib/engine/math'
 import type { ExerciseRef } from '@/lib/ui/exercises'
 import type { Session } from '@/lib/engine/types'
@@ -184,7 +184,7 @@ export function WeekView({
         <div className="rounded-card border border-line bg-card p-3">
           <div className="eyebrow text-[9.5px]">Charge</div>
           <div className="num mt-1 text-[24px] leading-none">{stats.load}</div>
-          <div className="mt-1 text-[10.5px] text-dim">unités</div>
+          <div className="mt-1 text-[10.5px] text-dim">{UNITE_CHARGE}</div>
         </div>
 
         {/* Trois repères de plus, quand l'écran a la place de les porter. */}

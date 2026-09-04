@@ -1,6 +1,6 @@
 import { addDays } from './date'
 import { limitationsActives } from './goals'
-import { acuteChronic, consecutiveDays } from './load'
+import { acuteChronic, consecutiveDays, UNITE_CHARGE } from './load'
 import { computeRecovery } from './recovery'
 import { wellnessOn } from './state'
 import type { AthleteState, ISODate, Session } from './types'
@@ -243,7 +243,7 @@ export function decide(state: AthleteState, today: ISODate): Verdict {
   if (reliable && acwr > ACWR_DANGER) {
     preuves.push({
       quoi: 'Charge des 7 derniers jours',
-      valeur: `${l7} unités, soit ${acwr.toFixed(2)} fois ton habitude`,
+      valeur: `${l7} ${UNITE_CHARGE}, soit ${acwr.toFixed(2)} fois ton habitude`,
       effet: 'Une charge qui dépasse de moitié l’habitude expose à la blessure.',
     })
     return { action: 'alleger', ampleur: ALLEGER, sessionId: seance.id, versDate: null, preuves, confirmationRequise: false }
@@ -271,7 +271,7 @@ export function decide(state: AthleteState, today: ISODate): Verdict {
     })
     preuves.push({
       quoi: 'Charge des 7 derniers jours',
-      valeur: `${l7} unités, soit ${acwr.toFixed(2)} fois ton habitude`,
+      valeur: `${l7} ${UNITE_CHARGE}, soit ${acwr.toFixed(2)} fois ton habitude`,
       effet: 'La charge récente est sous ton habitude : il reste de la marge.',
     })
     return { action: 'progresser', ampleur: PROGRESSER, sessionId: seance.id, versDate: null, preuves, confirmationRequise: false }

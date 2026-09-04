@@ -267,7 +267,7 @@ const AUTOUR = [
   {
     titre: 'Ce sur quoi il se base',
     corps: 'Récupération 79/100',
-    detail: 'Charge sur 7 jours · 1015 unités',
+    detail: 'Charge des 7 jours : 1015 — la durée de chaque séance, fois son effort.',
     Icone: IconRecuperation,
     jauge: 0.79,
   },
@@ -314,8 +314,14 @@ function Coach() {
           cartes se touchaient presque et la sphere ne pointait que dans
           l'interstice.
         */}
+        {/*
+          L'ordre change avec la largeur. Sur telephone : l'anneau, ce qu'on
+          lui dit, puis comment il decide — la barre suit immediatement la
+          video, qu'elle prolonge. Sur grand ecran les cartes encadrent
+          l'anneau, et la barre passe dessous sur toute la largeur.
+        */}
         <div className="mt-14 grid gap-4 md:grid-cols-[1fr_260px_1fr] md:gap-6">
-          <div className="flex flex-col gap-4">
+          <div className="order-3 flex flex-col gap-4 md:order-1">
             {AUTOUR.slice(0, 2).map((c) => (
               <CarteCoach key={c.titre} {...c} />
             ))}
@@ -327,31 +333,27 @@ function Coach() {
             `hidden md:flex`, c'est-a-dire absente de la majorite des visites.
           */}
           <div
-            className="order-first flex items-center justify-center pb-5 md:order-none md:pb-0"
+            className="order-1 flex items-center justify-center md:order-2 md:pb-0"
             aria-hidden
           >
             <AnneauVideo className="w-[210px] md:w-[290px]" />
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="order-4 flex flex-col gap-4 md:order-3">
             {AUTOUR.slice(2).map((c) => (
               <CarteCoach key={c.titre} {...c} />
             ))}
           </div>
+
+          <div className="order-2 mx-auto w-full max-w-[560px] md:order-4 md:col-span-3 md:mt-8">
+            <BarreCoach />
+            <p className="mt-3.5 text-center text-[12.5px] leading-6 text-dim">
+              Il répond avec tes chiffres, jamais avec des généralités — et ne modifie jamais rien
+              sans ta confirmation.
+            </p>
+          </div>
         </div>
 
-        {/*
-          Sous l'anneau, ce qu'on lui dit. Les quatre cartes disent comment il
-          decide ; celle-ci dit par ou on lui parle, et c'est la seule chose
-          qui manquait pour que la section soit complete.
-        */}
-        <div className="mx-auto mt-10 max-w-[560px] md:mt-14">
-          <BarreCoach />
-          <p className="mt-4 text-center text-[12.5px] leading-6 text-dim">
-            Il répond avec tes chiffres, jamais avec des généralités — et ne modifie jamais rien
-            sans ta confirmation.
-          </p>
-        </div>
       </div>
     </section>
   )

@@ -165,9 +165,15 @@ export default async function Page() {
         <section className="mt-6">
           <div className="mb-2.5 flex items-center justify-between">
             <h2 className="eyebrow">Charge des 7 derniers jours</h2>
-            <span className="num text-[12px] text-mut">{l7} unités</span>
+            <span className="num text-[12px] text-mut">{l7}</span>
           </div>
           <LoadChart series={load} />
+          {/* La definition, une fois, la ou le chiffre apparait. Ailleurs il
+              n'est plus qu'un nombre a comparer a lui-meme. */}
+          <p className="mt-2 text-[11.5px] leading-relaxed text-dim">
+            Chaque séance compte sa durée multipliée par l’effort ressenti : une heure difficile
+            pèse plus qu’une heure facile.
+          </p>
         </section>
             </div>
           </details>

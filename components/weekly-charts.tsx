@@ -1,5 +1,6 @@
 'use client'
 
+import { UNITE_CHARGE } from '@/lib/engine/load'
 import { fr } from '@/lib/ui/nombre'
 import {
   Bar,
@@ -143,7 +144,7 @@ export function WeeklyLoadChart({ series }: { series: WeekPoint[] }) {
             <CartesianGrid stroke="var(--line)" vertical={false} />
             <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} />
             <YAxis tick={AXIS} axisLine={false} tickLine={false} width={38} />
-            <Tooltip {...TOOLTIP} formatter={(v: number) => [`${v} unités`, 'Charge']} />
+            <Tooltip {...TOOLTIP} formatter={(v: number) => [`${v} ${UNITE_CHARGE}`, 'Charge']} />
             {/* Le repère de moyenne n'a de sens qu'à partir de deux semaines. */}
             {series.length > 1 && (
               <ReferenceLine y={moyenne} stroke="var(--line2)" strokeDasharray="4 4" />

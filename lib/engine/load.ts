@@ -4,10 +4,20 @@ import type { AthleteState, ISODate } from './types'
 
 /**
  * CHARGE D'ENTRAINEMENT
+ *
  * sRPE = durée x RPE. Une séance sans RPE saisi utilise l'estimation `rpeEst`,
  * et le point est alors marque comme estimé : on ne fait jamais passer une
  * estimation pour une mesure.
+ *
+ * L'unité s'écrit « min × effort » partout où le chiffre s'affiche, et jamais
+ * « unités » ni « sRPE ». Le premier ne veut rien dire, le second est du
+ * vocabulaire de laboratoire — or ce nombre se lit tout seul dès qu'on sait
+ * d'où il vient : une heure difficile pèse plus qu'une heure facile, et c'est
+ * exactement ce que la multiplication dit.
  */
+
+/** Nom de l'unité, tel qu'il s'affiche. Un seul endroit pour en changer. */
+export const UNITE_CHARGE = 'min × effort'
 
 export interface LoadPoint {
   date: ISODate
@@ -80,9 +90,9 @@ export function consecutiveDays(state: AthleteState, today: ISODate, max = 14): 
   return streak
 }
 
-/** Repères d'interpretation de la charge hebdomadaire, en unités sRPE. */
+/** Repères d'interpretation de la charge hebdomadaire. */
 export const LOAD_BANDS = [
-  { label: 'Faible', range: '< 900 u', max: 900 },
-  { label: 'Moderee', range: '900 – 1 800 u', max: 1800 },
-  { label: 'Elevee', range: '> 1 800 u', max: Infinity },
+  { label: 'Faible', range: '< 900', max: 900 },
+  { label: 'Modérée', range: '900 – 1 800', max: 1800 },
+  { label: 'Élevée', range: '> 1 800', max: Infinity },
 ] as const

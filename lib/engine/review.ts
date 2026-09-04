@@ -1,5 +1,5 @@
 import { addDays } from './date'
-import { sessionLoad } from './load'
+import { sessionLoad, UNITE_CHARGE } from './load'
 import { sum } from './math'
 import type { AthleteState, ISODate, RecordEntry, Session } from './types'
 
@@ -77,7 +77,7 @@ export function buildReview(state: AthleteState, today: ISODate, days: number): 
       value: now.reps > 0 ? `${now.reps} répétitions` : 'non mesuré',
       delta: delta(now.reps, before.reps),
     },
-    { label: 'Charge', value: `${now.load} unités`, delta: delta(now.load, before.load) },
+    { label: 'Charge', value: `${now.load} ${UNITE_CHARGE}`, delta: delta(now.load, before.load) },
     {
       label: 'Poids moyen',
       value: weightNow === null ? 'aucune pesée' : `${weightNow.toFixed(1)} kg`,
