@@ -364,6 +364,57 @@
   }
 
   /*
+   * MOT EN ARGENT
+   *
+   * Un degrade clair vers gris froid, decoupe a la forme des lettres. C'est
+   * la meme matiere que le logo : le mot n'est pas colore, il est en metal.
+   *
+   * `background-clip: text` ne montre le degrade qu'a travers le glyphe, ce
+   * qui suppose une couleur de texte transparente — sinon elle le recouvre.
+   */
+  .argent {
+    background-image: linear-gradient(
+      170deg,
+      #ffffff 0%,
+      #e8ecf5 26%,
+      #98a1b5 54%,
+      #f2f5fb 78%,
+      #b9c1d3 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  /*
+   * SOULIGNE ARGENTE
+   *
+   * Un filet sous le mot, qui s'eteint aux deux bouts. Un trait plein
+   * s'arreterait net et se lirait comme un lien ; un trait qui nait et meurt
+   * dans le vide se lit comme un reflet.
+   *
+   * `inline-block` est necessaire : sur un element en ligne, un
+   * pseudo-element positionne se calerait sur le bloc parent et non sur le
+   * mot.
+   */
+  .souligne {
+    @apply relative inline-block;
+  }
+
+  .souligne::after {
+    content: '';
+    @apply pointer-events-none absolute inset-x-0 -bottom-[0.02em] block h-[0.055em] rounded-full;
+    background: linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0) 0%,
+      rgb(255 255 255 / 0.85) 22%,
+      rgb(152 161 181 / 0.95) 55%,
+      rgb(255 255 255 / 0.75) 78%,
+      rgb(255 255 255 / 0) 100%
+    );
+  }
+
+  /*
    * LISERE METALLIQUE
    *
    * Un eclat argente qui fait le tour d'un bloc sombre, le long de sa

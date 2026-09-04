@@ -98,7 +98,11 @@ export default async function Page() {
 
           <section className="mt-5">
             <h2 className="eyebrow mb-2.5">Ta séance du jour</h2>
-            <SessionCard session={session} />
+            {/* Le lisere argente designe ce qu'on vient chercher le matin :
+                c'est la seule chose de l'ecran qui demande une action. */}
+            <div className="lisere rounded-card">
+              <SessionCard session={session} />
+            </div>
           </section>
 
           <section className="mt-6">

@@ -13,9 +13,15 @@ import { useEffect, useRef } from 'react'
  * quart de tour. Le brin traverse alors la page dans sa largeur, ce qui est
  * exactement le geste qu'on attend d'une transition.
  *
- * Même principe que l'anneau pour l'intégration : claire sur fond noir, donc
- * `mix-blend-mode: screen` la pose sans découpe. Quatre bords éteints par des
- * masques — une transition qui se voit n'en est plus une.
+ * Même principe que l'anneau pour l'intégration : le noir de la source vaut
+ * zéro, donc `mix-blend-mode: screen` la pose sur la page sans rien y ajouter.
+ *
+ * Aucun masque, et surtout aucun `overflow: hidden` sur le conteneur : l'un
+ * comme l'autre y ouvrent un contexte d'empilement, et un mélange ne se fait
+ * qu'avec le fond du contexte qui le contient. La vidéo se mélangeait donc
+ * avec du vide au lieu de la page, et son cadre noir redevenait opaque —
+ * c'est le rectangle qu'on voyait. Sans eux, `contain` laisse des marges
+ * noires sur les côtés, que le mélange rend invisibles.
  */
 export function BandeVideo() {
   const ref = useRef<HTMLVideoElement | null>(null)
@@ -35,18 +41,8 @@ export function BandeVideo() {
 
   return (
     <div
-      className="pointer-events-none relative h-[180px] w-full overflow-hidden sm:h-[250px] md:h-[320px]"
+      className="pointer-events-none relative h-[180px] w-full sm:h-[250px] md:h-[320px]"
       aria-hidden
-      style={{
-        /*
-         * Un fondu lateral seulement. J'avais ajoute un fondu haut-bas :
-         * apres rotation, la hauteur de la bande n'est plus que l'epaisseur
-         * du brin, et le masque mangeait donc l'helice elle-meme. Le noir de
-         * la source suffit a eteindre ces deux bords-la.
-         */
-        WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent)',
-        maskImage: 'linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent)',
-      }}
     >
       {/*
         Largeur et hauteur sont echangees avant rotation : l'element mesure la

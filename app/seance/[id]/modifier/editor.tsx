@@ -59,11 +59,34 @@ export function SessionEditor({ session, profile }: { session: Session; profile:
     setDuration(fresh.duration)
     setIntensity(fresh.intensity)
     setCues(fresh.cues)
-    setExercises(fresh.exercises.map((e) => ({ ...e })))
+    /*
+     * Sans marqueur de test : c'est le programme qui decide quand mesurer, pas
+     * une retouche de seance. Le contenu type de la semaine 1 porte les quatre
+     * tests, et changer de type ici les recopiait — la seance reclamait alors
+     * des repere officiels qu'on n'avait pas demande a passer.
+     */
+    setExercises(
+      fresh.exercises.map(({ test: _test, ...e }) => ({ ...e })),
+    )
   }
 
+  /*
+   * Renommer un exercice lui retire son marqueur de test.
+   *
+   * Un repere est attache a un mouvement precis : des que le nom change, la
+   * cle ne decrit plus ce qu'on fait. C'est ainsi qu'un exercice « Abdos »
+   * a fini par enregistrer cinquante dips, et qu'une seance ordinaire
+   * reclamait encore les chiffres d'un test.
+   */
   const patch = (i: number, key: keyof EditableExercise, value: string | number) =>
-    setExercises((prev) => prev.map((e, j) => (j === i ? { ...e, [key]: value } : e)))
+    setExercises((prev) =>
+      prev.map((e, j) => {
+        if (j !== i) return e
+        const suivant = { ...e, [key]: value }
+        if (key === 'n' && value !== e.n) delete suivant.test
+        return suivant
+      }),
+    )
 
   const move = (i: number, direction: -1 | 1) =>
     setExercises((prev) => {

@@ -105,14 +105,14 @@ function Header() {
  */
 function Hero() {
   return (
-    <section className="relative px-4 pb-24 pt-10 sm:px-6 sm:pt-16">
+    <section className="relative px-4 pb-14 pt-10 sm:px-6 sm:pb-16 sm:pt-16">
       <Aura taille="min(620px, 86vw)" className="left-1/2 top-[-110px] -translate-x-1/2" />
 
       <div className="relative z-10 mx-auto flex max-w-[760px] flex-col items-center text-center">
         <h1 className="entre dsp text-[clamp(2.6rem,10vw,4.6rem)]">
-          Un entraîneur.
+          Un <span className="souligne">entraîneur</span>.
           <br />
-          Tous tes entraînements.
+          Tous tes <span className="argent">entraînements</span>.
         </h1>
 
         <p className="entre mt-5 max-w-[30rem] text-[16px] leading-7 text-mut" style={{ animationDelay: '180ms' }}>
@@ -189,7 +189,7 @@ function Hero() {
  */
 function Demonstration() {
   return (
-    <section className="relative px-4 pb-4 pt-2 sm:px-6">
+    <section className="relative px-4 pt-6 sm:px-6">
       <div className="relative z-10 mx-auto max-w-[760px]">
         <div className="mx-auto mb-8 max-w-[560px] text-center">
           <p className="eyebrow">La forme de ta semaine</p>
@@ -215,7 +215,7 @@ function Demonstration() {
  */
 function Ecran() {
   return (
-    <section className="relative px-4 py-16 sm:px-6">
+    <section className="relative px-4 pt-16 sm:px-6 sm:pt-20">
       <Aura taille="min(560px, 84vw)" className="left-1/2 top-[18%] -translate-x-1/2" />
 
       <div className="relative z-10 mx-auto max-w-[1080px]">
@@ -274,7 +274,7 @@ function Coach() {
    * regard sans qu'aucune ne gagne.
    */
   return (
-    <section className="relative px-4 py-20 sm:px-6">
+    <section className="relative px-4 pt-16 sm:px-6 sm:pt-20">
       <div className="relative z-10 mx-auto max-w-[1120px]">
         <div className="mx-auto max-w-[640px] text-center">
           <p className="eyebrow">Le coach</p>
@@ -379,7 +379,7 @@ const OFFRES = [
 
 function Tarifs() {
   return (
-    <section id="tarifs" className="relative px-4 py-20 sm:px-6">
+    <section id="tarifs" className="relative px-4 py-16 sm:px-6 sm:py-20">
       <Aura taille="min(560px, 82vw)" className="left-1/2 top-[10%] -translate-x-1/2" />
 
       <div className="relative z-10 mx-auto max-w-[900px]">
