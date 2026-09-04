@@ -22,6 +22,8 @@
 import {
   AudioLines,
   Bike,
+  CircleCheck,
+  TrendingDown,
   Mic,
   Plus,
   X,
@@ -87,6 +89,10 @@ export const IconForce = fabrique(Dumbbell)
 export const IconHypertrophie = fabrique(Layers)
 export const IconEndurance = fabrique(Activity)
 export const IconHybride = fabrique(Gauge)
+
+/* ── Cartes du coach ── */
+export const IconVerdict = fabrique(CircleCheck)
+export const IconAllege = fabrique(TrendingDown)
 
 /* ── Barre du coach ── */
 export const IconPlus = fabrique(Plus)

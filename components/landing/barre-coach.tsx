@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { IconFermer, IconMicro, IconOndes, IconPlus } from '@/components/ui/icons'
+import { IconMicro, IconOndes, IconPlus } from '@/components/ui/icons'
 
 /**
  * BARRE DU COACH
@@ -82,12 +82,12 @@ export function BarreCoach() {
   }, [])
 
   return (
-    <div className="flex items-center justify-center gap-2.5 sm:gap-3">
+    <div className="flex items-center justify-center">
       {/*
         La barre. `lisere` lui donne le filet argenté qui tourne, comme la
         carte d'inscription : c'est la même invitation à commencer.
       */}
-      <div className="lisere glass flex min-w-0 flex-1 items-center gap-3 rounded-full py-3 pl-4 pr-3.5 sm:max-w-[440px] sm:gap-4 sm:py-3.5 sm:pl-5">
+      <div className="lisere glass flex min-w-0 flex-1 items-center gap-3 rounded-full py-3 pl-4 pr-4 sm:max-w-[460px] sm:gap-4 sm:py-3.5 sm:pl-5 sm:pr-5">
         <span className="shrink-0 text-mut" aria-hidden>
           <IconPlus size={19} />
         </span>
@@ -113,14 +113,6 @@ export function BarreCoach() {
         </span>
       </div>
 
-      {/* Le bouton de fermeture de la maquette : présent pour la forme de
-          l'ensemble, et explicitement inerte. */}
-      <span
-        className="glass flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full text-dim sm:h-[50px] sm:w-[50px]"
-        aria-hidden
-      >
-        <IconFermer size={17} />
-      </span>
     </div>
   )
 }

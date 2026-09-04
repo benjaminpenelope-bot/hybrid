@@ -7,7 +7,16 @@ import { AnneauVideo } from '@/components/anneau-video'
 import { BarreCoach } from '@/components/landing/barre-coach'
 import { BandeVideo } from '@/components/bande-video'
 import { Vitrine } from '@/components/landing/vitrine'
-import { IconBarre, IconCourse, IconNatation, IconVelo } from '@/components/ui/icons'
+import {
+  IconAllege,
+  IconAucun,
+  IconBarre,
+  IconCourse,
+  IconNatation,
+  IconRecuperation,
+  IconVelo,
+  IconVerdict,
+} from '@/components/ui/icons'
 
 export const metadata: Metadata = {
   title: 'HYBRID · Un entraîneur. Tous tes entraînements.',
@@ -250,21 +259,31 @@ const AUTOUR = [
     titre: 'Le verdict du jour',
     corps: 'Séance prévue, telle quelle.',
     detail: 'Rien ne justifie de toucher à la séance.',
+    Icone: IconVerdict,
+    /* La jauge n'est pas un ornement : elle porte le chiffre de la carte, et
+       reste absente quand la carte n'en a pas. */
+    jauge: null,
   },
   {
     titre: 'Ce sur quoi il se base',
     corps: 'Récupération 79/100',
     detail: 'Charge sur 7 jours · 1015 unités',
+    Icone: IconRecuperation,
+    jauge: 0.79,
   },
   {
     titre: 'Quand il allège',
     corps: 'Tu as signalé une douleur.',
     detail: 'La séance est allégée de 30 %.',
+    Icone: IconAllege,
+    jauge: 0.3,
   },
   {
     titre: 'Ce qu’il refuse de faire',
     corps: 'À TESTER',
     detail: 'Un repère non mesuré ne devient jamais un chiffre.',
+    Icone: IconAucun,
+    jauge: null,
   },
 ] as const
 
@@ -342,16 +361,51 @@ function CarteCoach({
   titre,
   corps,
   detail,
+  Icone,
+  jauge,
 }: {
   titre: string
   corps: string
   detail: string
+  Icone: (p: { size?: number }) => React.ReactElement
+  jauge: number | null
 }) {
   return (
-    <article className="glass rounded-card p-5">
-      <p className="eyebrow">{titre}</p>
-      <p className="dsp mt-2.5 text-[19px]">{corps}</p>
-      <p className="mt-1.5 text-[13.5px] leading-6 text-mut">{detail}</p>
+    /*
+      Un pictogramme a gauche, le texte a droite.
+      
+      Empilees, ces quatre cartes n'occupaient que le tiers gauche de leur
+      largeur : trois lignes courtes dans un bloc large, et beaucoup de vide a
+      droite. La colonne de pictogrammes leur donne un point de depart commun
+      et un rythme, et la jauge — quand la carte porte un chiffre — remplit la
+      ligne au lieu de la laisser mourir au milieu.
+    */
+    <article className="glass flex items-start gap-3.5 rounded-card p-4 sm:p-[18px]">
+      <span
+        className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-mut"
+        style={{
+          background: 'rgb(255 255 255 / 0.05)',
+          boxShadow: 'inset 0 1px 0 rgb(255 255 255 / 0.12)',
+        }}
+        aria-hidden
+      >
+        <Icone size={17} />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="eyebrow">{titre}</p>
+        <p className="dsp mt-1.5 text-[18px] leading-snug">{corps}</p>
+        <p className="mt-1 text-[13px] leading-6 text-mut">{detail}</p>
+
+        {jauge !== null && (
+          <span className="mt-3 block h-[3px] w-full overflow-hidden rounded-full bg-[rgb(255_255_255/0.07)]">
+            <span
+              className="block h-full rounded-full bg-[rgb(255_255_255/0.55)]"
+              style={{ width: `${Math.round(jauge * 100)}%` }}
+            />
+          </span>
+        )}
+      </div>
     </article>
   )
 }
