@@ -398,7 +398,13 @@ function Tarifs() {
           {OFFRES.map((o) => (
             <article
               key={o.nom}
-              className={`flex flex-col rounded-card p-6 ${o.phare ? 'glass iris' : 'glass'}`}
+              /*
+                L'offre mise en avant porte le lisere argente, et non plus le
+                cadre irise : les deux emploient le meme pseudo-element, ils ne
+                peuvent pas coexister — et un arc-en-ciel detonnait dans une
+                identite noir et argent.
+              */
+              className={`flex flex-col rounded-card p-6 ${o.phare ? 'glass lisere' : 'glass'}`}
             >
               <p className="eyebrow">{o.nom}</p>
 

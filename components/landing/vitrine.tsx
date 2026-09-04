@@ -64,7 +64,10 @@ export function Vitrine() {
 
           <div className="mt-4">
             <p className="eyebrow mb-2">Ta séance du jour</p>
-            <SessionCard session={seance} />
+            {/* Le lisere designe ce qu'on vient chercher le matin. */}
+            <div className="lisere rounded-card">
+              <SessionCard session={seance} />
+            </div>
           </div>
 
         </div>
