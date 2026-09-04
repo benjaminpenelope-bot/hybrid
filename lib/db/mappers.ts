@@ -104,6 +104,7 @@ export interface WellnessRow {
   motivation: number | null
   soreness: string | null
   resting_hr: number | null
+  steps: number | null
 }
 
 export interface BenchmarkRow {
@@ -239,6 +240,7 @@ export function rowToWellness(row: WellnessRow): Wellness {
     motivation: row.motivation,
     soreness: row.soreness,
     restingHr: row.resting_hr,
+    steps: row.steps ?? null,
   }
 }
 

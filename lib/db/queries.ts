@@ -46,7 +46,7 @@ export async function loadState(userId: string): Promise<AthleteState | null> {
       supabase.from('photos').select('date, storage_path').eq('user_id', userId).order('date'),
       supabase
         .from('wellness')
-        .select('date, sleep, fatigue, motivation, soreness, resting_hr')
+        .select('date, sleep, fatigue, motivation, soreness, resting_hr, steps')
         .eq('user_id', userId)
         .order('date'),
       supabase

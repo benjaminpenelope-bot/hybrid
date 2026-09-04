@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
+import { CartePas } from '@/components/carte-pas'
 import { loadState } from '@/lib/db/queries'
 import { weightTrend } from '@/lib/engine/body'
 import { todayISO } from '@/lib/engine/date'
+import { bilanDesPas } from '@/lib/engine/pas'
 import { currentUserId } from '@/lib/supabase/server'
 import { signedPhotoUrl } from './actions'
 import { BodyView } from './body-view'
@@ -33,6 +35,13 @@ export default async function Page() {
   return (
     <main className="wrap py-[18px]">
       <h1 className="dsp mb-4 text-[22px]">Corps</h1>
+
+      {/* Les pas ont leur place ici autant que sur l'accueil : c'est une
+          mesure du corps, pas de l'entrainement. */}
+      <div className="mb-6">
+        <CartePas bilan={bilanDesPas(state, today)} date={today} />
+      </div>
+
       <BodyView
         profile={state.profile}
         weights={weights}

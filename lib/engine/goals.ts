@@ -2,6 +2,7 @@ import { addDays } from './date'
 import { clamp, sum } from './math'
 import { runStats, streetStats, swimStats } from './perf'
 import { currentWeight } from './state'
+import { frMille } from '@/lib/ui/nombre'
 import type {
   AthleteState,
   DeclaredGoal,
@@ -173,18 +174,9 @@ export function limitationsActives(state: AthleteState, today: ISODate) {
   return state.limitations.filter((l) => l.startedOn <= today && (l.endedOn === null || l.endedOn >= today))
 }
 
-/**
- * Nombre a la francaise : virgule decimale, espace fine insecable pour les
- * milliers. Sans ca, une meme ligne affichait « 10.2 km · objectif 42,2 km ».
- */
-function nombre(v: number, decimales = 1): string {
-  const arrondi = Number.isInteger(v) ? `${v}` : v.toFixed(decimales)
-  const [entier, dec] = arrondi.split('.')
-  const groupe = entier!.replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f')
-  return dec ? `${groupe},${dec}` : groupe
-}
-
 /** Traduit un jalon en objectif affichable, sur les données réelles. */
+const nombre = frMille
+
 function mesurer(jalon: Jalon, state: AthleteState, today: ISODate): Goal {
   const { horizon, label, cible, metrique } = jalon
 

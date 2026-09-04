@@ -6,6 +6,7 @@ import {
   analyser,
   decouper,
   extractionVide,
+  pasParJour,
   peseesParJour,
   seancesUniques,
   type Extraction,
@@ -70,10 +71,11 @@ export function HealthImport() {
     }
 
     const pesees = peseesParJour(extraction.pesees)
+    const pas = pasParJour(extraction.pas)
     const seances = seancesUniques(extraction.seances).map(({ hr: _hr, ...s }) => s)
     setIgnores([...extraction.ignores.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4))
 
-    if (pesees.length === 0 && seances.length === 0) {
+    if (pesees.length === 0 && seances.length === 0 && pas.length === 0) {
       setEtape('attente')
       setErreur(
         "Aucune pesée ni séance suivie dans ce fichier. Hybrid ne lit que la masse corporelle, la course, la natation et le renforcement.",
@@ -82,7 +84,7 @@ export function HealthImport() {
     }
 
     setEtape('envoi')
-    setResultat(await importHealth({ pesees, seances }))
+    setResultat(await importHealth({ pesees, seances, pas }))
     setEtape('attente')
     if (input.current) input.current.value = ''
   }
@@ -138,7 +140,8 @@ export function HealthImport() {
           {resultat.ok ? (
             <>
               <p className="text-[12.5px] leading-relaxed text-text">
-                {resultat.pesees} pesée(s) et {resultat.seances} séance(s) enregistrées.
+                {resultat.pesees} pesée(s), {resultat.seances} séance(s) et {resultat.pas} jour(s)
+                de pas enregistrés.
               </p>
               <p className="mt-2 text-[12.5px] leading-relaxed text-warn">
                 Health ne mesure pas le ressenti. Les séances importées attendent ton RPE : tant

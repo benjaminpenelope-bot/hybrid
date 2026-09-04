@@ -17,6 +17,7 @@ import {
   WeightChart,
 } from '@/components/weekly-charts'
 import { etatProfil } from '@/lib/db/profil-complet'
+import { CartePas } from '@/components/carte-pas'
 import { ProjectionPlan } from '@/components/projection-plan'
 import type { GoalType, Sport } from '@/lib/engine/types'
 import { prolongerSiNecessaire } from '@/lib/db/prolonger'
@@ -29,6 +30,7 @@ import { formatDate, todayISO } from '@/lib/engine/date'
 import { disciplineSplit, weeklySeries } from '@/lib/engine/history'
 import { loadSeries } from '@/lib/engine/load'
 import { sum } from '@/lib/engine/math'
+import { bilanDesPas } from '@/lib/engine/pas'
 import { computeRecovery } from '@/lib/engine/recovery'
 import { computeScores, levelOf } from '@/lib/engine/scoring'
 import { hasSupabaseEnv } from '@/lib/supabase/env'
@@ -71,6 +73,7 @@ export default async function Page() {
   const l7 = sum(load.map((p) => p.load))
   const hasHistory = state.sessions.some((s) => s.status === 'done')
   const seancesFaites = state.sessions.filter((s) => s.status === 'done').length
+  const pas = bilanDesPas(state, today)
   const objectifPrincipal =
     (state.goals.find((g) => g.status === 'actif' && g.priority === 'principal')?.type as
       | GoalType
@@ -140,6 +143,16 @@ export default async function Page() {
               {...(state.profile.baseWeeklyKm ? { baseKm: state.profile.baseWeeklyKm } : {})}
             />
           )}
+
+          {/*
+            Les pas se tiennent a part : ils n'entrent dans aucun score et
+            dans aucune charge — marcher n'est pas s'entrainer, et les
+            melanger fausserait le rapport entre charge aigue et chronique.
+            Ils disent combien on bouge les jours ou l'on ne s'entraine pas.
+          */}
+          <div className="mt-6">
+            <CartePas bilan={pas} date={today} />
+          </div>
 
           <section className="mt-6">
             <h2 className="eyebrow mb-2.5">Prochains jours</h2>

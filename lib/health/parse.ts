@@ -36,6 +36,15 @@ export interface SeanceHealth {
 export interface Extraction {
   pesees: PeseeHealth[]
   seances: SeanceHealth[]
+  /**
+   * Pas cumules par jour.
+   *
+   * Health n'ecrit pas un total quotidien : il empile des dizaines de lignes
+   * par jour, une par intervalle mesure, et parfois par appareil. On somme
+   * donc a la volee dans une table plutot que de garder les lignes — une
+   * annee d'export en compte des centaines de milliers.
+   */
+  pas: Map<ISODate, number>
   /** Types rencontrés mais non suivis, pour pouvoir le dire plutôt que de taire. */
   ignores: Map<string, number>
 }
@@ -70,7 +79,7 @@ function jour(v: string | null): ISODate | null {
 }
 
 export function extractionVide(): Extraction {
-  return { pesees: [], seances: [], ignores: new Map() }
+  return { pesees: [], seances: [], pas: new Map(), ignores: new Map() }
 }
 
 /**
@@ -82,7 +91,17 @@ export function extractionVide(): Extraction {
  */
 export function analyser(morceau: string, dans: Extraction): Extraction {
   for (const balise of morceau.match(RECORD) ?? []) {
-    if (attribut(balise, 'type') !== 'HKQuantityTypeIdentifierBodyMass') continue
+    const type = attribut(balise, 'type')
+
+    if (type === 'HKQuantityTypeIdentifierStepCount') {
+      const date = jour(attribut(balise, 'startDate'))
+      const valeur = nombre(attribut(balise, 'value'))
+      if (date === null || valeur === null || valeur <= 0) continue
+      dans.pas.set(date, (dans.pas.get(date) ?? 0) + Math.round(valeur))
+      continue
+    }
+
+    if (type !== 'HKQuantityTypeIdentifierBodyMass') continue
 
     const date = jour(attribut(balise, 'startDate'))
     const valeur = nombre(attribut(balise, 'value'))
@@ -136,6 +155,17 @@ export function analyser(morceau: string, dans: Extraction): Extraction {
  * Garde une pesée par jour, la dernière. Plusieurs pesées le même jour sont
  * la même mesure répétée, pas une tendance.
  */
+/**
+ * Les pas, prets a etre envoyes. La borne haute est celle de la contrainte en
+ * base : un compteur qui deraille ferait echouer l'insertion de tout le lot.
+ */
+export function pasParJour(pas: Map<ISODate, number>): { date: ISODate; pas: number }[] {
+  return [...pas.entries()]
+    .filter(([, n]) => n > 0 && n <= 200_000)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, n]) => ({ date, pas: n }))
+}
+
 export function peseesParJour(pesees: PeseeHealth[]): PeseeHealth[] {
   const parJour = new Map<ISODate, number>()
   for (const p of pesees) parJour.set(p.date, p.kg)

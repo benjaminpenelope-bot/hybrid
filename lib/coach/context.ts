@@ -4,6 +4,7 @@ import { decide } from '@/lib/engine/decide'
 import { limitationsActives, LIBELLE_OBJECTIF, objectifsActifs } from '@/lib/engine/goals'
 import { weightTrend } from '@/lib/engine/body'
 import { acuteChronic } from '@/lib/engine/load'
+import { bilanDesPas, OBJECTIF_PAS } from '@/lib/engine/pas'
 import { runStats, swimStats } from '@/lib/engine/perf'
 import { computeRecovery } from '@/lib/engine/recovery'
 import { computeScores } from '@/lib/engine/scoring'
@@ -64,6 +65,7 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
   const run = runStats(state, today)
   const swim = swimStats(state, today)
   const poids = weightTrend(state, today)
+  const pas = bilanDesPas(state, today)
 
   /*
    * Les pesees brutes des huit dernieres semaines, et non la moyenne
@@ -165,6 +167,17 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
       pesees_recentes: peseesRecentes,
       moyennes_hebdomadaires: poids.weekly.slice(-8),
       dernieres_mensurations_cm: derniereMesure ?? 'aucune mesure',
+      /*
+       * Les pas ne comptent dans aucun score et dans aucune charge — marcher
+       * n'est pas s'entrainer — mais ils disent combien la personne bouge les
+       * jours ou elle ne s'entraine pas, ce qu'aucune autre donnee ne dit.
+       */
+      pas: {
+        objectif_par_jour: OBJECTIF_PAS,
+        aujourdhui: pas.aujourdhui ?? 'non mesuré',
+        moyenne_7j: pas.moyenne ?? 'non mesurée',
+        jours_a_objectif_sur_7: `${pas.atteints} sur ${pas.mesures} mesurés`,
+      },
     },
     records: state.records
       .slice(-10)

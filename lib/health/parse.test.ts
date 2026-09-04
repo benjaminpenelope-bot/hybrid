@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  analyser,
-  decouper,
-  extractionVide,
-  peseesParJour,
-  seancesUniques,
-} from './parse'
+import { analyser, decouper, extractionVide, pasParJour, peseesParJour, seancesUniques } from './parse'
 
 function extraire(xml: string) {
   return analyser(xml, extractionVide())
@@ -135,5 +129,32 @@ describe('dédoublonnage', () => {
       hr: null,
     }
     expect(seancesUniques([s, { ...s }])).toHaveLength(1)
+  })
+})
+
+describe('pas', () => {
+  /*
+   * Health n'ecrit pas de total quotidien : il empile des dizaines de lignes
+   * par jour, une par intervalle mesure. Il faut donc les sommer.
+   */
+  it('cumule les intervalles d’une même journée', () => {
+    const r = analyser(
+      '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-03-16 07:12:00 +0100" unit="count" value="800"/>' +
+        '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-03-16 11:40:00 +0100" unit="count" value="1200"/>' +
+        '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-03-17 09:00:00 +0100" unit="count" value="500"/>',
+      extractionVide(),
+    )
+    expect(pasParJour(r.pas)).toEqual([
+      { date: '2026-03-16', pas: 2000 },
+      { date: '2026-03-17', pas: 500 },
+    ])
+  })
+
+  it('écarte un compteur qui déraille', () => {
+    const r = analyser(
+      '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-03-16 07:12:00 +0100" unit="count" value="999999"/>',
+      extractionVide(),
+    )
+    expect(pasParJour(r.pas)).toEqual([])
   })
 })

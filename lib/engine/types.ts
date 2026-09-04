@@ -173,6 +173,8 @@ export interface Wellness {
   motivation?: number | null
   soreness?: string | null
   restingHr?: number | null
+  /** Pas du jour. `null` = non mesuré, jamais zéro par défaut. */
+  steps?: number | null
   source?: DataSource
 }
 
