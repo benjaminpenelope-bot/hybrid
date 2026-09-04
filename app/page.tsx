@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { LogoMark } from '@/components/logo'
 import { DemoSemaine } from '@/components/landing/demo-semaine'
 import { AnneauVideo } from '@/components/anneau-video'
+import { Vitrine } from '@/components/landing/vitrine'
 import { IconBarre, IconCourse, IconNatation, IconVelo } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default function LandingPage() {
       <Header />
       <Hero />
       <Demonstration />
+      <Ecran />
       <Coach />
       <Tarifs />
       <Pied />
@@ -196,6 +198,35 @@ function Demonstration() {
         </div>
 
         <DemoSemaine />
+      </div>
+    </section>
+  )
+}
+
+/* ── L'ecran ─────────────────────────────────────────────────
+ *
+ * Apres la forme de la semaine, ce qu'on ouvre le matin. La page parlait
+ * d'un verdict et de preuves sans jamais en montrer un seul.
+ */
+function Ecran() {
+  return (
+    <section className="relative px-4 py-16 sm:px-6">
+      <Aura taille="min(560px, 84vw)" className="left-1/2 top-[18%] -translate-x-1/2" />
+
+      <div className="relative z-10 mx-auto max-w-[1080px]">
+        <div className="mx-auto mb-10 max-w-[560px] text-center">
+          <p className="eyebrow">L&rsquo;écran du matin</p>
+          <h2 className="dsp mt-3 text-[clamp(1.7rem,5.5vw,2.4rem)]">
+            Une décision, puis les chiffres qui l&rsquo;ont prise.
+          </h2>
+          <p className="mt-4 text-[14.5px] leading-7 text-mut">
+            Ce n&rsquo;est pas une capture d&rsquo;écran : ce sont les composants de
+            l&rsquo;application, rendus avec un historique de démonstration. Le verdict, la séance et
+            son « pourquoi » sortent du moteur.
+          </p>
+        </div>
+
+        <Vitrine />
       </div>
     </section>
   )
