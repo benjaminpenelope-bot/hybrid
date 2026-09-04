@@ -43,9 +43,10 @@ export function ImportAuto({
   return (
     <div className="card">
       <p className="text-[13px] leading-relaxed text-mut">
-        Ton téléphone envoie tes pas et tes pesées chaque jour, sans que tu aies rien à faire.
-        C&rsquo;est lui qui pousse : un site web ne peut pas lire Santé, Apple le réserve aux
-        applications installées.
+        Ton téléphone envoie tes pas, tes pesées et tes séances chaque jour, sans que tu aies
+        rien à faire. C&rsquo;est lui qui pousse : un site web ne peut pas lire Santé, Apple le
+        réserve aux applications installées. Rien ne dépend d&rsquo;une plateforme tierce —
+        n&rsquo;importe quel outil sachant envoyer du JSON alimente ton programme.
       </p>
 
       {dernierEnvoi && (
@@ -145,6 +146,20 @@ export function ImportAuto({
             </span>
           </li>
           <li>
+            Pour envoyer aussi une séance, ajoute une entrée{' '}
+            <span className="font-mono text-[11.5px]">seances</span> :{' '}
+            <span className="font-mono text-[11.5px]">
+              {'{ "date": "…", "discipline": "run", "minutes": 42, "metres": 8000 }'}
+            </span>
+            . Les disciplines acceptées sont{' '}
+            <span className="font-mono text-[11.5px]">run</span>,{' '}
+            <span className="font-mono text-[11.5px]">bike</span>,{' '}
+            <span className="font-mono text-[11.5px]">swim</span> et{' '}
+            <span className="font-mono text-[11.5px]">strength</span>. Une séance envoyée se
+            rapproche d&rsquo;abord de celle qui était prévue ce jour-là : elle la valide au lieu
+            d&rsquo;en créer une seconde.
+          </li>
+          <li>
             Dans <b className="text-text">Automatisation</b>, déclenche-le tous les jours à 23 h.
             Renvoyer deux fois la même journée ne crée pas de doublon : la dernière valeur
             remplace la précédente.
@@ -152,7 +167,10 @@ export function ImportAuto({
         </ol>
         <p className="mt-2.5 text-[12px] leading-relaxed text-dim">
           Une application d&rsquo;export automatique fait la même chose sans raccourci, du moment
-          qu&rsquo;elle sait envoyer du JSON à une adresse avec un en-tête.
+          qu&rsquo;elle sait envoyer du JSON à une adresse avec un en-tête. Sur Android, la même
+          recette s&rsquo;écrit avec un automatiseur de tâches. Le ressenti reste à saisir dans
+          l&rsquo;app : aucun appareil ne le mesure, et le déduire d&rsquo;une fréquence cardiaque
+          serait l&rsquo;inventer.
         </p>
       </details>
     </div>

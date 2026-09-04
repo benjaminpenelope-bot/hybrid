@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { ecrireSeances } from '@/lib/ingest/seances'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { currentUserId } from '@/lib/supabase/server'
 
@@ -52,8 +53,6 @@ export interface ResultatHealth {
   pas?: number
 }
 
-const TYPE_PAR_DISCIPLINE = { run: 'RUN', swim: 'SWIM', strength: 'UPPER' } as const
-
 export async function importHealth(brut: unknown): Promise<ResultatHealth> {
   const userId = await currentUserId()
   if (!userId) return { ok: false, message: 'Session expirée.' }
@@ -88,72 +87,13 @@ export async function importHealth(brut: unknown): Promise<ResultatHealth> {
     if (error) return { ok: false, message: `Enregistrement des pesées impossible : ${error.message}` }
   }
 
-  let ecrites = 0
-  if (seances.length > 0) {
-    const dates = [...new Set(seances.map((s) => s.date))]
-    const { data } = await supabase
-      .from('sessions')
-      .select('id, date, kind, status, note')
-      .eq('user_id', userId)
-      .in('date', dates)
-
-    const existantes = (data ?? []) as {
-      id: string
-      date: string
-      kind: string
-      status: string
-      note: string | null
-    }[]
-
-    for (const s of seances) {
-      // Health ne donne pas de clé stable : on la range dans la note pour
-      // qu'un réimport reconnaisse la séance au lieu de la dupliquer.
-      const marque = `health:${s.cle}`
-      if (existantes.some((e) => e.note?.includes(marque))) continue
-
-      const log =
-        s.kind === 'run'
-          ? { km: s.distance === null ? null : Math.round((s.distance / 1000) * 100) / 100, minutes: s.minutes, hr: null, elev: null }
-          : s.kind === 'swim'
-            ? // Health ne dit pas ce qui a été nagé en continu, ni comment.
-              { minutes: s.minutes, distance: s.distance, continuous: null, pauses: null, stroke: null, crawl: null }
-            : { minutes: s.minutes }
-
-      const champs = {
-        status: 'done' as const,
-        kind: s.kind,
-        duration: Math.round(s.minutes),
-        log,
-        // Health ne mesure aucun ressenti : la colonne reste vide.
-        rpe: null,
-        source: 'health' as const,
-        note: marque,
-      }
-
-      const prevue = existantes.find(
-        (e) => e.date === s.date && e.kind === s.kind && e.status !== 'done',
-      )
-
-      if (prevue) {
-        await supabase.from('sessions').update(champs).eq('id', prevue.id)
-        prevue.status = 'done'
-        prevue.note = marque
-      } else {
-        await supabase.from('sessions').insert({
-          user_id: userId,
-          date: s.date,
-          type: TYPE_PAR_DISCIPLINE[s.kind],
-          week: 0,
-          title: 'Séance importée depuis Health',
-          intensity: 0,
-          unplanned: true,
-          ...champs,
-        })
-        existantes.push({ id: 'nouvelle', date: s.date, kind: s.kind, status: 'done', note: marque })
-      }
-      ecrites++
-    }
-  }
+  const ecrites = await ecrireSeances(
+    supabase,
+    userId,
+    seances,
+    'health',
+    'Séance importée depuis Health',
+  )
 
   revalidatePath('/reglages')
   revalidatePath('/aujourdhui')

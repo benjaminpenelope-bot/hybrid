@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { empreinteDe, jetonDeLEntete } from '@/lib/ingest/jeton'
+import { ecrireSeances } from '@/lib/ingest/seances'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
@@ -24,6 +25,25 @@ export const dynamic = 'force-dynamic'
 
 const jour = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date attendue au format AAAA-MM-JJ.')
 
+/**
+ * Une seance venue d'ailleurs.
+ *
+ * `cle` est ce qui evite les doublons : la source doit fournir quelque chose
+ * de stable pour une meme seance — un identifiant d'activite, ou a defaut
+ * l'heure de debut. Absente, on la reconstitue depuis la date et la
+ * discipline, ce qui suffit tant qu'on n'en fait pas deux le meme jour.
+ */
+const seance = z.object({
+  date: jour,
+  discipline: z.enum(['run', 'swim', 'bike', 'strength']),
+  minutes: z.number().positive().max(1440),
+  /** Metres. Absente sur un home-trainer ou une seance de force. */
+  metres: z.number().nonnegative().max(500_000).nullable().default(null),
+  fc_moyenne: z.number().int().min(25).max(240).nullable().default(null),
+  denivele: z.number().int().min(0).max(20_000).nullable().default(null),
+  cle: z.string().min(1).max(200).optional(),
+})
+
 const corps = z.object({
   pas: z
     .array(z.object({ date: jour, pas: z.number().int().positive().max(200_000) }))
@@ -33,6 +53,7 @@ const corps = z.object({
     .array(z.object({ date: jour, kg: z.number().min(30).max(250) }))
     .max(400)
     .default([]),
+  seances: z.array(seance).max(200).default([]),
 })
 
 export type IngestInput = z.input<typeof corps>
@@ -72,9 +93,9 @@ export async function POST(request: NextRequest) {
     return refus(400, parsed.error.issues[0]?.message ?? 'Envoi invalide.')
   }
 
-  const { pas, poids } = parsed.data
-  if (pas.length === 0 && poids.length === 0) {
-    return refus(400, 'Rien à enregistrer : ni pas, ni pesée.')
+  const { pas, poids, seances } = parsed.data
+  if (pas.length === 0 && poids.length === 0 && seances.length === 0) {
+    return refus(400, 'Rien à enregistrer : ni pas, ni pesée, ni séance.')
   }
 
   if (pas.length > 0) {
@@ -98,10 +119,36 @@ export async function POST(request: NextRequest) {
     if (error) return refus(500, `Pesées non enregistrées : ${error.message}`)
   }
 
+  /*
+   * Les seances passent par le meme ecrivain que l'export Apple Health : une
+   * seance importee se rapproche d'abord de ce qui etait prevu ce jour-la,
+   * sans quoi le programme se croirait manque alors qu'il a ete suivi.
+   */
+  const ecrites = await ecrireSeances(
+    supabase,
+    profil.id,
+    seances.map((s) => ({
+      cle: s.cle ?? `${s.date}-${s.discipline}`,
+      date: s.date,
+      kind: s.discipline,
+      minutes: s.minutes,
+      distance: s.metres,
+      hr: s.fc_moyenne,
+      elev: s.denivele,
+    })),
+    'health',
+    'Séance importée',
+  )
+
   await supabase
     .from('profiles')
     .update({ ingest_token_last_used_at: new Date().toISOString() })
     .eq('id', profil.id)
 
-  return NextResponse.json({ ok: true, pas: pas.length, poids: poids.length })
+  return NextResponse.json({
+    ok: true,
+    pas: pas.length,
+    poids: poids.length,
+    seances: ecrites,
+  })
 }
