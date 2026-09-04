@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { LogoMark } from '@/components/logo'
 import { DemoSemaine } from '@/components/landing/demo-semaine'
 import { AnneauVideo } from '@/components/anneau-video'
+import { BandeVideo } from '@/components/bande-video'
 import { Vitrine } from '@/components/landing/vitrine'
 import { IconBarre, IconCourse, IconNatation, IconVelo } from '@/components/ui/icons'
 
@@ -25,6 +26,8 @@ export default function LandingPage() {
     <main className="relative overflow-hidden">
       <Header />
       <Hero />
+      {/* La bande fait le passage entre la promesse et sa demonstration. */}
+      <BandeVideo />
       <Demonstration />
       <Ecran />
       <Coach />
@@ -126,7 +129,7 @@ function Hero() {
         <form
           action="/login"
           method="get"
-          className="entre glass mt-9 w-full max-w-[430px] rounded-[26px] p-6"
+          className="entre glass lisere mt-9 w-full max-w-[430px] rounded-[26px] p-6"
           style={{ animationDelay: '280ms' }}
         >
           <p className="dsp text-[20px]">Crée ton compte</p>
@@ -139,6 +142,8 @@ function Hero() {
           <label htmlFor="email-hero" className="sr-only">
             Adresse e-mail
           </label>
+          {/* Le filet argente tourne autour du champ : c'est par la que tout
+              commence, c'est donc lui qu'on doit voir. */}
           <input
             id="email-hero"
             name="email"
@@ -147,7 +152,7 @@ function Hero() {
             autoComplete="email"
             required
             placeholder="toi@exemple.fr"
-            className="field mt-5 text-center"
+            className="field lisere mt-5 text-center"
           />
           <button type="submit" className="btn btn-solid w-full">
             Commencer

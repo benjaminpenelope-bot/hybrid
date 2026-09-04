@@ -69,26 +69,22 @@ export function AnneauVideo({ className = '' }: { className?: string }) {
         mixBlendMode: 'screen',
         pointerEvents: 'none',
         /*
-         * Le noir de la source n'est pas un vrai noir : compression aidant,
-         * il tire vers le gris tres sombre. Or `screen` ne rend jamais plus
-         * sombre que ce qu'il recouvre — ce gris suffisait donc a dessiner un
-         * carre plat au milieu du degrade de la page. Le contraste le ramene
-         * a zero sans toucher aux traits blancs.
-         *
-         * Il ecrase aussi le halo diffus que la source entoure de l'anneau :
-         * tres sombre mais pas nul, il eclaircissait un disque autour de la
-         * video, et c'est ce disque qu'on voyait comme un changement de
-         * couleur.
+         * Aucune correction de contraste : mesure faite sur la source, son
+         * noir vaut exactement zero. `screen` laisse donc le fond de la page
+         * intact tout seul, et les filtres que j'avais empiles pour « ecraser
+         * le noir » n'ecrasaient en realite que l'anneau. Il ne reste qu'une
+         * luminosite, qui multiplie — donc qui releve les gris du trace sans
+         * jamais ressusciter un noir nul.
          */
-        filter: 'contrast(2.1) brightness(0.96)',
+        filter: 'brightness(1.7)',
         /*
-         * Et le masque efface les angles : meme noire, une image reste un
-         * rectangle, et l'oeil finit toujours par le trouver.
+         * Le masque n'efface plus un rectangle — il n'y en a pas — mais il
+         * adoucit la fin du halo, qui sinon s'arrete net au bord du cadre.
          */
         WebkitMaskImage:
-          'radial-gradient(circle at 50% 50%, #000 40%, rgb(0 0 0 / 0.35) 62%, transparent 76%)',
+          'radial-gradient(circle at 50% 50%, #000 58%, rgb(0 0 0 / 0.5) 76%, transparent 92%)',
         maskImage:
-          'radial-gradient(circle at 50% 50%, #000 40%, rgb(0 0 0 / 0.35) 62%, transparent 76%)',
+          'radial-gradient(circle at 50% 50%, #000 58%, rgb(0 0 0 / 0.5) 76%, transparent 92%)',
       }}
     />
   )

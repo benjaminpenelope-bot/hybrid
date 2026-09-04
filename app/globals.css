@@ -363,6 +363,70 @@
       0 10px 30px rgb(0 0 0 / 0.6);
   }
 
+  /*
+   * LISERE METALLIQUE
+   *
+   * Un eclat argente qui fait le tour d'un bloc sombre, le long de sa
+   * bordure. Meme matiere que le logo — du chrome sur lequel la lumiere
+   * glisse.
+   *
+   * Deux mecanismes, et aucun n'est celui qu'on essaie en premier.
+   *
+   * Le trace : un degrade conique couvre tout l'element, puis deux masques
+   * s'excluent — l'un s'arrete a la boite de contenu, l'autre couvre la boite
+   * entiere — si bien qu'il ne reste que l'anneau entre les deux. C'est ce
+   * qui permet de border un bloc translucide : un cadre pose en dessous se
+   * verrait par transparence au milieu.
+   *
+   * Le mouvement : c'est l'angle du degrade qui tourne, declare en
+   * `@property` pour etre animable, et non l'element. Faire tourner
+   * l'element emporterait le masque avec lui, donc l'anneau lui-meme.
+   *
+   * Reserve aux blocs sombres : sur un bouton blanc, un eclat blanc ne se
+   * voit pas, et le fond qui bougeait sous le libelle le rendait penible a
+   * lire.
+   */
+  .lisere {
+    @apply relative;
+  }
+
+  .lisere::before {
+    content: '';
+    @apply pointer-events-none absolute inset-0;
+    padding: 2px;
+    border-radius: inherit;
+    /* L'eclat deborde legerement du filet : sans cette lueur il reste un
+       trait net, alors que du chrome eclaire diffuse autour de lui. */
+    filter: drop-shadow(0 0 5px rgb(255 255 255 / 0.35));
+    background: conic-gradient(
+      from var(--tour),
+      rgb(255 255 255 / 0.06) 0deg,
+      rgb(255 255 255 / 0.06) 26deg,
+      rgb(255 255 255 / 0.98) 46deg,
+      rgb(206 214 232 / 0.5) 66deg,
+      rgb(255 255 255 / 0.06) 96deg,
+      rgb(255 255 255 / 0.06) 206deg,
+      rgb(255 255 255 / 0.62) 226deg,
+      rgb(255 255 255 / 0.06) 252deg,
+      rgb(255 255 255 / 0.06) 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    animation: tour-lisere 6s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lisere::before {
+      animation: none;
+    }
+  }
+
   /* Secondaire : du verre. Present, mais qui ne dispute rien. */
   .btn-ghost {
     @apply glass text-text;
@@ -527,6 +591,23 @@
  * alors dans une position quelconque, ce qui est sans consequence puisqu'elle
  * est symetrique d'ordre trois.
  */
+/*
+ * L'angle du degre conique du lisere. Une propriete personnalisee n'est
+ * animable que si son type est declare : sans ce `@property`, le navigateur
+ * la traite comme une chaine et saute d'un coup de 0 a 360.
+ */
+@property --tour {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes tour-lisere {
+  to {
+    --tour: 360deg;
+  }
+}
+
 @keyframes rotation-lente {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
