@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Chip, ChipGroup, ChipMulti } from '@/components/ui/chip'
 import { Field, Question } from '@/components/ui/field'
+import { ProjectionPlan } from '@/components/projection-plan'
 import { SilhouetteFemme, SilhouetteHomme } from '@/components/ui/silhouettes'
 import {
   EQUIPMENT_LABELS,
@@ -1140,10 +1141,25 @@ export function OnboardingForm({
             volumeCourseHebdo={d.sports.includes('running') ? num(d.runWeeklyKm) : null}
           />
 
-          <p className="mt-5 text-[12px] leading-5 text-dim">
-            La semaine 1 sert de point de départ : le volume monte ensuite de 8 % par semaine, avec
-            une décharge toutes les quatre. Il reste deux questions, qui ne changent pas le
-            programme mais permettent de suivre ton corps et tes contraintes.
+          {/*
+            Et ou cela mene. La semaine 1 dit ce qu'on fait lundi ; celle-ci
+            dit pourquoi on s'y met. C'est la seule question qu'on se pose
+            vraiment le premier jour, et la reponse etait dans le moteur sans
+            qu'aucun ecran l'affiche.
+          */}
+          <ProjectionPlan
+            className="mt-7"
+            sports={d.sports}
+            objectif={d.goalMain}
+            {...(d.sports.includes('running') && num(d.runWeeklyKm) > 0
+              ? { baseKm: baseWeeklyKm(num(d.runWeeklyKm)) }
+              : {})}
+          />
+
+          <p className="mt-6 text-[12px] leading-5 text-dim">
+            Le volume monte de 8 % par semaine, avec une décharge toutes les quatre, et il est
+            borné : jamais plus de trois fois ton point de départ. Il reste deux questions, qui ne
+            changent pas le programme mais permettent de suivre ton corps et tes contraintes.
           </p>
         </section>
       )}

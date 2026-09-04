@@ -16,6 +16,8 @@ import {
   WeightChart,
 } from '@/components/weekly-charts'
 import { etatProfil } from '@/lib/db/profil-complet'
+import { ProjectionPlan } from '@/components/projection-plan'
+import type { GoalType, Sport } from '@/lib/engine/types'
 import { prolongerSiNecessaire } from '@/lib/db/prolonger'
 import { loadState } from '@/lib/db/queries'
 import { VerdictCard } from '@/components/verdict-card'
@@ -67,6 +69,11 @@ export default async function Page() {
   const load = loadSeries(state, 7, today)
   const l7 = sum(load.map((p) => p.load))
   const hasHistory = state.sessions.some((s) => s.status === 'done')
+  const seancesFaites = state.sessions.filter((s) => s.status === 'done').length
+  const objectifPrincipal =
+    (state.goals.find((g) => g.status === 'actif' && g.priority === 'principal')?.type as
+      | GoalType
+      | undefined) ?? null
   const upcoming = state.sessions.filter((s) => s.date > today).slice(0, 4)
   // Seconde colonne des grands écrans : le recul que le mobile n'a pas la place d'afficher.
   const weeks = weeklySeries(state, today, 12)
@@ -114,6 +121,23 @@ export default async function Page() {
               <SessionCard session={session} />
             </div>
           </section>
+
+          {/*
+            Les premiers jours, le moteur n'a rien mesure : le verdict dit
+            honnetement « je ne sais pas comment tu te sens », les scores sont
+            partiels, les graphiques vides. C'est juste, et c'est le moment ou
+            l'application donne le moins envie de revenir. La projection comble
+            ce creux sans rien inventer — puis s'efface des que l'historique
+            parle a sa place.
+          */}
+          {seancesFaites < 6 && (
+            <ProjectionPlan
+              className="mt-6"
+              sports={(state.profile.sports ?? []) as Sport[]}
+              objectif={objectifPrincipal}
+              {...(state.profile.baseWeeklyKm ? { baseKm: state.profile.baseWeeklyKm } : {})}
+            />
+          )}
 
           <section className="mt-6">
             <h2 className="eyebrow mb-2.5">Prochains jours</h2>

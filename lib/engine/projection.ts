@@ -49,6 +49,13 @@ export interface OptionsProjection {
 
 const TOUS: Slot[] = [0, 1, 2, 3, 4, 5, 6]
 
+/*
+ * Un volume s'ecrit « 50,5 km » et non « 50.5 km ». La regle vaut partout
+ * dans l'application, et ce module produit deja des chaines destinees a
+ * l'affichage : la formater ici evite d'avoir a la reparer a l'ecran.
+ */
+const km = (v: number): string => (Number.isInteger(v) ? `${v} km` : `${v.toFixed(1).replace('.', ',')} km`)
+
 export function projection({
   sports,
   goal = null,
@@ -64,13 +71,13 @@ export function projection({
     const slot = TOUS.find((s) => micro[s] === 'LONG')!
     const d = kmDesCourses(1, baseKm, micro).get(slot)
     const a = kmDesCourses(semaines, baseKm, micro).get(slot)
-    if (d && a) jalons.push({ quoi: 'Sortie longue', depart: `${d} km`, arrivee: `${a} km` })
+    if (d && a) jalons.push({ quoi: 'Sortie longue', depart: km(d), arrivee: km(a) })
   }
   if (contient('RUN') || contient('LONG')) {
     jalons.push({
       quoi: 'Course par semaine',
-      depart: `${weekVolume(1, baseKm)} km`,
-      arrivee: `${weekVolume(semaines, baseKm)} km`,
+      depart: km(weekVolume(1, baseKm)),
+      arrivee: km(weekVolume(semaines, baseKm)),
     })
   }
 

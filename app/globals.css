@@ -385,17 +385,40 @@
    * qui suppose une couleur de texte transparente — sinon elle le recouvre.
    */
   .argent {
+    /*
+     * Un degrade fixe donnait bien du metal, mais un metal eteint : sur un
+     * mot de deux lignes il se lit comme un simple gris. Ce qui fait le
+     * chrome, ce n'est pas la teinte, c'est le reflet qui s'y deplace.
+     *
+     * Le degrade est donc trois fois plus large que le mot et glisse
+     * lentement dessous. Il boucle sur lui-meme — la teinte de fin est celle
+     * du debut — pour qu'aucun saut ne se voie a la reprise.
+     */
     background-image: linear-gradient(
-      170deg,
-      #ffffff 0%,
-      #e8ecf5 26%,
-      #98a1b5 54%,
-      #f2f5fb 78%,
+      100deg,
+      #b9c1d3 0%,
+      #ffffff 12%,
+      #8f98ad 24%,
+      #f4f7fd 36%,
+      #a7afc4 48%,
+      #ffffff 60%,
+      #8f98ad 72%,
+      #eef2f9 86%,
       #b9c1d3 100%
     );
+    background-size: 300% 100%;
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
+    animation: reflet-argent 7s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .argent {
+      animation: none;
+      /* Une position ou le mot reste eclaire plutot que pris dans une ombre. */
+      background-position: 30% 0;
+    }
   }
 
   /*
@@ -668,6 +691,16 @@
 @keyframes tour-lisere {
   to {
     --tour: 360deg;
+  }
+}
+
+/* Le reflet parcourt la largeur du degrade, qui vaut trois fois le mot. */
+@keyframes reflet-argent {
+  from {
+    background-position: 0% 0;
+  }
+  to {
+    background-position: -200% 0;
   }
 }
 
