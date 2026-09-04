@@ -59,7 +59,11 @@ export function SessionRunner({ session }: { session: Session }) {
   const [minutes, setMinutes] = useState(session.duration || 0)
   const [hr, setHr] = useState(0)
   const [elev, setElev] = useState(0)
-  /** Mesures facultatives d'une sortie : repliees tant qu'on ne les demande pas. */
+  /**
+   * Mesures facultatives — FC et denivele a la course, distance totale a la
+   * natation. Repliees tant qu'on ne les demande pas : elles ne nourrissent
+   * ni le score, ni la charge, ni le programme.
+   */
   const [detail, setDetail] = useState(false)
   const [finisherDone, setFinisherDone] = useState<boolean | null>(null)
 
@@ -444,14 +448,31 @@ export function SessionRunner({ session }: { session: Session }) {
               step={25}
               hint="C'est ce chiffre qui décide de ton score natation, pas le total."
             />
-            <ChoixNombre
-              label="Distance totale"
-              value={distance}
-              onChange={setDistance}
-              options={[500, 750, 1000, 1500, 2000]}
-              unit="m"
-              step={50}
-            />
+            {/*
+              La distance totale est repliee : c'est la distance sans pause
+              qui decide du score, et la legende juste au-dessus le dit. Le
+              total ne sert qu'au volume hebdomadaire et au bilan — utile,
+              mais pas au point de le demander a tout le monde a chaque
+              seance.
+            */}
+            {detail ? (
+              <ChoixNombre
+                label="Distance totale"
+                value={distance}
+                onChange={setDistance}
+                options={[500, 750, 1000, 1500, 2000]}
+                unit="m"
+                step={50}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setDetail(true)}
+                className="mb-4 w-full rounded-[11px] border border-line px-3 py-2.5 text-[12.5px] text-mut active:bg-[rgb(255_255_255/0.05)]"
+              >
+                Ajouter la distance totale
+              </button>
+            )}
 
             <div className="mb-4">
               <div className="eyebrow mb-1.5">Nage</div>

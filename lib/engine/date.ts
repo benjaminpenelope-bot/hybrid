@@ -82,6 +82,23 @@ export function formatDate(date: ISODate): string {
   return `${DAYS_FR[dt.getUTCDay()]} ${dt.getUTCDate()} ${MONTHS_FR[dt.getUTCMonth()]}`
 }
 
+/**
+ * Une période, dite comme on la dit à l'oral : « du 12 au 18 mars », et
+ * « du 28 février au 6 mars » quand elle change de mois.
+ *
+ * `formatDate` aux deux bouts donnait « Du Jeu 12 mars au Mer 18 mars » : les
+ * jours de semaine n'apprennent rien sur une période et le mois s'y répète.
+ */
+export function formatPeriode(du: ISODate, au: ISODate): string {
+  const a = parse(du)
+  const b = parse(au)
+  const memeMois = a.getUTCMonth() === b.getUTCMonth() && a.getUTCFullYear() === b.getUTCFullYear()
+  const debut = memeMois
+    ? `${a.getUTCDate()}`
+    : `${a.getUTCDate()} ${MONTHS_FR[a.getUTCMonth()]}`
+  return `du ${debut} au ${b.getUTCDate()} ${MONTHS_FR[b.getUTCMonth()]}`
+}
+
 export function dayLabel(date: ISODate): string {
   return DAYS_FR[weekday(date)] ?? ''
 }

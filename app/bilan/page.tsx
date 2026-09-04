@@ -8,7 +8,7 @@ import {
   whatMustProgress,
   whatProgresses,
 } from '@/lib/engine/advice'
-import { formatDate, todayISO } from '@/lib/engine/date'
+import { addDays, formatDate, formatPeriode, todayISO } from '@/lib/engine/date'
 import { computeRecovery } from '@/lib/engine/recovery'
 import { buildReview } from '@/lib/engine/review'
 import { computeScores } from '@/lib/engine/scoring'
@@ -48,12 +48,37 @@ export default async function Page() {
     firstDone !== undefined &&
     (new Date(today).getTime() - new Date(firstDone).getTime()) / 86400000 >= 30
 
+  const score = weekScore(state, today)
+
   return (
     <main className="wrap py-[18px]">
       <h1 className="dsp text-[22px]">Ton bilan</h1>
-      <p className="mb-3 text-[12.5px] text-dim">7 derniers jours</p>
+      {/* La periode, datee. « 7 derniers jours » obligeait a compter soi-meme
+          de quel dimanche on parlait. */}
+      <p className="text-[12.5px] text-dim">
+        Semaine {formatPeriode(addDays(today, -6), today)}
+      </p>
 
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+      {/*
+        Le score ouvre le bilan.
+        
+        Il figurait en cinquieme position, apres six tuiles et trois blocs de
+        prose : le chiffre qui resume la semaine arrivait une fois la semaine
+        deja racontee. Un bilan commence par son verdict, et le detail vient
+        l'expliquer.
+      */}
+      <section className="glass mt-4 flex items-center justify-between gap-4 rounded-card p-5">
+        <div className="min-w-0">
+          <p className="eyebrow">Score de la semaine</p>
+          <p className="mt-1.5 text-[13px] leading-6 text-mut">
+            {week.done} séance{week.done > 1 ? 's' : ''} sur {week.planned} prévue
+            {week.planned > 1 ? 's' : ''}. Assiduité 60 %, volume atteint 40 %.
+          </p>
+        </div>
+        <span className="num shrink-0 text-[44px] leading-none">{score}</span>
+      </section>
+
+      <div className="mt-6 grid grid-cols-2 gap-2 lg:grid-cols-4">
         <Stat label="Séances" value={`${week.done}/${week.planned}`} sub="réalisées / prévues" />
         <Stat
           label="Course"
@@ -123,14 +148,6 @@ export default async function Page() {
       </section>
 
       <section className="mt-6">
-        <h2 className="eyebrow mb-2.5">Score de la semaine</h2>
-        <div className="card py-6 text-center">
-          <div className="num text-[46px] leading-none">{weekScore(state, today)}</div>
-          <p className="mt-1.5 text-[12px] text-dim">assiduité 60 % · volume atteint 40 %</p>
-        </div>
-      </section>
-
-      <section className="mt-6">
         <h2 className="eyebrow mb-2.5">Bilan mensuel</h2>
         {monthlyReady ? (
           <div className="card divide-y divide-line py-0">
@@ -155,20 +172,22 @@ export default async function Page() {
             ))}
           </div>
         ) : (
-          <div className="card">
-            <p className="text-[13px] leading-relaxed text-mut">
-              Disponible à partir du{' '}
-              {firstDone
-                ? formatDate(
-                    new Date(new Date(firstDone).getTime() + 30 * 86400000)
-                      .toISOString()
-                      .slice(0, 10),
-                  )
-                : 'premier mois enregistré'}
-              , avec la comparaison automatique mois par mois : distance de course, distance
-              continue en natation, poids, répétitions à la barre.
-            </p>
-          </div>
+          /*
+            Une ligne, pas une carte. Pendant le premier mois, cette section
+            n'a rien a montrer : lui donner la meme place qu'aux autres
+            revenait a consacrer un bloc entier a dire qu'il n'y a rien.
+          */
+          <p className="text-[12.5px] leading-relaxed text-dim">
+            À partir du{' '}
+            {firstDone
+              ? formatDate(
+                  new Date(new Date(firstDone).getTime() + 30 * 86400000)
+                    .toISOString()
+                    .slice(0, 10),
+                )
+              : 'premier mois enregistré'}
+            , mois par mois : course, natation, poids, répétitions.
+          </p>
         )}
       </section>
 
