@@ -7,6 +7,8 @@ import { joursRestants, lireAbonnement } from '@/lib/coach/abonnement'
 import { LIMITES, planDe } from '@/lib/coach/quota'
 import { createClient, currentUserId } from '@/lib/supabase/server'
 import { HealthImport } from './health-import'
+import { adresseDuSite } from '@/lib/paiement/stripe'
+import { ImportAuto } from './import-auto'
 import { MesDonnees } from './mes-donnees'
 import { MotDePasse } from './mot-de-passe'
 import { StravaCard } from './strava-card'
@@ -52,6 +54,16 @@ export default async function Page({
   const { data } = await supabase.rpc('strava_status')
   const statut = (Array.isArray(data) ? data[0] : data) as StravaStatus | undefined
 
+  /*
+   * Le jeton d'import : on ne lit que son existence et la date du dernier
+   * envoi. L'empreinte elle-meme n'a aucune raison de remonter jusqu'ici.
+   */
+  const { data: jetonRow } = await supabase
+    .from('profiles')
+    .select('ingest_token_hash, ingest_token_last_used_at')
+    .eq('id', userId)
+    .maybeSingle<{ ingest_token_hash: string | null; ingest_token_last_used_at: string | null }>()
+
   const erreur = searchParams.erreur ? ERREURS[searchParams.erreur] : undefined
   const configure = stravaConfigured() && chiffrementDisponible()
 
@@ -74,6 +86,24 @@ export default async function Page({
           Compte Strava connecté. Lance une synchronisation pour rattraper les 30 derniers jours.
         </p>
       )}
+
+      {/*
+        L'import automatique passe en premier : c'est le seul des trois qui ne
+        demande rien apres son installation, et les deux autres se lisent
+        mieux comme ses appoints.
+      */}
+      <section className="mb-6">
+        <h2 className="eyebrow mb-2.5">Import automatique</h2>
+        <ImportAuto
+          adresse={`${adresseDuSite()}/api/ingest`}
+          jetonExiste={Boolean(jetonRow?.ingest_token_hash)}
+          dernierEnvoi={
+            jetonRow?.ingest_token_last_used_at
+              ? formatDate(jetonRow.ingest_token_last_used_at.slice(0, 10))
+              : null
+          }
+        />
+      </section>
 
       <section className="mb-6">
         <h2 className="eyebrow mb-2.5">Strava</h2>
