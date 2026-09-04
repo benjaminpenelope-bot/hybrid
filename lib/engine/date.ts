@@ -83,6 +83,17 @@ export function formatDate(date: ISODate): string {
 }
 
 /**
+ * Une date dans une phrase : « depuis le 14 août ».
+ *
+ * `formatDate` y glisse le jour de la semaine — « depuis le Ven 14 août » —
+ * qui se lit mal après un article et n'apprend rien sur une date passée.
+ */
+export function formatJour(date: ISODate): string {
+  const dt = parse(date)
+  return `${dt.getUTCDate()} ${MONTHS_FR[dt.getUTCMonth()]}`
+}
+
+/**
  * Une période, dite comme on la dit à l'oral : « du 12 au 18 mars », et
  * « du 28 février au 6 mars » quand elle change de mois.
  *

@@ -88,6 +88,12 @@ export interface PlanOptions {
    * demandait de remesurer un chiffre qu'il avait deja.
    */
   reperesConnus?: string[]
+  /**
+   * Plafond de volume hebdomadaire, en kilometres. Fourni quand le plan est
+   * ancre en cours de route : la base n'est plus alors interpretable comme un
+   * volume, et le plafond ne peut plus s'en deduire.
+   */
+  plafondKm?: number
 }
 
 function defaultId(): string {
@@ -101,8 +107,17 @@ function defaultId(): string {
  * Volume de course de la semaine `w`, en km.
  * `baseKm` est le volume de la semaine 1, propre à chaque athlète.
  */
-export function weekVolume(w: number, baseKm: number = RUN_KM_W1): number {
-  const plafond = Math.min(baseKm * PLAFOND_FACTEUR, PLAFOND_KM)
+export function weekVolume(w: number, baseKm: number = RUN_KM_W1, plafondKm?: number): number {
+  /*
+   * Le plafond se deduit de la base, sauf quand on le fournit.
+   *
+   * Il faut pouvoir le fournir depuis qu'une prolongation ancre le volume au
+   * milieu du plan : la base transmise n'est plus alors le volume d'une
+   * semaine mais la valeur qui, composee jusqu'a la semaine visee, donne le
+   * volume mesure. Elle est donc petite, et un plafond calcule dessus
+   * mordrait des la premiere semaine du bloc.
+   */
+  const plafond = plafondKm ?? Math.min(baseKm * PLAFOND_FACTEUR, PLAFOND_KM)
   // Le plafond s'applique avant la decharge : une semaine de decharge doit
   // rester une baisse par rapport a la semaine pleine, meme au plafond.
   let v = Math.min(baseKm * Math.pow(RUN_GROWTH, w - 1), plafond)
@@ -907,8 +922,8 @@ export interface RunSplit {
   long: number
 }
 
-export function runSplit(w: number, baseKm: number = RUN_KM_W1): RunSplit {
-  const vol = weekVolume(w, baseKm)
+export function runSplit(w: number, baseKm: number = RUN_KM_W1, plafondKm?: number): RunSplit {
+  const vol = weekVolume(w, baseKm, plafondKm)
   const easy = half(vol * 0.3)
   const fundamental = half(vol * 0.28)
   return { easy, fundamental, long: half(vol - easy - fundamental) }
@@ -934,8 +949,9 @@ export function kmDesCourses(
   w: number,
   baseKm: number,
   micro: Record<Slot, SessionType>,
+  plafondKm?: number,
 ): Map<Slot, number> {
-  const vol = weekVolume(w, baseKm)
+  const vol = weekVolume(w, baseKm, plafondKm)
   const out = new Map<Slot, number>()
   for (const slot of slotsDeCourse(micro)) {
     const poids =
@@ -1028,6 +1044,7 @@ export function buildSession(
     sports = [],
     availableWeekdays = [],
     goal = null,
+    plafondKm,
   } = opts
   const w = Math.max(1, week)
   const micro = microcycleDe(goal)
@@ -1121,7 +1138,9 @@ export function buildSession(
       }
 
     case 'RUN': {
-      const km = kmDesCourses(w, baseKm, micro).get(slot) ?? runSplit(w, baseKm).fundamental
+      const km =
+        kmDesCourses(w, baseKm, micro, plafondKm).get(slot) ??
+        runSplit(w, baseKm, plafondKm).fundamental
       const isEasy = estFootingSouple(slot, effectif)
       if (isEasy) {
         return {
@@ -1357,7 +1376,8 @@ export function buildSession(
     }
 
     default: {
-      const long = kmDesCourses(w, baseKm, micro).get(slot) ?? runSplit(w, baseKm).long
+      const long =
+        kmDesCourses(w, baseKm, micro, plafondKm).get(slot) ?? runSplit(w, baseKm, plafondKm).long
       return {
         ...base,
         type: 'LONG',

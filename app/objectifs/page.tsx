@@ -3,7 +3,14 @@ import { redirect } from 'next/navigation'
 import { Meter } from '@/components/ui/stat'
 import { loadState } from '@/lib/db/queries'
 import { todayISO } from '@/lib/engine/date'
-import { computeGoals, HORIZONS, LIBELLE_OBJECTIF, objectifsActifs } from '@/lib/engine/goals'
+import {
+  computeGoals,
+  HORIZONS,
+  LIBELLE_OBJECTIF,
+  limitationsActives,
+  objectifsActifs,
+} from '@/lib/engine/goals'
+import { Limitations } from './limitations'
 import { currentUserId } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -19,6 +26,8 @@ export default async function Page() {
   const today = todayISO()
   const goals = computeGoals(state, today)
   const declares = objectifsActifs(state)
+  const actives = limitationsActives(state, today)
+  const closes = state.limitations.filter((l) => !actives.some((a) => a.id === l.id))
 
   return (
     <main className="wrap py-[18px]">
@@ -55,6 +64,12 @@ export default async function Page() {
       )}
 
       <div className="colonnes">
+      {/*
+        Les limitations d'abord : elles conditionnent tout ce qui suit, et
+        c'est la seule chose de cet ecran qui demande un geste.
+      */}
+      <Limitations actives={actives} closes={closes} />
+
       {HORIZONS.map((horizon) => {
         const duHorizon = goals.filter((g) => g.horizon === horizon)
         // Un objectif n'a pas forcement de jalon a chaque horizon : un titre

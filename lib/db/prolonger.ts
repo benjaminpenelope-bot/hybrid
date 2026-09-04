@@ -1,6 +1,7 @@
-import { todayISO } from '@/lib/engine/date'
+import { baseAncreeSur } from '@/lib/engine/ancrage'
+import { addDays, todayISO } from '@/lib/engine/date'
 import { prolongationRequise } from '@/lib/engine/horizon'
-import { generatePlan } from '@/lib/engine/program'
+import { baseWeeklyKm, generatePlan } from '@/lib/engine/program'
 import type { GoalType, Sport } from '@/lib/engine/types'
 import { sessionToRow } from '@/lib/db/mappers'
 import { createClient } from '@/lib/supabase/server'
@@ -35,6 +36,22 @@ const num = (v: number | string | null): number | undefined => {
   if (v === null) return undefined
   const n = typeof v === 'number' ? v : Number(v)
   return Number.isFinite(n) ? n : undefined
+}
+
+/**
+ * Volume hebdomadaire couru sur la fenetre, depuis les lignes brutes.
+ *
+ * `volumeHebdoReel` travaille sur un `AthleteState` complet, qu'il faudrait
+ * charger en entier pour trois champs. La regle est la meme, et la seule qui
+ * compte : trois sorties minimum, distance enregistree, moyenne sur quatre
+ * semaines.
+ */
+function volumeHebdoReelDepuisLignes(
+  lignes: { log: { km?: number | null } | null }[],
+): number | null {
+  const km = lignes.map((l) => l.log?.km ?? 0).filter((k) => k > 0)
+  if (km.length < 3) return null
+  return Math.round((km.reduce((a, b) => a + b, 0) / 4) * 10) / 10
 }
 
 /**
@@ -87,6 +104,34 @@ export async function prolongerSiNecessaire(userId: string): Promise<number> {
     .eq('user_id', userId)
     .eq('partial', false)
 
+  /*
+   * La base du prochain bloc part de ce qui a ete couru, pas de ce qui a ete
+   * declare a l'inscription. Sans quoi un athlete annoncant dix-huit
+   * kilometres en aout voyait son plan de decembre calcule sur dix-huit,
+   * qu'il en coure trente ou huit — alors que le produit affirme partout
+   * qu'il part du reel.
+   *
+   * Trois sorties minimum sur quatre semaines : en dessous, la moyenne
+   * decrirait un accident plutot qu'une habitude, et la base du questionnaire
+   * reste en vigueur.
+   */
+  const { data: courues } = await supabase
+    .from('sessions')
+    .select('date, status, log')
+    .eq('user_id', userId)
+    .eq('status', 'done')
+    .gte('date', addDays(today, -28))
+  const reel = volumeHebdoReelDepuisLignes(courues ?? [])
+
+  const baseProfil = num(profil.base_weekly_km) ?? null
+  const cible = reel === null ? null : baseWeeklyKm(reel)
+  const baseKm = cible === null ? baseProfil : baseAncreeSur(cible, requis.semaine)
+  /*
+   * Le plafond suit la reference mesuree, et non la base : celle-ci n'est
+   * plus un volume une fois ancree au milieu du plan.
+   */
+  const plafondKm = cible === null ? undefined : Math.min(cible * 3, 90)
+
   const plan = generatePlan(requis.depuis, requis.semaines, requis.semaine, {
     restWeekday: profil.rest_weekday,
     allowDoubles: profil.allow_doubles,
@@ -95,7 +140,8 @@ export async function prolongerSiNecessaire(userId: string): Promise<number> {
     sports: (profil.sports ?? []) as Sport[],
     availableWeekdays: profil.available_weekdays ?? [],
     reperesConnus: (reperes ?? []).map((r: { key: string }) => r.key),
-    ...(num(profil.base_weekly_km) !== undefined ? { baseKm: num(profil.base_weekly_km)! } : {}),
+    ...(baseKm !== null ? { baseKm } : {}),
+    ...(plafondKm !== undefined ? { plafondKm } : {}),
   })
 
   /*
