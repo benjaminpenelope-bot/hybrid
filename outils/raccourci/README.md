@@ -21,6 +21,16 @@ shortcuts sign --mode anyone \
 Le mode par défaut, `people-who-know-me`, le réserverait aux contacts du
 compte qui a signé.
 
+## Deux pieges rencontres, et leur cause
+
+`Formater la date` sans champ `WFDate` rend une chaine vide : l'action n'a
+alors rien a formater, et le format personnalise n'y change rien. La date du
+jour se designe par le jeton `CurrentDate`, ce qui evite au passage l'action
+`Date` separee.
+
+Le format lui-meme s'ecrit en chaine simple. Passe comme un jeton de texte, il
+etait ignore, et l'action rendait la date longue du systeme.
+
 ## L'action Santé, absente exprès
 
 Le raccourci lit le nombre de pas par une action **Demander une entrée**, que

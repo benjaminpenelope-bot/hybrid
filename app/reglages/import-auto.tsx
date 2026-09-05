@@ -148,9 +148,18 @@ export function ImportAuto({
         <ol className="mt-2.5 flex list-decimal flex-col gap-2 pl-4 text-[12.5px] leading-relaxed text-mut">
           <li>
             Ouvre l&rsquo;app <b className="text-text">Raccourcis</b>, crée un raccourci, ajoute
-            l&rsquo;action <b className="text-text">Obtenir un échantillon de santé</b> : type
-            <b className="text-text"> Pas</b>, période <b className="text-text">Aujourd&rsquo;hui</b>,
-            calcul <b className="text-text">Total</b>.
+            <b className="text-text"> Rechercher des échantillons de santé</b> — type
+            <b className="text-text"> Pas</b>, date de début
+            <b className="text-text"> aujourd&rsquo;hui</b> — puis
+            <b className="text-text"> Calculer l&rsquo;opération</b> réglée sur
+            <b className="text-text"> Somme</b>. L&rsquo;action de recherche rend une liste
+            d&rsquo;échantillons, pas un total : Santé en enregistre des dizaines par jour.
+          </li>
+          <li>
+            Ajoute <b className="text-text">Formater la date</b>, avec
+            <b className="text-text"> Date actuelle</b> en entrée et le format personnalisé{' '}
+            <span className="font-mono text-[11.5px]">yyyy-MM-dd</span>. Sans date en entrée,
+            l&rsquo;action rend une chaîne vide, et l&rsquo;envoi est refusé.
           </li>
           <li>
             Ajoute <b className="text-text">Obtenir le contenu de l&rsquo;URL</b> sur
