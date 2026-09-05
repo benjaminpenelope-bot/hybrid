@@ -45,11 +45,7 @@
 				<key>UUID</key><string>E15DC23B-1472-4B1A-8ED1-2B2467EFAD2A</string>
 				<key>CustomOutputName</key><string>Jour</string>
 				<key>WFDateFormatStyle</key><string>Custom</string>
-				<key>WFDateFormat</key>
-				<dict>
-					<key>Value</key><dict><key>string</key><string>yyyy-MM-dd</string></dict>
-					<key>WFSerializationType</key><string>WFTextTokenString</string>
-				</dict>
+				<key>WFDateFormat</key><string>yyyy-MM-dd</string>
 			</dict>
 		</dict>
 		<dict>

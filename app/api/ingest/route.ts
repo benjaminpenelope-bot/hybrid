@@ -23,7 +23,20 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
 
-const jour = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date attendue au format AAAA-MM-JJ.')
+/**
+ * Une date, et rien d'autre qu'une date sans ambiguite.
+ *
+ * On refuse « 05/09/2026 » plutot que de l'interpreter : selon la langue du
+ * telephone, ce serait le 5 septembre ou le 9 mai. Ecrire des pas sur le
+ * mauvais jour serait pire qu'une erreur — l'erreur se voit, la donnee fausse
+ * non. Le message cite donc ce qui est arrive, pour que la correction se
+ * fasse a la source.
+ */
+const jour = z
+  .string()
+  .refine((v) => /^\d{4}-\d{2}-\d{2}$/.test(v), (v) => ({
+    message: `Date attendue au format AAAA-MM-JJ. Reçu « ${v} ». Dans le raccourci, règle « Formater la date » sur un format personnalisé yyyy-MM-dd.`,
+  }))
 
 /**
  * Un nombre, meme s'il arrive en texte.
