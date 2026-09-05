@@ -21,6 +21,21 @@ shortcuts sign --mode anyone \
 Le mode par défaut, `people-who-know-me`, le réserverait aux contacts du
 compte qui a signé.
 
+## L'action Santé, absente exprès
+
+Le raccourci lit le nombre de pas par une action **Demander une entrée**, que
+l'athlète remplace une fois par l'action Santé.
+
+Ce n'est pas un oubli : je n'ai pas pu déterminer l'identifiant de l'action
+Santé sans appareil pour l'essayer. macOS ne peut pas servir de banc de test —
+Santé n'existe pas sur Mac, donc toute action de ce type y est « inconnue »,
+que son identifiant soit juste ou faux. Et une seule action inconnue empêche
+l'import du fichier entier, ce qui rend l'erreur plus coûteuse que l'absence.
+
+Le jour où l'identifiant est connu — en exportant depuis un iPhone un
+raccourci qui contient cette action, et en lisant son plist — il suffira de
+remplacer l'action `is.workflow.actions.ask` par la vraie, puis de resigner.
+
 Le fichier signé ne contient aucun jeton : il le demande à l'import. Il est
 servi publiquement, donc un jeton dedans donnerait à un inconnu de quoi écrire
 dans le compte de quelqu'un.

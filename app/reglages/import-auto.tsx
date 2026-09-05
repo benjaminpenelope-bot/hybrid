@@ -133,8 +133,12 @@ export function ImportAuto({
         Télécharger le raccourci iOS
       </a>
       <p className="mt-2 text-[11.5px] leading-relaxed text-dim">
-        À ouvrir depuis l&rsquo;iPhone. Il demande ton jeton à l&rsquo;import, puis il reste à le
-        déclencher chaque soir depuis <b className="text-mut">Automatisation</b>.
+        À ouvrir depuis l&rsquo;iPhone. Il demande ton jeton à l&rsquo;import et fait tout le
+        reste : la date, le corps JSON, l&rsquo;en-tête, l&rsquo;envoi. Une seule chose reste à
+        faire une fois — remplacer l&rsquo;action <b className="text-mut">Demander une entrée</b>
+        par <b className="text-mut">Santé → Obtenir un échantillon</b>, réglée sur
+        <b className="text-mut"> Pas · Aujourd&rsquo;hui · Total</b>. Puis déclenche-le chaque
+        soir depuis <b className="text-mut">Automatisation</b>.
       </p>
 
       <details className="mt-4">
