@@ -26,6 +26,29 @@ export const dynamic = 'force-dynamic'
 const jour = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date attendue au format AAAA-MM-JJ.')
 
 /**
+ * Un nombre, meme s'il arrive en texte.
+ *
+ * Un raccourci iOS compose son corps JSON en collant des variables dans une
+ * chaine, et il les formate selon la langue du telephone : un total de pas
+ * peut arriver « 8 241 », avec une espace fine insecable, ou « 8241,0 ». Le
+ * JSON reste valide — c'est une chaine — mais un `z.number()` le refuserait,
+ * et l'athlete verrait une erreur incomprehensible pour un chiffre juste.
+ *
+ * On nettoie donc les separateurs avant de convertir. Ce qui n'est pas un
+ * nombre reste refuse.
+ */
+const nombre = z.union([z.number(), z.string()]).transform((v, ctx) => {
+  if (typeof v === 'number') return v
+  const propre = v.replace(/[\s\u00a0\u202f\u2009]/g, '').replace(',', '.')
+  const n = Number(propre)
+  if (!Number.isFinite(n)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: `« ${v} » n'est pas un nombre.` })
+    return z.NEVER
+  }
+  return n
+})
+
+/**
  * Une seance venue d'ailleurs.
  *
  * `cle` est ce qui evite les doublons : la source doit fournir quelque chose
@@ -36,21 +59,26 @@ const jour = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date attendue au format AA
 const seance = z.object({
   date: jour,
   discipline: z.enum(['run', 'swim', 'bike', 'strength']),
-  minutes: z.number().positive().max(1440),
+  minutes: nombre.pipe(z.number().positive().max(1440)),
   /** Metres. Absente sur un home-trainer ou une seance de force. */
-  metres: z.number().nonnegative().max(500_000).nullable().default(null),
-  fc_moyenne: z.number().int().min(25).max(240).nullable().default(null),
-  denivele: z.number().int().min(0).max(20_000).nullable().default(null),
+  metres: nombre.pipe(z.number().nonnegative().max(500_000)).nullable().default(null),
+  fc_moyenne: nombre.pipe(z.number().int().min(25).max(240)).nullable().default(null),
+  denivele: nombre.pipe(z.number().int().min(0).max(20_000)).nullable().default(null),
   cle: z.string().min(1).max(200).optional(),
 })
 
 const corps = z.object({
   pas: z
-    .array(z.object({ date: jour, pas: z.number().int().positive().max(200_000) }))
+    .array(
+      z.object({
+        date: jour,
+        pas: nombre.pipe(z.number().int().positive().max(200_000)),
+      }),
+    )
     .max(400)
     .default([]),
   poids: z
-    .array(z.object({ date: jour, kg: z.number().min(30).max(250) }))
+    .array(z.object({ date: jour, kg: nombre.pipe(z.number().min(30).max(250)) }))
     .max(400)
     .default([]),
   seances: z.array(seance).max(200).default([]),
