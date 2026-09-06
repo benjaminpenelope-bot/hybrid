@@ -18,6 +18,7 @@ import {
 } from '@/components/weekly-charts'
 import { etatProfil } from '@/lib/db/profil-complet'
 import { CartePas } from '@/components/carte-pas'
+import { FONCTIONS } from '@/lib/ui/fonctions'
 import { ProjectionPlan } from '@/components/projection-plan'
 import type { GoalType, Sport } from '@/lib/engine/types'
 import { prolongerSiNecessaire } from '@/lib/db/prolonger'
@@ -148,11 +149,13 @@ export default async function Page() {
             Les pas se tiennent a part : ils n'entrent dans aucun score et
             dans aucune charge — marcher n'est pas s'entrainer, et les
             melanger fausserait le rapport entre charge aigue et chronique.
-            Ils disent combien on bouge les jours ou l'on ne s'entraine pas.
+            En veille tant qu'aucune source ne les alimente : voir `FONCTIONS`.
           */}
-          <div className="mt-6">
-            <CartePas bilan={pas} date={today} />
-          </div>
+          {FONCTIONS.pas && (
+            <div className="mt-6">
+              <CartePas bilan={pas} date={today} />
+            </div>
+          )}
 
           <section className="mt-6">
             <h2 className="eyebrow mb-2.5">Prochains jours</h2>

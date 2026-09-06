@@ -7,6 +7,7 @@ import { joursRestants, lireAbonnement } from '@/lib/coach/abonnement'
 import { LIMITES, planDe } from '@/lib/coach/quota'
 import { createClient, currentUserId } from '@/lib/supabase/server'
 import { HealthImport } from './health-import'
+import { FONCTIONS } from '@/lib/ui/fonctions'
 import { adresseDuSite } from '@/lib/paiement/stripe'
 import { ImportAuto } from './import-auto'
 import { MesDonnees } from './mes-donnees'
@@ -70,9 +71,14 @@ export default async function Page({
   return (
     <main className="wrap py-[18px]">
       <h1 className="dsp text-[22px]">Réglages</h1>
+      {/*
+        Le sous-titre parlait des imports, tous en veille aujourd'hui. Annoncer
+        une fonction absente donne l'impression d'un ecran casse plutot que
+        d'un ecran sobre.
+      */}
       <p className="mb-5 mt-2 text-[12.5px] leading-relaxed text-mut">
-        Les imports ne remplissent que ce qui est mesuré. Ce qu&apos;une montre ne sait pas dire
-        reste à saisir, et n&apos;est jamais deviné.
+        Ton compte, ton abonnement et tes données. Rien n&apos;y est deviné : ce que tu ne
+        renseignes pas reste vide.
       </p>
 
       {erreur && (
@@ -92,6 +98,7 @@ export default async function Page({
         demande rien apres son installation, et les deux autres se lisent
         mieux comme ses appoints.
       */}
+      {FONCTIONS.importAutomatique && (
       <section className="mb-6">
         <h2 className="eyebrow mb-2.5">Import automatique</h2>
         <ImportAuto
@@ -104,7 +111,9 @@ export default async function Page({
           }
         />
       </section>
+      )}
 
+      {FONCTIONS.strava && (
       <section className="mb-6">
         <h2 className="eyebrow mb-2.5">Strava</h2>
         <StravaCard
@@ -116,11 +125,14 @@ export default async function Page({
           }
         />
       </section>
+      )}
 
+      {FONCTIONS.appleHealth && (
       <section className="mb-6">
         <h2 className="eyebrow mb-2.5">Apple Health</h2>
         <HealthImport />
       </section>
+      )}
 
       <section>
         <h2 className="eyebrow mb-2.5">Mot de passe</h2>

@@ -7,6 +7,7 @@ import { acuteChronic } from '@/lib/engine/load'
 import { bilanDesPas, OBJECTIF_PAS } from '@/lib/engine/pas'
 import { runStats, swimStats } from '@/lib/engine/perf'
 import { computeRecovery } from '@/lib/engine/recovery'
+import { buildReview } from '@/lib/engine/review'
 import { computeScores } from '@/lib/engine/scoring'
 import { benchmarkValue, isPartial, UNTESTED } from '@/lib/engine/state'
 import type { AthleteState, ISODate } from '@/lib/engine/types'
@@ -43,6 +44,16 @@ export interface CoachContext {
   corps: Record<string, unknown>
   /** Records personnels enregistres. Absents eux aussi jusqu'ici. */
   records: { repere: string; valeur: string; date: string }[]
+  /**
+   * La semaine ecoulee et celle d'avant, mesurees.
+   *
+   * Le contexte donnait un volume sur sept jours sans rien a quoi le
+   * comparer. Le modele comblait le vide : il annoncait « 15 km cette
+   * semaine contre 5 la semaine derniere » quand la semaine precedente en
+   * comptait 22,3. Une absence de donnee ne se lit pas comme une absence —
+   * elle se lit comme une invitation a deviner.
+   */
+  semaine: Record<string, unknown>
   seances_recentes: Record<string, unknown>[]
   seances_a_venir: Record<string, unknown>[]
   /** Ce que l'athlete a declare viser. Le coach ne le remplace jamais. */
@@ -66,6 +77,7 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
   const swim = swimStats(state, today)
   const poids = weightTrend(state, today)
   const pas = bilanDesPas(state, today)
+  const bilan = buildReview(state, today, 7)
 
   /*
    * Les pesees brutes des huit dernieres semaines, et non la moyenne
@@ -178,6 +190,26 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
         moyenne_7j: pas.moyenne ?? 'non mesurée',
         jours_a_objectif_sur_7: `${pas.atteints} sur ${pas.mesures} mesurés`,
       },
+    },
+    /*
+     * Les deux semaines viennent du meme calcul que l'ecran Bilan : le coach
+     * et l'ecran ne peuvent donc pas annoncer deux chiffres differents pour
+     * la meme periode.
+     */
+    semaine: {
+      periode: `du ${bilan.from} au ${bilan.to}`,
+      seances_faites: bilan.done,
+      seances_prevues: bilan.planned,
+      mesures: Object.fromEntries(
+        bilan.metrics.map((m) => [
+          m.label.toLowerCase().replace(/ /g, '_'),
+          {
+            cette_semaine: m.value,
+            variation_vs_semaine_precedente:
+              m.delta === null ? 'rien à comparer' : `${m.delta > 0 ? '+' : ''}${m.delta} %`,
+          },
+        ]),
+      ),
     },
     records: state.records
       .slice(-10)

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { CartePas } from '@/components/carte-pas'
+import { FONCTIONS } from '@/lib/ui/fonctions'
 import { loadState } from '@/lib/db/queries'
 import { weightTrend } from '@/lib/engine/body'
 import { todayISO } from '@/lib/engine/date'
@@ -37,10 +38,12 @@ export default async function Page() {
       <h1 className="dsp mb-4 text-[22px]">Corps</h1>
 
       {/* Les pas ont leur place ici autant que sur l'accueil : c'est une
-          mesure du corps, pas de l'entrainement. */}
-      <div className="mb-6">
-        <CartePas bilan={bilanDesPas(state, today)} date={today} />
-      </div>
+          mesure du corps, pas de l'entrainement. En veille : voir `FONCTIONS`. */}
+      {FONCTIONS.pas && (
+        <div className="mb-6">
+          <CartePas bilan={bilanDesPas(state, today)} date={today} />
+        </div>
+      )}
 
       <BodyView
         profile={state.profile}
