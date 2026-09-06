@@ -41,6 +41,27 @@ export const FONCTIONS = {
   athleteScore: false,
 
   /**
+   * Pourcentage de preparation marathon.
+   *
+   * Meme defaut que l'Athlete Score, sur un autre ecran : il s'affichait a
+   * tout le monde, calcule contre un marathon sous quatre heures, quel que
+   * soit l'objectif declare. Quelqu'un qui vise la force, le street workout
+   * ou la perte de poids lisait « 34 % de preparation » a une course qu'il n'a
+   * jamais annoncee — et le chiffre ne pouvait que baisser, puisque son
+   * programme ne l'y mene pas.
+   *
+   * La carte entiere part avec lui : la phase du plan et le verdict marathon
+   * n'ont pas plus de sens hors d'une preparation. Le reste de l'onglet —
+   * volumes, allures, chronos, frequence cardiaque — sont des mesures, et
+   * elles restent.
+   *
+   * `marathonReadiness` et ses tests restent intacts. Le jour ou le
+   * pourcentage suivra l'objectif principal plutot qu'un marathon suppose, il
+   * revient.
+   */
+  preparationMarathon: false,
+
+  /**
    * Compteur de pas.
    *
    * Le moteur, la colonne, la carte et l'import sont faits. Ce qui manque est

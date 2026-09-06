@@ -12,6 +12,7 @@ import type { Blocker } from '@/lib/engine/advice'
 import { SWIM_RUNGS } from '@/lib/engine/advice'
 import type { CalendarAssessment, MarathonVerdict } from '@/lib/engine/marathon'
 import { badgeState } from '@/lib/engine/prs'
+import { FONCTIONS } from '@/lib/ui/fonctions'
 
 const PHASES = ['BASE', 'BUILD', 'SPECIFIC', 'TAPER', 'RACE'] as const
 
@@ -77,6 +78,13 @@ export function PerfTabs({
 
       {tab === 'running' && (
         <section>
+          {/*
+            La carte de preparation marathon est en veille : elle s'affichait
+            a tout le monde, calculee contre un marathon sous quatre heures,
+            quel que soit l'objectif declare. Voir `FONCTIONS`. Ce qui suit —
+            volumes, allures, chronos — sont des mesures, et reste affiche.
+          */}
+          {FONCTIONS.preparationMarathon && (
           <div
             className="card"
             style={{ background: 'linear-gradient(160deg, rgba(226,96,58,0.10), transparent 65%)' }}
@@ -123,12 +131,15 @@ export function PerfTabs({
               <b className="text-text">{verdict.headline}</b> {verdict.detail}
             </p>
           </div>
+          )}
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className={`grid grid-cols-2 gap-2 ${FONCTIONS.preparationMarathon ? 'mt-3' : ''}`}>
             <Stat
               label="Volume 7 jours"
               value={`${fr(run.km7)}`}
-              sub={`km · cible ${weeklyTarget}`}
+              // La cible vient des paliers marathon : elle ne s'affiche que
+              // si la preparation marathon est active. Voir `FONCTIONS`.
+              sub={FONCTIONS.preparationMarathon ? `km · cible ${weeklyTarget}` : 'km'}
               color="var(--run)"
             />
             <Stat label="Volume 30 jours" value={`${fr(run.km30)}`} sub="km" />
@@ -158,12 +169,14 @@ export function PerfTabs({
               value={run.avgHr === null ? 'à mesurer' : `${run.avgHr}`}
               sub={run.avgHr === null ? 'aucune sortie avec cardio' : 'bpm'}
             />
-            <Stat
-              label="Allure marathon cible"
-              value={targetPace}
-              sub={`/km pour ${targetLabel}`}
-              color="var(--run)"
-            />
+            {FONCTIONS.preparationMarathon && (
+              <Stat
+                label="Allure marathon cible"
+                value={targetPace}
+                sub={`/km pour ${targetLabel}`}
+                color="var(--run)"
+              />
+            )}
           </div>
 
           {run.points.length > 1 && (
@@ -210,6 +223,13 @@ export function PerfTabs({
             </section>
           )}
 
+          {/*
+            L'evaluation du calendrier parle d'une allure cible sur 42 km et
+            des paliers d'une preparation marathon. Elle suit donc le meme
+            interrupteur : la servir a quelqu'un qui vise la force ou la perte
+            de poids revenait a evaluer une course qu'il n'a jamais annoncee.
+          */}
+          {FONCTIONS.preparationMarathon && (
           <section className="mt-6">
             <h2 className="eyebrow mb-2.5">Évaluation honnête du calendrier</h2>
             <div className="card">
@@ -224,6 +244,7 @@ export function PerfTabs({
               ))}
             </div>
           </section>
+          )}
         </section>
       )}
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { addDays, weekday } from './date'
+import { sum } from './math'
 import {
   ABSOLUTE_MIN_BASE,
   baseWeeklyKm,
@@ -610,5 +611,80 @@ describe('plafond de volume', () => {
     const pleine = weekVolume(51, 18.5)
     const decharge = weekVolume(52, 18.5)
     expect(decharge).toBeLessThan(pleine)
+  })
+})
+
+describe('plafond de volume : la somme des sorties le respecte', () => {
+  const totalDeLaSemaine = (
+    goal: GoalType,
+    sports: Sport[],
+    baseKm: number,
+    w: number,
+    plafondKm?: number,
+  ): number => {
+    const micro = microcycleEffectif(microcycleDe(goal), sports)
+    return sum([...kmDesCourses(w, baseKm, micro, plafondKm).values()])
+  }
+
+  it('la répartition d’origine est inchangée, au kilomètre près', () => {
+    // Course, nage et force declarees : aucun creneau n'est substitue, les
+    // poids totalisent exactement un, et le facteur vaut un.
+    const sports: Sport[] = ['running', 'swimming', 'strength']
+    const micro = microcycleEffectif(microcycleDe('marathon'), sports)
+    const km = kmDesCourses(9, 20, micro)
+    expect(sum([...km.values()])).toBeCloseTo(weekVolume(9, 20), 1)
+  })
+
+  it('ne dépasse plus le plafond quand la substitution ajoute des courses', () => {
+    /*
+     * Sans natation declaree, les creneaux de nage deviennent des courses :
+     * quatre footings et une sortie longue. Les poids totalisaient alors
+     * 1,56, et un plafond de soixante kilometres prescrivait quatre-vingt-
+     * quatorze.
+     */
+    const sports: Sport[] = ['running', 'strength']
+    const plafond = 60
+    const total = totalDeLaSemaine('marathon', sports, 20, 30, plafond)
+    /*
+     * Chaque sortie est arrondie au demi-kilometre, donc la somme ne peut pas
+     * tomber juste : cinq sorties, un quart de kilometre d'ecart possible
+     * chacune. On borne l'ecart plutot que d'exiger l'egalite — exiger
+     * l'egalite reviendrait a demander des distances a la dizaine de metres,
+     * qu'aucun coureur ne lit.
+     */
+    expect(Math.abs(total - weekVolume(30, 20, plafond))).toBeLessThanOrEqual(1.5)
+    // Avant, la meme semaine en prescrivait quatre-vingt-quatorze.
+    expect(total).toBeLessThan(70)
+  })
+
+  it('ne remonte pas le volume d’une semaine qui court peu', () => {
+    // Deux courses, pas de sortie longue : les poids totalisent 0,58. Les
+    // renormaliser vers le haut donnerait un footing souple intenable.
+    const sports: Sport[] = ['running', 'strength']
+    const micro = microcycleEffectif(microcycleDe('force'), sports)
+    const vol = weekVolume(9, 35)
+    const km = kmDesCourses(9, 35, micro)
+    const total = sum([...km.values()])
+    // Les poids totalisent 0,58 : la semaine court bien moins que le volume,
+    // et c'est la consequence assumee d'avoir choisi la force.
+    expect(total).toBeLessThan(vol * 0.7)
+    // Les renormaliser vers le haut aurait donne 0,30 / 0,58 du volume sur la
+    // seule sortie souple, soit une trentaine de kilometres.
+    for (const v of km.values()) expect(v).toBeLessThan(vol * 0.35)
+  })
+
+  it('garde l’ordre des rôles : la longue reste la plus longue', () => {
+    const sports: Sport[] = ['running', 'strength']
+    const micro = microcycleEffectif(microcycleDe('marathon'), sports)
+    const km = kmDesCourses(30, 20, micro, 60)
+    const slotLong = ([0, 1, 2, 3, 4, 5, 6] as const).find((s) => micro[s] === 'LONG')!
+    const longue = km.get(slotLong)!
+    for (const [slot, v] of km) if (slot !== slotLong) expect(v).toBeLessThan(longue)
+  })
+
+  it('aucune sortie ne devient intenable, même au plafond', () => {
+    const sports: Sport[] = ['running', 'strength']
+    const micro = microcycleEffectif(microcycleDe('marathon'), sports)
+    for (const v of kmDesCourses(52, 30, micro, 90).values()) expect(v).toBeLessThanOrEqual(40)
   })
 })

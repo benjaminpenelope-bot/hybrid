@@ -1,5 +1,5 @@
 import { addDays, daysBetween, weekday as weekdayOf } from './date'
-import { half } from './math'
+import { half, sum } from './math'
 import type {
   Exercise,
   Finisher,
@@ -1025,15 +1025,30 @@ const POIDS = { fundamental: 0.28, easy: 0.3, long: 0.42 } as const
 /**
  * Kilometres de chaque sortie.
  *
- * Les poids restent absolus, volontairement. Une semaine de force n'a que
- * deux courses et pas de sortie longue : les renormaliser pour conserver le
- * volume hebdomadaire concentrerait toute la semaine dans ces deux sorties.
- * A 35 km de base, ca donnait un « footing souple » de 18 km — pas un plan,
- * une blessure.
+ * LES POIDS SE RAMENENT A UN QUAND ILS LE DEPASSENT, JAMAIS QUAND ILS SONT
+ * EN DESSOUS. C'est toute la regle, et les deux moities repondent chacune a
+ * un defaut different.
  *
- * Le volume de course baisse donc quand l'objectif n'est pas la course. Ce
- * n'est pas une perte accidentelle : c'est la consequence directe d'avoir
- * choisi la force, et chaque seance prise isolement reste courable.
+ * En dessous de un, on ne touche a rien. Une semaine de force n'a que deux
+ * courses et pas de sortie longue : les renormaliser vers le haut
+ * concentrerait tout le volume hebdomadaire dans ces deux sorties, et a 35 km
+ * de base donnait un « footing souple » de 18 km — pas un plan, une blessure.
+ * Le volume de course baisse donc quand l'objectif n'est pas la course, et
+ * c'est voulu : c'est la consequence directe d'avoir choisi la force.
+ *
+ * Au-dessus de un, on ramene. Ce cas n'existe dans aucune repartition ecrite
+ * a la main — elles totalisent toutes un au plus — mais il nait de la
+ * substitution. Qui declare la course et la force sans la natation voit ses
+ * creneaux de nage devenir des courses : la repartition marathon passe alors
+ * a quatre footings et une sortie longue, soit 0,28 × 3 + 0,30 + 0,42 = 1,56.
+ * Le plafond hebdomadaire annonce soixante kilometres et le plan en
+ * prescrivait quatre-vingt-quatorze. Le garde-fou ne gardait rien, et
+ * personne ne pouvait le voir : chaque seance prise isolement restait
+ * plausible, c'est leur somme qui ne l'etait pas.
+ *
+ * Ramener plutot que rogner la derniere sortie preserve l'equilibre des
+ * roles : la sortie longue reste la plus longue, le footing souple le plus
+ * court, dans les memes proportions.
  */
 export function kmDesCourses(
   w: number,
@@ -1042,16 +1057,22 @@ export function kmDesCourses(
   plafondKm?: number,
 ): Map<Slot, number> {
   const vol = weekVolume(w, baseKm, plafondKm)
+  const slots = slotsDeCourse(micro)
+
+  const poidsDe = (slot: Slot): number =>
+    micro[slot] === 'LONG'
+      ? POIDS.long
+      : estFootingSouple(slot, micro)
+        ? POIDS.easy
+        : POIDS.fundamental
+
+  const total = sum(slots.map(poidsDe))
+  // Jamais au-dessus de un : voir la note. En dessous, le facteur vaut un et
+  // la repartition est celle d'avant, au kilometre pres.
+  const facteur = total > 1 ? 1 / total : 1
+
   const out = new Map<Slot, number>()
-  for (const slot of slotsDeCourse(micro)) {
-    const poids =
-      micro[slot] === 'LONG'
-        ? POIDS.long
-        : estFootingSouple(slot, micro)
-          ? POIDS.easy
-          : POIDS.fundamental
-    out.set(slot, half(vol * poids))
-  }
+  for (const slot of slots) out.set(slot, half(vol * poidsDe(slot) * facteur))
   return out
 }
 
