@@ -15,23 +15,63 @@ import { PaiementBoutons, PortailBouton } from './paiement-boutons'
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'HYBRID PRO · Hybrid' }
 
+/**
+ * CE QUE PRO AJOUTE.
+ *
+ * L'offre se vendait sur un plafond : trois messages par jour devenaient
+ * quinze. Un plafond ne se raconte pas — il se mesure en frustration evitee,
+ * jamais en valeur recue, et aucun concurrent ne met le sien en tete de sa
+ * page. Il descend donc dans le detail, ou il a toujours eu sa place.
+ *
+ * Ce qui monte a la place, ce sont trois objets qu'on peut montrer : la
+ * memoire, la sortie, le coach. Chacun existe reellement dans le code — on ne
+ * promet ici rien qui ne soit deja ecrit.
+ */
+const AJOUTS = [
+  {
+    titre: 'La mémoire',
+    texte:
+      'Ton bilan de chaque semaine, gardé et comparé au précédent, aussi loin que remonte ton programme. L’offre gratuite en montre les deux dernières : c’est assez pour juger une semaine, pas pour voir une pente.',
+  },
+  {
+    titre: 'La sortie',
+    texte:
+      'Ton programme dans le calendrier de ton téléphone — donc à ton poignet, sur toute montre qui affiche l’agenda. C’est un abonnement, pas un export : une séance déplacée ici se déplace là-bas.',
+  },
+  {
+    titre: 'Le coach',
+    texte:
+      'Le modèle le plus fin, qui raisonne davantage avant de répondre, et qui adapte la semaine en cours plutôt que la suivante.',
+  },
+]
+
 /** Ce que chaque offre donne, cote a cote. Les chiffres viennent du code. */
 function comparaison() {
   return [
     {
-      quoi: 'Programme, séances, suivi du corps',
+      quoi: 'Programme, séances, suivi du corps, projection',
       free: 'Tout',
       pro: 'Tout',
     },
     {
-      quoi: 'Messages au coach',
-      free: `${LIMITES.free.jour}/jour · ${LIMITES.free.mois}/mois`,
-      pro: `${LIMITES.pro.jour}/jour · ${LIMITES.pro.mois}/mois`,
+      quoi: 'Historique des bilans',
+      free: '2 dernières semaines',
+      pro: 'Complet',
+    },
+    {
+      quoi: 'Calendrier à ta montre',
+      free: '—',
+      pro: 'Abonnement, mis à jour tout seul',
     },
     {
       quoi: 'Modèle du coach',
       free: 'Rapide',
       pro: 'Le plus fin, qui raisonne davantage',
+    },
+    {
+      quoi: 'Messages au coach',
+      free: `${LIMITES.free.jour}/jour · ${LIMITES.free.mois}/mois`,
+      pro: `${LIMITES.pro.jour}/jour · ${LIMITES.pro.mois}/mois`,
     },
     {
       quoi: 'Export de tes données, suppression du compte',
@@ -90,11 +130,20 @@ export default async function Page({
         </p>
       ) : (
         <p className="mb-5 mt-2 text-[12.5px] leading-relaxed text-mut">
-          Le programme, les séances et le suivi restent gratuits, entièrement. PRO ne débloque
-          qu&apos;une chose : un coach qu&apos;on peut solliciter souvent, et qui réfléchit plus
-          longtemps avant de répondre.
+          Le programme, les séances, le suivi et la projection restent gratuits, entièrement. PRO
+          ajoute ce qui dure : la mémoire de tes semaines, la sortie vers ton calendrier, et un
+          coach qui réfléchit plus longtemps.
         </p>
       )}
+
+      <div className="mb-4 flex flex-col gap-2">
+        {AJOUTS.map((a) => (
+          <section key={a.titre} className="card">
+            <p className="eyebrow">{a.titre}</p>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-mut">{a.texte}</p>
+          </section>
+        ))}
+      </div>
 
       <section className="card mb-4">
         <table className="w-full text-[12.5px]">
@@ -123,7 +172,11 @@ export default async function Page({
           {PRIX.mensuel} <span className="text-[14px] text-mut">par mois</span>
         </p>
         <p className="mt-1 text-[12.5px] text-mut">
-          ou {PRIX.annuel} à l&apos;année, soit deux mois offerts.
+          ou {PRIX.annuel} à l&apos;année — {PRIX.mensuelEquivalent} par mois, deux mois offerts.
+        </p>
+        <p className="mt-2 text-[12px] leading-relaxed text-dim">
+          {JOURS_ESSAI} jours d&apos;essai sans carte bancaire, et sans rien à résilier à la fin :
+          l&apos;essai expire de lui-même et te laisse sur l&apos;offre gratuite.
         </p>
 
         {/*

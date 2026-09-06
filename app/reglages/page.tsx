@@ -9,6 +9,8 @@ import { createClient, currentUserId } from '@/lib/supabase/server'
 import { HealthImport } from './health-import'
 import { FONCTIONS } from '@/lib/ui/fonctions'
 import { adresseDuSite } from '@/lib/paiement/stripe'
+import { calendrierOuvert, jetonDe } from '@/lib/calendrier/jeton'
+import { Calendrier } from './calendrier'
 import { ImportAuto } from './import-auto'
 import { MesDonnees } from './mes-donnees'
 import { MotDePasse } from './mot-de-passe'
@@ -47,6 +49,12 @@ export default async function Page({
   if (!userId) redirect('/login?suite=/reglages')
 
   const [plan, abonnement] = await Promise.all([planDe(userId), lireAbonnement(userId)])
+  /*
+   * Le jeton se calcule, il ne se stocke pas : voir `lib/calendrier/jeton`.
+   * Nul quand le serveur n'a pas de secret de signature, auquel cas la
+   * section entiere disparait plutot que de proposer un lien mort.
+   */
+  const jetonCalendrier = jetonDe(userId)
 
   // Le client ne lit jamais la table `integrations` : ses droits y sont
   // révoqués. Cette fonction ne rend qu'un état, jamais un jeton.
@@ -91,6 +99,19 @@ export default async function Page({
         <p className="mb-4 rounded-[11px] border border-ok/40 bg-ok/10 p-3 text-[12.5px] leading-relaxed text-text">
           Compte Strava connecté. Lance une synchronisation pour rattraper les 30 derniers jours.
         </p>
+      )}
+
+      {/*
+        Le calendrier est la seule sortie de l'application vers le reste du
+        telephone : il passe donc avant les imports, qui vont dans l'autre
+        sens. Reserve a PRO, et masque plutot qu'annonce a qui ne l'a pas —
+        un reglage qu'on ne peut pas actionner n'est pas un reglage.
+      */}
+      {plan === 'pro' && calendrierOuvert() && jetonCalendrier && (
+        <section className="mb-6">
+          <h2 className="eyebrow mb-2.5">Calendrier</h2>
+          <Calendrier adresse={`${adresseDuSite()}/api/calendrier/${jetonCalendrier}.ics`} />
+        </section>
       )}
 
       {/*

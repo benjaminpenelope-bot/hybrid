@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { projection } from './projection'
+import { dateDeLHorizon, projection, projectionDeLAthlete } from './projection'
 import { weekVolume } from './program'
+import type { AthleteState, Session } from './types'
 
 describe('projection', () => {
   it('ne projette que les sports déclarés', () => {
@@ -56,5 +57,86 @@ describe('projection', () => {
     const sans = projection({ sports: [] })
     const defaut = projection({ sports: ['running', 'swimming', 'street_workout'], goal: 'hybride' })
     expect(sans.map((j) => j.quoi)).toEqual(defaut.map((j) => j.quoi))
+  })
+})
+
+describe('projection datée et ancrée', () => {
+  const etat = (sessions: Session[], baseWeeklyKm: number | null = 15): AthleteState =>
+    ({
+      profile: { sports: ['running'], baseWeeklyKm } as AthleteState['profile'],
+      sessions,
+      weights: [],
+      measures: [],
+      photos: [],
+      wellness: [],
+      benchmarks: {} as AthleteState['benchmarks'],
+      records: [],
+      goals: [],
+      limitations: [],
+    }) as AthleteState
+
+  const sortie = (date: string, km: number, week: number): Session =>
+    ({
+      id: `${date}-${km}`,
+      date,
+      type: 'RUN',
+      kind: 'run',
+      status: 'done',
+      week,
+      title: 'Course',
+      cues: [],
+      duration: 40,
+      intensity: 2,
+      exercises: [],
+      log: { km, minutes: 40 },
+    }) as Session
+
+  it('date l’horizon à onze intervalles de sept jours', () => {
+    expect(dateDeLHorizon('2026-09-06', 12)).toBe('2026-11-22')
+  })
+
+  it('part de la semaine 1 quand rien n’a été fait', () => {
+    const p = projectionDeLAthlete(etat([]), '2026-09-06')
+    expect(p.semaineActuelle).toBe(1)
+    expect(p.semaineVisee).toBe(12)
+    expect(p.ancree).toBe(false)
+  })
+
+  it('part de la semaine réellement atteinte', () => {
+    const p = projectionDeLAthlete(etat([sortie('2026-09-01', 8, 9)]), '2026-09-06')
+    expect(p.semaineActuelle).toBe(9)
+    expect(p.semaineVisee).toBe(20)
+  })
+
+  it('s’ancre sur le volume mesuré dès trois sorties', () => {
+    const p = projectionDeLAthlete(
+      etat([
+        sortie('2026-08-18', 10, 8),
+        sortie('2026-08-25', 10, 9),
+        sortie('2026-09-01', 10, 9),
+      ]),
+      '2026-09-06',
+    )
+    expect(p.ancree).toBe(true)
+    // 30 km sur 28 jours = 7,5 km par semaine. Le depart doit s'en approcher,
+    // et surtout ne pas valoir le volume de la semaine 9 d'un plan parti de 15.
+    const volume = p.jalons.find((j) => j.quoi === 'Course par semaine')
+    expect(volume).toBeDefined()
+    expect(Number.parseFloat(volume!.depart.replace(',', '.'))).toBeLessThan(12)
+  })
+
+  it('ne laisse pas le volume projeté exploser au-delà du plafond', () => {
+    const p = projectionDeLAthlete(
+      etat([
+        sortie('2026-08-18', 10, 40),
+        sortie('2026-08-25', 10, 41),
+        sortie('2026-09-01', 10, 42),
+      ]),
+      '2026-09-06',
+      12,
+    )
+    const volume = p.jalons.find((j) => j.quoi === 'Course par semaine')
+    // Plafond : trois fois les 7,5 km mesurés, soit 22,5 km.
+    expect(Number.parseFloat(volume!.arrivee.replace(',', '.'))).toBeLessThanOrEqual(22.5)
   })
 })

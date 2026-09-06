@@ -27,6 +27,15 @@ export const JOURS_ESSAI = 14
 export const PRIX = {
   mensuel: '9,99 €',
   annuel: '79,99 €',
+  /**
+   * L'annuel ramene au mois.
+   *
+   * Trente-trois pour cent de remise ne se voient pas dans « 79,99 € par an »
+   * : personne ne divise de tete en lisant une page de tarifs. Le chiffre
+   * mensuel equivalent est ce qui rend la remise lisible, et c'est ce que
+   * font tous les concurrents. 79,99 / 12 = 6,67.
+   */
+  mensuelEquivalent: '6,67 €',
 } as const
 
 /**

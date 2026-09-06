@@ -414,16 +414,27 @@ function CarteCoach({
 
 /* ── Tarifs ───────────────────────────────────────────────── */
 
+/*
+ * L'offre PRO se vendait sur un plafond : « Coach : 15 messages par jour ».
+ * Un plafond ne se montre pas — il se mesure en frustration evitee, jamais en
+ * valeur recue. Il reste vrai, il reste ecrit, mais il descend sous les trois
+ * choses qu'on peut montrer : la memoire, la sortie, le coach.
+ *
+ * L'annuel dit desormais son prix mensuel equivalent. Trente-trois pour cent
+ * de remise ne se lisent pas dans « 79,99 € par an » : personne ne divise de
+ * tete en parcourant une grille de tarifs.
+ */
 const OFFRES = [
   {
     nom: 'HYBRID',
     prix: '0 €',
     periode: 'pour toujours',
-    resume: 'Le programme, les séances et le suivi. Entièrement.',
+    resume: 'Le programme, les séances, le suivi et la projection. Entièrement.',
     points: [
       'Programme construit sur tes sports et ton objectif',
       'Séances détaillées, avec le pourquoi de chacune',
       'Suivi du corps, des performances et de la charge',
+      'Où le plan mène, daté, recalculé sur ce que tu fais',
       'Coach : 3 messages par jour',
       'Export de tes données, suppression du compte',
     ],
@@ -433,14 +444,15 @@ const OFFRES = [
   {
     nom: 'HYBRID PRO',
     prix: '9,99 €',
-    periode: 'par mois · ou 79,99 € par an',
-    resume: 'Un coach qu’on peut solliciter souvent, et qui réfléchit plus longtemps.',
+    periode: 'par mois · ou 79,99 € par an, soit 6,67 € par mois',
+    resume: 'Ce qui dure : la mémoire de tes semaines, et la sortie vers ta montre.',
     points: [
       'Tout ce que contient l’offre gratuite',
-      'Coach : 15 messages par jour',
+      'L’historique complet de tes bilans, semaine après semaine',
+      'Ton programme dans ton calendrier, donc à ton poignet',
       'Le modèle le plus fin, qui raisonne davantage',
-      'Adaptation de la semaine en cours',
-      '14 jours d’essai, sans carte bancaire',
+      'Adaptation de la semaine en cours, coach sans compter',
+      '14 jours d’essai, sans carte bancaire, sans rien à résilier',
     ],
     cta: 'Essayer 14 jours',
     phare: true,
@@ -459,8 +471,9 @@ function Tarifs() {
             Tout le programme est gratuit.
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-mut">
-            PRO ne débloque qu&rsquo;une chose : un coach qu&rsquo;on peut solliciter souvent. Le
-            reste ne se paie pas.
+            Le programme, les séances, le suivi et la projection ne se paient pas. PRO ajoute la
+            mémoire de tes semaines, la sortie vers ta montre, et un coach qui réfléchit plus
+            longtemps.
           </p>
         </div>
 

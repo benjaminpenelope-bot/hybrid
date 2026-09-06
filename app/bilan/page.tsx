@@ -12,6 +12,10 @@ import { addDays, formatDate, formatPeriode, todayISO } from '@/lib/engine/date'
 import { computeRecovery } from '@/lib/engine/recovery'
 import { buildReview } from '@/lib/engine/review'
 import { computeScores } from '@/lib/engine/scoring'
+import { historiqueDesBilans } from '@/lib/engine/historique'
+import { projectionDeLAthlete } from '@/lib/engine/projection'
+import { planDe } from '@/lib/coach/quota'
+import { HistoriqueBilans } from '@/components/historique-bilans'
 import { currentUserId } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -49,6 +53,9 @@ export default async function Page() {
     (new Date(today).getTime() - new Date(firstDone).getTime()) / 86400000 >= 30
 
   const score = weekScore(state, today)
+  const plan_ = await planDe(userId)
+  const historique = historiqueDesBilans(state, today, 12)
+  const cap = projectionDeLAthlete(state, today, 12)
 
   return (
     <main className="wrap py-[18px]">
@@ -77,6 +84,44 @@ export default async function Page() {
         </div>
         <span className="num shrink-0 text-[44px] leading-none">{score}</span>
       </section>
+
+      {/*
+        OU CA MENE.
+
+        Le bilan regardait derriere, exclusivement. Un athlete qui ouvre
+        l'application le dimanche soir veut aussi savoir a quoi ressemblera
+        novembre — c'est la seule question a laquelle un carnet de seances ne
+        repond jamais.
+
+        Rien n'est predit ici : chaque ligne lit le plan deja genere, ancre
+        sur ce qui a ete reellement couru. Une prediction pourrait etre
+        fausse, une lecture de plan ne peut pas l'etre.
+      */}
+      {cap.jalons.length > 0 && (
+        <section className="mt-6">
+          <h2 className="eyebrow mb-1">Où ça mène — semaine {cap.semaineVisee}</h2>
+          <p className="mb-3 text-[12px] leading-5 text-dim">
+            Au {formatDate(cap.quand)}, si tu suis le plan.{' '}
+            {cap.ancree
+              ? 'Le départ vient de tes quatre dernières semaines, pas de ce que tu as déclaré.'
+              : 'Le départ vient encore de ce que tu as déclaré : trois sorties enregistrées suffiront à le mesurer.'}
+          </p>
+          <div className="card divide-y divide-line py-0">
+            {cap.jalons.map((j) => (
+              <div key={j.quoi} className="flex items-center justify-between gap-3 py-2.5">
+                <span className="min-w-0 flex-1 truncate text-[13px]">{j.quoi}</span>
+                <span className="num flex shrink-0 items-center gap-2 text-[13px]">
+                  <span className="text-dim">{j.depart}</span>
+                  <span className="text-dim" aria-hidden>
+                    →
+                  </span>
+                  <span className="text-text">{j.arrivee}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="mt-6 grid grid-cols-2 gap-2 lg:grid-cols-4">
         <Stat label="Séances" value={`${week.done}/${week.planned}`} sub="réalisées / prévues" />
@@ -207,6 +252,7 @@ export default async function Page() {
           </div>
         </section>
       )}
+      <HistoriqueBilans bilans={historique} libre={2} pro={plan_ === 'pro'} />
       </div>
     </main>
   )
