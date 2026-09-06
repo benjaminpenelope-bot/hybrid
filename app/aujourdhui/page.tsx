@@ -66,7 +66,7 @@ export default async function Page() {
   const today = todayISO()
   const scores = computeScores(state, today)
   const recovery = computeRecovery(state, today)
-  const alerts = computeAlerts(state, today, { scores })
+  const alerts = computeAlerts(state, today)
   const level = levelOf(scores.global)
   const session = state.sessions.find((s) => s.date === today)
   const verdict = decide(state, today)
@@ -186,28 +186,43 @@ export default async function Page() {
 
           <details className="mt-7 border-t border-line pt-5">
             <summary className="eyebrow cursor-pointer text-dim">
-              Où j&apos;en suis · niveau {level.n}, {level.t.toLowerCase()}
+              {FONCTIONS.athleteScore
+                ? `Où j'en suis · niveau ${level.n}, ${level.t.toLowerCase()}`
+                : 'Où j’en suis'}
             </summary>
 
             <div className="mt-4">
-          <ScoreRing scores={scores} />
+          {/*
+            L'anneau, les sous-scores et le niveau sont en veille : le chiffre
+            se calcule bien mais ne s'explique pas, et un chiffre qu'on ne peut
+            pas expliquer fait douter de ce qui l'entoure. Voir `FONCTIONS`.
+            Ce qui reste ici — recuperation, signaux, charge — repose sur des
+            mesures qu'on sait nommer une par une.
+          */}
+          {FONCTIONS.athleteScore && (
+            <>
+              <ScoreRing scores={scores} />
 
-        {scores.missing > 0 && (
-          <div className="mt-2.5 flex items-start gap-2.5 rounded-card border border-line bg-bg2 p-3">
-            <span className="text-[13px]" aria-hidden>
-              ⚠️
-            </span>
-            <p className="text-[12.5px] leading-relaxed text-mut">
-              <b className="text-text">{scores.missing} % du score est en attente de mesure.</b>{' '}
-              Une donnée non mesurée sort du calcul : elle n&apos;est jamais remplacée par une
-              estimation.
-            </p>
-          </div>
-        )}
+              {scores.missing > 0 && (
+                <div className="mt-2.5 flex items-start gap-2.5 rounded-card border border-line bg-bg2 p-3">
+                  <span className="text-[13px]" aria-hidden>
+                    ⚠️
+                  </span>
+                  <p className="text-[12.5px] leading-relaxed text-mut">
+                    <b className="text-text">
+                      {scores.missing} % du score est en attente de mesure.
+                    </b>{' '}
+                    Une donnée non mesurée sort du calcul : elle n&apos;est jamais remplacée par
+                    une estimation.
+                  </p>
+                </div>
+              )}
 
-        <SubScores scores={scores} />
+              <SubScores scores={scores} />
+            </>
+          )}
 
-        <RecoveryCard recovery={recovery} />
+          <RecoveryCard recovery={recovery} />
 
         <section className="mt-6">
           <h2 className="eyebrow mb-2.5">Signaux</h2>

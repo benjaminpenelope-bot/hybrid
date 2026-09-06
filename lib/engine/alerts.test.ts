@@ -240,9 +240,10 @@ describe('calendrier de course', () => {
 })
 
 describe('repères manquants', () => {
-  it('annonce la part du score en attente de tests', () => {
+  it('annonce combien de repères restent à mesurer, sans citer de score', () => {
     const a = find(seedState(TODAY), 'benchmarks_missing')!
-    expect(a.title).toContain('% du score')
+    expect(a.title).toMatch(/^\d+ repères? de force/)
+    expect(a.title).not.toContain('%')
     expect(a.body).toContain('tractions')
   })
 

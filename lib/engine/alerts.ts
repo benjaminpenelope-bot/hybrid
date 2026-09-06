@@ -2,9 +2,8 @@ import { addDays, daysBetween } from './date'
 import { acuteChronic, consecutiveDays } from './load'
 import { sum } from './math'
 import { raceFeasibility } from './program'
-import { computeScores } from './scoring'
 import { BENCHMARK_LABELS, benchmarkValue, isPartial } from './state'
-import type { AthleteState, BenchmarkKey, ISODate, Scores } from './types'
+import type { AthleteState, BenchmarkKey, ISODate } from './types'
 
 /**
  * SIGNAUX AUTOMATIQUES
@@ -54,17 +53,14 @@ const ID_RANK: AlertId[] = [
   'benchmarks_missing',
 ]
 
-export interface AlertContext {
-  scores?: Scores
-}
-
-export function computeAlerts(
-  state: AthleteState,
-  today: ISODate,
-  ctx: AlertContext = {},
-): Alert[] {
+/*
+ * La signature portait un contexte optionnel : les scores, passes pour eviter
+ * de les recalculer. Plus aucun signal ne s'en sert — le seul qui les citait
+ * ne s'en servait que pour son libelle — donc le parametre disparait, et avec
+ * lui le calcul complet qu'il imposait a chaque appel.
+ */
+export function computeAlerts(state: AthleteState, today: ISODate): Alert[] {
   const out: Alert[] = []
-  const scores = ctx.scores ?? computeScores(state, today)
 
   /* 1 — Ratio aigu / chronique. Base sur les charges sRPE enregistrées. */
   const { acwr, l7, reliable } = acuteChronic(state, today)
@@ -246,7 +242,7 @@ export function computeAlerts(
   // maximum n'a jamais été mesuré, et le score le sous-estime tant qu'il l'est.
   const partial = testable.filter((k) => isPartial(state.benchmarks[k]))
 
-  if (untested.length + partial.length > 0 && scores.missing > 0) {
+  if (untested.length + partial.length > 0) {
     const pieces = [
       untested.length > 0 ? `Jamais testé : ${untested.map(label).join(', ')}.` : null,
       partial.length > 0
@@ -255,10 +251,17 @@ export function computeAlerts(
       'Le protocole de test est intégré à la prochaine séance haut du corps.',
     ].filter(Boolean)
 
+    /*
+     * Le titre citait une part de score. Il annonce maintenant ce qui manque
+     * reellement — des reperes — plutot qu'un pourcentage d'un chiffre que
+     * l'ecran n'affiche plus. Le signal ne dependait de toute facon du score
+     * que par son libelle : ce sont bien les reperes qui declenchent, pas lui.
+     */
+    const combien = untested.length + partial.length
     out.push({
       id: 'benchmarks_missing',
       level: 'info',
-      title: `${scores.missing} % du score est en attente de tests`,
+      title: `${combien} repère${combien > 1 ? 's' : ''} de force ${combien > 1 ? 'restent' : 'reste'} à mesurer`,
       body: pieces.join(' '),
       evidence: `${untested.length} repère(s) sans mesure, ${partial.length} connu(s) par un plancher`,
       target: 'perf',

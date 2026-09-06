@@ -11,7 +11,6 @@ import {
 import { addDays, formatDate, formatPeriode, todayISO } from '@/lib/engine/date'
 import { computeRecovery } from '@/lib/engine/recovery'
 import { buildReview } from '@/lib/engine/review'
-import { computeScores } from '@/lib/engine/scoring'
 import { historiqueDesBilans } from '@/lib/engine/historique'
 import { projectionDeLAthlete } from '@/lib/engine/projection'
 import { planDe } from '@/lib/coach/quota'
@@ -29,12 +28,11 @@ export default async function Page() {
   if (!state || state.sessions.length === 0) redirect('/onboarding')
 
   const today = todayISO()
-  const scores = computeScores(state, today)
   const recovery = computeRecovery(state, today)
   const week = buildReview(state, today, 7)
   const month = buildReview(state, today, 30)
   const progress = whatProgresses(state, today)
-  const gaps = whatMustProgress(state, today, scores.missing)
+  const gaps = whatMustProgress(state, today)
   const plan = nextWeekPlan(state, today)
 
   const value = (label: string) => week.metrics.find((m) => m.label === label)

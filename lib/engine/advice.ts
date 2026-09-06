@@ -3,7 +3,11 @@ import { clamp, sum } from './math'
 import { runStats } from './perf'
 import { PHASE_TARGETS } from './marathon'
 import { consecutiveDays } from './load'
-import type { AthleteState, ISODate, Session } from './types'
+import { BENCHMARK_LABELS, benchmarkValue } from './state'
+import type { AthleteState, BenchmarkKey, ISODate, Session } from './types'
+
+/** Repères que la séance haut du corps sait tester. Miroir de `alerts`. */
+const TESTABLES: BenchmarkKey[] = ['pullups', 'dips', 'muscleups', 'legraises', 'squats']
 
 /**
  * CONSEILS CALCULÉS
@@ -125,11 +129,7 @@ export function whatProgresses(state: AthleteState, today: ISODate): Insight | n
 }
 
 /** Ce qui doit progresser : les écarts réels, chiffrés, du plus urgent au moins. */
-export function whatMustProgress(
-  state: AthleteState,
-  today: ISODate,
-  missingPct: number,
-): Insight[] {
+export function whatMustProgress(state: AthleteState, today: ISODate): Insight[] {
   const out: Insight[] = []
   const stats = runStats(state, today)
   const target = PHASE_TARGETS.SPECIFIC.weeklyKm
@@ -152,10 +152,17 @@ export function whatMustProgress(
     })
   }
 
-  if (missingPct > 0) {
+  /*
+   * Le troisieme constat citait une part de score. Il dit maintenant ce qui
+   * manque : des reperes jamais mesures. Le fond est identique — c'etaient
+   * eux que le pourcentage comptait — mais il se lit sans connaitre la
+   * formule qui le produisait.
+   */
+  const jamaisTestes = TESTABLES.filter((k) => benchmarkValue(state.benchmarks[k]) === null)
+  if (jamaisTestes.length > 0) {
     out.push({
       title: 'Tes repères de force.',
-      text: `${missingPct} % du score attend une mesure réelle plutôt qu'une valeur déclarée ou absente.`,
+      text: `${jamaisTestes.length} repère${jamaisTestes.length > 1 ? 's' : ''} n’${jamaisTestes.length > 1 ? 'ont' : 'a'} jamais été mesuré${jamaisTestes.length > 1 ? 's' : ''} : ${jamaisTestes.map((k) => BENCHMARK_LABELS[k].toLowerCase()).join(', ')}. Le protocole de test est intégré à la prochaine séance haut du corps.`,
     })
   }
 

@@ -103,20 +103,28 @@ describe('whatProgresses', () => {
 
 describe('whatMustProgress', () => {
   it('chiffre chaque écart sur les données réelles', () => {
-    const gaps = whatMustProgress(seedState(TODAY), TODAY, 26)
+    const gaps = whatMustProgress(seedState(TODAY), TODAY)
     const volume = gaps.find((g) => g.title.includes('volume de course'))
     expect(volume?.text).toContain('10.2 km')
 
     const natation = gaps.find((g) => g.title.includes('natation'))
     expect(natation?.text).toContain('2 séances sans distance notée')
-
-    const reperes = gaps.find((g) => g.title.includes('repères'))
-    expect(reperes?.text).toContain('26 %')
   })
 
-  it('ne signale rien sur les repères quand le score est complet', () => {
-    const gaps = whatMustProgress(seedState(TODAY), TODAY, 0)
-    expect(gaps.some((g) => g.title.includes('repères'))).toBe(false)
+  it('nomme les repères jamais mesurés plutôt qu’une part de score', () => {
+    const gaps = whatMustProgress(seedState(TODAY), TODAY)
+    const reperes = gaps.find((g) => g.title.includes('repères'))
+    // Le seed ne teste ni les tractions ni les muscle-ups.
+    expect(reperes?.text).toContain('tractions')
+    expect(reperes?.text).not.toContain('%')
+  })
+
+  it('ne signale rien quand tous les repères sont mesurés', () => {
+    const state = seedState(TODAY)
+    for (const k of ['pullups', 'dips', 'muscleups', 'legraises', 'squats'] as const) {
+      state.benchmarks[k] = { value: 10, partial: false, testedAt: TODAY }
+    }
+    expect(whatMustProgress(state, TODAY).some((g) => g.title.includes('repères'))).toBe(false)
   })
 })
 

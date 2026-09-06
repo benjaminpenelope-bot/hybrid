@@ -19,8 +19,11 @@ describe('buildCoachContext', () => {
     expect(context.reperes_force.squats).toContain('maximum non testé')
   })
 
-  it('annonce la part du score non mesurée', () => {
-    expect(context.part_du_score_non_mesuree).toMatch(/^\d+ %$/)
+  it('ne transmet plus de score global : l’écran ne l’affiche plus', () => {
+    // Le coach ne doit pas commenter un chiffre que l'athlete ne voit nulle
+    // part. Voir `FONCTIONS.athleteScore`.
+    expect('score_global' in context).toBe(false)
+    expect('part_du_score_non_mesuree' in context).toBe(false)
   })
 
   it('dit que la récupération n est pas mesurée plutôt que d envoyer 65', () => {

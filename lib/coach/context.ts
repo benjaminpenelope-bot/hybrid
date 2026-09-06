@@ -8,7 +8,6 @@ import { bilanDesPas, OBJECTIF_PAS } from '@/lib/engine/pas'
 import { runStats, swimStats } from '@/lib/engine/perf'
 import { computeRecovery } from '@/lib/engine/recovery'
 import { buildReview } from '@/lib/engine/review'
-import { computeScores } from '@/lib/engine/scoring'
 import { benchmarkValue, isPartial, UNTESTED } from '@/lib/engine/state'
 import type { AthleteState, ISODate } from '@/lib/engine/types'
 
@@ -25,9 +24,13 @@ const FENETRE_PESEES = 12
 
 export interface CoachContext {
   profil: Record<string, unknown>
-  score_global: number
-  part_du_score_non_mesuree: string
-  sous_scores: Record<string, number | null>
+  /*
+   * Le score global et sa part non mesuree ont quitte le contexte en meme
+   * temps que l'ecran : le coach ne doit pas commenter un chiffre que
+   * l'athlete ne voit nulle part. Il lui reste ce qui se nomme — la
+   * recuperation, les reperes, les volumes — c'est-a-dire tout ce dont le
+   * score n'etait qu'un resume.
+   */
   recuperation: Record<string, unknown>
   signaux: { niveau: string; titre: string; preuve: string }[]
   reperes_force: Record<string, string>
@@ -69,9 +72,8 @@ export interface CoachContext {
 }
 
 export function buildCoachContext(state: AthleteState, today: ISODate): CoachContext {
-  const scores = computeScores(state, today)
   const recovery = computeRecovery(state, today)
-  const alerts = computeAlerts(state, today, { scores })
+  const alerts = computeAlerts(state, today)
   const load = acuteChronic(state, today)
   const run = runStats(state, today)
   const swim = swimStats(state, today)
@@ -123,11 +125,6 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
       date_de_course: state.profile.raceDate ?? 'non renseignée',
       volume_course_semaine_1_km: state.profile.baseWeeklyKm,
     },
-    score_global: scores.global,
-    part_du_score_non_mesuree: `${scores.missing} %`,
-    sous_scores: Object.fromEntries(
-      Object.entries(scores.subs).map(([key, sub]) => [key, sub.score]),
-    ),
     recuperation: {
       score: recovery.measured ? recovery.score : 'non mesurée',
       zone: recovery.zone,
