@@ -172,7 +172,30 @@ export function buildCoachContext(state: AthleteState, today: ISODate): CoachCon
        */
       vitesse_kg_par_semaine:
         poids.rate === null ? 'pas assez de pesées pour le dire' : Number(poids.rate.toFixed(2)),
+      /*
+       * Le sens et le seuil, en clair.
+       *
+       * `trop_rapide` seul obligeait le modele a deviner ce que « trop » veut
+       * dire, et il le devinait avec la seule regle qu'il connaisse — deux
+       * cent cinquante grammes par semaine — qui vaut pour une prise et pas
+       * pour une perte. Un athlete qui perdait six cents grammes par semaine,
+       * ce qui est sain a quatre-vingts kilos, se faisait donc alerter a tort.
+       */
+      sens_vise: poids.target === 0 ? 'stabiliser' : poids.perte ? 'perdre' : 'prendre',
+      vitesse_saine_max_kg_par_semaine: poids.vitesseMax,
       trop_rapide: poids.tooFast,
+      /*
+       * La qualite de la perte, et le seul indicateur honnete qu'on ait :
+       * une perte reussie ne coute pas de force. Quand les reperes baissent
+       * pendant une perte, c'est du muscle qui part avec le gras — et la
+       * balance, elle, ne fait pas la difference.
+       */
+      ...(poids.perte
+        ? {
+            a_surveiller:
+              'Sur une perte, compare les repères de force d’une mesure à l’autre. S’ils baissent, la perte se fait sur le muscle : c’est un motif de ralentir, pas d’en faire plus.',
+          }
+        : {}),
       pesees_recentes: peseesRecentes,
       moyennes_hebdomadaires: poids.weekly.slice(-8),
       dernieres_mensurations_cm: derniereMesure ?? 'aucune mesure',

@@ -54,6 +54,8 @@ export const OBJECTIFS = [
   'street_workout',
   'endurance',
   'hybride',
+  'perte_de_poids',
+  'prise_de_masse',
 ] as const
 
 const objectif = z.object({
@@ -230,6 +232,8 @@ export const OBJECTIF_LABELS: Record<(typeof OBJECTIFS)[number], string> = {
   street_workout: 'Progresser en street workout',
   endurance: 'Améliorer mon endurance',
   hybride: 'Performer sur plusieurs disciplines',
+  perte_de_poids: 'Perdre du poids',
+  prise_de_masse: 'Prendre de la masse',
 }
 
 export const STROKE_LABELS: Record<

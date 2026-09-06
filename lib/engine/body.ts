@@ -13,6 +13,32 @@ import type { AthleteState, ISODate, Profile } from './types'
 /** Au-delà, la prise se fait surtout en gras plutôt qu'en muscle. */
 export const GAIN_MAX_KG_SEMAINE = 0.25
 
+/**
+ * VITESSE DE PERTE
+ *
+ * Une perte se juge en pourcentage du poids de corps, pas en kilos : perdre
+ * six cents grammes par semaine n'a pas le même sens à cinquante kilos qu'à
+ * cent. Trois quarts de pour cent est le seuil au-delà duquel la perte se
+ * fait de plus en plus aux dépens du muscle.
+ *
+ * La règle de la prise ne pouvait pas servir ici. Elle plafonne à 250 g par
+ * semaine, ce qui est une prise rapide — et une perte lente. Appliquée telle
+ * quelle, elle aurait signalé comme dangereuse une perte parfaitement saine,
+ * et l'alerte serait devenue du bruit.
+ */
+export const PERTE_MAX_PART_SEMAINE = 0.0075
+
+/**
+ * Vitesse hebdomadaire au-delà de laquelle on prévient, en kilos.
+ *
+ * Le sens compte : on ne borne que la direction visée. Reprendre un kilo
+ * pendant une perte n'est pas une perte trop rapide, c'est autre chose — et
+ * le confondre avec ça donnerait un mauvais conseil.
+ */
+export function vitesseMaximale(poidsActuel: number, perte: boolean): number {
+  return perte ? poidsActuel * PERTE_MAX_PART_SEMAINE : GAIN_MAX_KG_SEMAINE
+}
+
 /** Fenêtre sur laquelle la vitesse de prise est calculée. */
 const FENETRE_JOURS = 28
 
@@ -20,6 +46,10 @@ const FENETRE_JOURS = 28
 const ECART_MIN_JOURS = 7
 
 export interface WeightTrend {
+  /** `true` quand le poids cible est sous le poids de départ. */
+  perte: boolean
+  /** Vitesse au-delà de laquelle on prévient, en kg par semaine. */
+  vitesseMax: number
   /** Moyenne par semaine calendaire, pour lisser le bruit quotidien. */
   weekly: { date: ISODate; kg: number }[]
   /** kg par semaine, ou null si l'historique ne permet pas de le dire. */
@@ -54,14 +84,28 @@ export function weightTrend(state: AthleteState, today: ISODate): WeightTrend {
 
   const current = weights[weights.length - 1]?.kg ?? profile.startWeight
 
+  const ecart = profile.goalWeight - profile.startWeight
+  const perte = ecart < 0
+  const vitesseMax = vitesseMaximale(current, perte)
+
   return {
     weekly,
     rate,
     current,
+    perte,
+    vitesseMax: Math.round(vitesseMax * 100) / 100,
     gain: current - profile.startWeight,
-    target: profile.goalWeight - profile.startWeight,
-    // Le sens compte : sur une perte, c'est descendre trop vite qui alerte.
-    tooFast:
-      rate !== null && Math.abs(rate) > GAIN_MAX_KG_SEMAINE && Math.sign(rate) === Math.sign(profile.goalWeight - profile.startWeight),
+    target: ecart,
+    /*
+     * Le sens compte : on ne borne que la direction visee. Descendre vite
+     * quand on cherche a descendre est ce qu'on signale ; remonter pendant
+     * une perte est un autre probleme, et le confondre avec celui-ci donnerait
+     * un mauvais conseil.
+     *
+     * Le seuil, lui, n'est plus le meme dans les deux sens : une perte se
+     * juge en part du poids de corps, une prise en kilos absolus. Voir
+     * `vitesseMaximale`.
+     */
+    tooFast: rate !== null && Math.abs(rate) > vitesseMax && Math.sign(rate) === Math.sign(ecart),
   }
 }

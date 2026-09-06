@@ -2,6 +2,7 @@ import { addDays, daysBetween } from './date'
 import { acuteChronic, consecutiveDays } from './load'
 import { sum } from './math'
 import { raceFeasibility } from './program'
+import { vitesseMaximale } from './body'
 import { BENCHMARK_LABELS, benchmarkValue, isPartial } from './state'
 import type { AthleteState, BenchmarkKey, ISODate } from './types'
 
@@ -172,7 +173,19 @@ export function computeAlerts(state: AthleteState, today: ISODate): Alert[] {
     })
   }
 
-  /* 6 — Vitesse de prise de poids. */
+  /*
+   * 6 — Vitesse de variation du poids, dans le sens vise.
+   *
+   * Le signal ne connaissait que la prise, et ne s'armait qu'au-dessus de
+   * 250 g par semaine. Sur un objectif de perte, ce seuil est absurde : il
+   * n'aurait jamais rien dit, alors que c'est precisement la ou la vitesse
+   * abime — une perte trop rapide se fait sur le muscle, et la balance ne
+   * fait pas la difference.
+   *
+   * Les deux sens ont donc leur seuil, et le meme calcul. Voir
+   * `vitesseMaximale` : une perte se juge en part du poids de corps, une
+   * prise en kilos absolus.
+   */
   const weights = [...state.weights]
     .filter((x) => x.date <= today)
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -182,13 +195,22 @@ export function computeAlerts(state: AthleteState, today: ISODate): Alert[] {
   if (firstW && lastW && daysBetween(firstW.date, lastW.date) >= 7) {
     const weeks = daysBetween(firstW.date, lastW.date) / 7
     const rate = (lastW.kg - firstW.kg) / weeks
-    if (rate > 0.25) {
+    const ecart = state.profile.goalWeight - state.profile.startWeight
+    // Sans ecart declare, on retombe sur l'ancienne regle : seule une prise
+    // rapide alerte. C'est le cas des comptes anterieurs a ces objectifs.
+    const perte = ecart < 0
+    const max = vitesseMaximale(lastW.kg, perte)
+    const dansLeSens = ecart === 0 ? rate > 0 : Math.sign(rate) === Math.sign(ecart)
+
+    if (dansLeSens && Math.abs(rate) > max) {
       out.push({
         id: 'weight_rate',
         level: 'warn',
-        title: 'Prise de poids trop rapide',
-        body: "Au-delà de 0,25 kg par semaine, la part de gras augmente sans bénéfice sur la performance. Réduis l'excédent calorique, garde les protéines.",
-        evidence: `+${rate.toFixed(2)} kg / semaine sur ${Math.round(weeks * 7)} jours`,
+        title: perte ? 'Perte de poids trop rapide' : 'Prise de poids trop rapide',
+        body: perte
+          ? `Au-delà de ${max.toFixed(2)} kg par semaine — trois quarts de pour cent de ton poids — la perte se fait de plus en plus sur le muscle. Tes repères de force sont ce qui le dira avant la balance : s'ils baissent, ralentis.`
+          : "Au-delà de 0,25 kg par semaine, la part de gras augmente sans bénéfice sur la performance. Réduis l'excédent calorique, garde les protéines.",
+        evidence: `${rate > 0 ? '+' : ''}${rate.toFixed(2)} kg / semaine sur ${Math.round(weeks * 7)} jours`,
         target: 'body',
       })
     }

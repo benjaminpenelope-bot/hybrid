@@ -54,6 +54,24 @@ export const ABSOLUTE_MIN_BASE = 8
 export const PLAFOND_FACTEUR = 3
 export const PLAFOND_KM = 90
 
+/**
+ * COURSE D'ENTRETIEN
+ *
+ * Un objectif de prise de masse ne veut pas d'un volume de course qui triple.
+ * La course et la barre se disputent la meme recuperation, et huit pour cent
+ * de plus chaque semaine reviendrait a construire un coureur pendant qu'on
+ * essaie de construire du muscle : au bout de quelques mois, c'est la barre
+ * qui perd l'arbitrage, sans que personne ne l'ait decide.
+ *
+ * D'ou un plafond a peine au-dessus de ce que la personne court deja : quinze
+ * pour cent de marge, assez pour que ce soit un entretien et non un declin.
+ * Le facteur multiplie la reference — le volume mesure ou declare — jamais la
+ * base ancree, qui n'est plus un volume. Voir `weekVolume`.
+ */
+export function facteurDePlafond(objectif?: GoalType | null): number {
+  return objectif === 'prise_de_masse' ? 1.15 : PLAFOND_FACTEUR
+}
+
 export interface PlanOptions {
   /** 0 = dimanche. Défaut 1 = lundi. */
   restWeekday?: number
@@ -287,6 +305,29 @@ const DOSAGES: Partial<Record<GoalType, Dosage>> = {
     repos: 0.7,
     rir: 1,
     note: 'Séries longues et repos courts, plus près de l’échec : c’est le volume qui fait grossir.',
+  },
+  /*
+   * Meme dosage que l'hypertrophie : a la barre, prendre du muscle et prendre
+   * de la masse demandent la meme chose. Ce qui les separe est la repartition
+   * de la semaine et ce qu'on regarde ensuite, pas la serie.
+   */
+  prise_de_masse: {
+    reps: +3,
+    repos: 0.7,
+    rir: 1,
+    note: 'Séries longues et repos courts, plus près de l’échec : c’est le volume qui fait grossir.',
+  },
+  /*
+   * Perte de poids : series longues, repos courts, mais une repetition de
+   * plus en reserve qu'en hypertrophie. En deficit, la recuperation est moins
+   * bonne : aller au contact de l'echec a chaque serie coute plus qu'il ne
+   * rapporte, et c'est comme ca qu'on perd les reperes qu'on essaie de garder.
+   */
+  perte_de_poids: {
+    reps: +2,
+    repos: 0.8,
+    rir: 2,
+    note: 'Séries longues et repos courts pour la dépense, mais deux répétitions en réserve : en déficit, la charge est ce qui protège ton muscle, pas ce qui le construit.',
   },
 }
 
@@ -727,6 +768,49 @@ const MICROCYCLE_HYROX: Record<Slot, SessionType> = {
   6: 'LONG',
 }
 
+/**
+ * PERTE DE POIDS : trois seances de barre, trois seances aerobies.
+ *
+ * Jamais du cardio seul. Perdre du poids sans toucher a la barre, c'est
+ * perdre du muscle en meme temps que le gras — la balance descend, la
+ * silhouette ne change pas, et les reperes de force s'effondrent. La barre
+ * n'est pas ici pour construire, elle est la pour garder.
+ *
+ * Deux seances basses pour une haute, comme HYROX et pour la meme raison :
+ * les jambes sont le plus gros poste de depense du corps.
+ */
+const MICROCYCLE_PERTE: Record<Slot, SessionType> = {
+  0: 'REST',
+  1: 'LOWER',
+  2: 'RUN',
+  3: 'UPPER',
+  4: 'RUN',
+  5: 'LOWER',
+  6: 'LONG',
+}
+
+/**
+ * PRISE DE MASSE : quatre seances de barre, une course d'entretien, deux
+ * jours de repos.
+ *
+ * C'est la ou elle se separe de l'hypertrophie, qui garde deux courses. Le
+ * volume de course n'y grossit pas non plus — voir `facteurDePlafond`. Les
+ * deux disciplines se disputent la meme recuperation, et quand on cherche a
+ * prendre, c'est la barre qui doit gagner l'arbitrage.
+ *
+ * Le second repos tombe au milieu, entre les deux paires de seances : c'est
+ * lui qui rend quatre seances de barre tenables.
+ */
+const MICROCYCLE_MASSE: Record<Slot, SessionType> = {
+  0: 'REST',
+  1: 'UPPER',
+  2: 'LOWER',
+  3: 'REST',
+  4: 'UPPER',
+  5: 'LOWER',
+  6: 'RUN',
+}
+
 const MICROCYCLES: Record<GoalType, Record<Slot, SessionType>> = {
   /*
    * Les trois objectifs de course partagent une structure : ce qui les
@@ -742,6 +826,8 @@ const MICROCYCLES: Record<GoalType, Record<Slot, SessionType>> = {
   hypertrophie: MICROCYCLE_FORCE,
   street_workout: MICROCYCLE_STREET,
   hyrox: MICROCYCLE_HYROX,
+  perte_de_poids: MICROCYCLE_PERTE,
+  prise_de_masse: MICROCYCLE_MASSE,
 }
 
 /**
@@ -759,6 +845,10 @@ const POURQUOI_LONGUE: Record<GoalType, string> = {
   force: "C'est elle qui construit ton endurance de base.",
   hypertrophie: "C'est elle qui construit ton endurance de base.",
   street_workout: "C'est elle qui construit ton endurance de base.",
+  perte_de_poids:
+    "C'est la seance la plus longue de la semaine, donc celle qui depense le plus — et a cette intensite-la, sans mordre sur ce que la barre demande.",
+  prise_de_masse:
+    "Elle entretient le fond, sans plus : ce qui construit ici, c'est la barre, et la course ne doit pas lui prendre sa recuperation.",
 }
 
 /** Repartition retenue. Sans objectif declare, celle d'origine. */
@@ -1046,6 +1136,14 @@ export function buildSession(
     goal = null,
     plafondKm,
   } = opts
+
+  /*
+   * Le plafond fourni l'emporte — il vient d'une prolongation, donc d'une
+   * mesure. Sans lui, il se deduit de la base, avec le facteur de l'objectif :
+   * une prise de masse garde sa course en entretien plutot que de la laisser
+   * tripler. Voir `facteurDePlafond`.
+   */
+  const plafondEffectif = plafondKm ?? Math.min(baseKm * facteurDePlafond(goal), PLAFOND_KM)
   const w = Math.max(1, week)
   const micro = microcycleDe(goal)
   // Les roles se lisent sur la semaine reellement realisee, pas sur le
@@ -1139,8 +1237,8 @@ export function buildSession(
 
     case 'RUN': {
       const km =
-        kmDesCourses(w, baseKm, micro, plafondKm).get(slot) ??
-        runSplit(w, baseKm, plafondKm).fundamental
+        kmDesCourses(w, baseKm, micro, plafondEffectif).get(slot) ??
+        runSplit(w, baseKm, plafondEffectif).fundamental
       const isEasy = estFootingSouple(slot, effectif)
       if (isEasy) {
         return {
@@ -1377,7 +1475,8 @@ export function buildSession(
 
     default: {
       const long =
-        kmDesCourses(w, baseKm, micro, plafondKm).get(slot) ?? runSplit(w, baseKm, plafondKm).long
+        kmDesCourses(w, baseKm, micro, plafondEffectif).get(slot) ??
+        runSplit(w, baseKm, plafondEffectif).long
       return {
         ...base,
         type: 'LONG',

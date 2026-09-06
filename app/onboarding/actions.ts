@@ -227,8 +227,9 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
    * choisit la repartition de la semaine, les sports declares filtrent ce
    * qui est realisable, et les jours disponibles decident quand.
    *
-   * Ce qui reste a differencier : la prescription de force selon que
-   * l'objectif est la force ou l'hypertrophie.
+   * Le dosage des series suit lui aussi l'objectif : force, hypertrophie,
+   * prise de masse et perte de poids ne demandent ni les memes repetitions,
+   * ni les memes repos, ni la meme reserve. Voir `doserPourObjectif`.
    */
   const plan = generatePlan(today, PLAN_WEEKS, 1, {
     restWeekday,

@@ -48,6 +48,7 @@ import {
   Layers,
   Medal,
   Route,
+  Scale,
   Timer,
   CircleDashed,
   type LucideProps,
@@ -101,6 +102,14 @@ export const IconForce = fabrique(Dumbbell)
 export const IconHypertrophie = fabrique(Layers)
 export const IconEndurance = fabrique(Activity)
 export const IconHybride = fabrique(Gauge)
+/* Perte de poids : la courbe qui descend. Le meme glyphe sert au verdict
+   « allege » du coach — c'est voulu, les deux disent la meme chose, et ils ne
+   se croisent jamais sur un ecran. */
+export const IconPerteDePoids = fabrique(TrendingDown)
+/* Prise de masse : la balance, et non l'halterophile. C'est justement ce qui
+   la separe de l'hypertrophie — a la barre elles se travaillent pareil, mais
+   celle-ci se juge au poids. */
+export const IconPriseDeMasse = fabrique(Scale)
 
 /* ── Cartes du coach ── */
 export const IconVerdict = fabrique(CircleCheck)

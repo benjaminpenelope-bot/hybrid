@@ -6,8 +6,10 @@ import {
   kmDesCourses,
   microcycleDe,
   microcycleEffectif,
+  facteurDePlafond,
   swimTarget,
   weekVolume,
+  PLAFOND_KM,
   RUN_KM_W1,
   type Slot,
 } from './program'
@@ -206,6 +208,10 @@ export function projectionDeLAthlete(
   const passees = state.sessions.filter((s) => s.date <= today)
   const semaineActuelle = passees.length > 0 ? Math.max(1, ...passees.map((s) => s.week)) : 1
 
+  const objectif =
+    (state.goals.find((g) => g.status === 'actif' && g.priority === 'principal')?.type as
+      | GoalType
+      | undefined) ?? null
   const reel = volumeHebdoReel(state, today)
   const { baseKm, mesuree } = baseDuProchainBloc(
     state,
@@ -216,16 +222,17 @@ export function projectionDeLAthlete(
 
   const jalons = projection({
     sports: (state.profile.sports ?? []) as Sport[],
-    goal:
-      (state.goals.find((g) => g.status === 'actif' && g.priority === 'principal')?.type as
-        | GoalType
-        | undefined) ?? null,
+    goal: objectif,
     semaines,
     semaineActuelle,
     ...(baseKm !== null ? { baseKm } : {}),
     // Le plafond suit la référence mesurée, jamais la base ancrée : voir
     // `weekVolume`, qui explique pourquoi les deux ne sont plus la même chose.
-    ...(reel !== null ? { plafondKm: Math.min(reel * 3, 90) } : {}),
+    // Son facteur dépend de l'objectif — une prise de masse garde sa course
+    // en entretien.
+    ...(reel !== null
+      ? { plafondKm: Math.min(reel * facteurDePlafond(objectif), PLAFOND_KM) }
+      : {}),
   })
 
   return {

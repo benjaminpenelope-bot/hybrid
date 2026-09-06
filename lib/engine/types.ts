@@ -227,6 +227,16 @@ export type GoalType =
   | 'street_workout'
   | 'endurance'
   | 'hybride'
+  /**
+   * Les deux seuls objectifs dont la cible se lit sur une balance.
+   *
+   * `prise_de_masse` cohabite avec `hypertrophie` : a la barre elles se
+   * travaillent pareil, mais elles ne se jugent pas au meme endroit — l'une
+   * au muscle, l'autre au poids — et `prise_de_masse` protege davantage la
+   * recuperation en faisant passer la course en entretien.
+   */
+  | 'perte_de_poids'
+  | 'prise_de_masse'
 
 export type GoalPriority = 'principal' | 'secondaire'
 export type GoalStatus = 'actif' | 'atteint' | 'abandonne'

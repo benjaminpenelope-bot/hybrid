@@ -36,6 +36,8 @@ import {
   IconEndurance,
   IconForce,
   IconHybride,
+  IconPerteDePoids,
+  IconPriseDeMasse,
   IconHypertrophie,
   IconHyrox,
   IconMarathon,
@@ -250,6 +252,8 @@ const OBJECTIF_ICONES: Record<(typeof OBJECTIFS)[number], (p: { size?: number })
   street_workout: IconBarre,
   endurance: IconEndurance,
   hybride: IconHybride,
+  perte_de_poids: IconPerteDePoids,
+  prise_de_masse: IconPriseDeMasse,
 }
 
 /**
@@ -270,6 +274,10 @@ const OBJECTIF_EFFET: Record<(typeof OBJECTIFS)[number], string> = {
   street_workout: 'Tirage prioritaire, deux séances hautes au plus, jamais rapprochées.',
   endurance: 'Le volume avant l’intensité, sur toutes tes disciplines.',
   hybride: 'Course, nage et barre qui se répondent au lieu de s’additionner.',
+  perte_de_poids:
+    'Trois séances de barre pour garder ton muscle, trois séances aérobies pour la dépense.',
+  prise_de_masse:
+    'Quatre séances de barre, une course d’entretien qui ne grossit pas, deux jours de repos.',
 }
 
 /** Pictogramme de chaque sport. */

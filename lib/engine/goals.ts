@@ -126,6 +126,43 @@ const JALONS: Record<GoalType, Jalon[]> = {
     { horizon: '6 mois', label: '1 500 m nagés sans pause', cible: 1500, metrique: { m: 'nage_continue' } },
     { horizon: '3 mois', label: '30 km de course par semaine', cible: 30, metrique: { m: 'course_semaine' } },
   ],
+  /*
+   * Les deux seuls objectifs dont la cible principale est le poids. Elle
+   * n'est pas ici : `jalonsUniversels` l'affiche deja pour quiconque a un
+   * poids cible different de son poids de depart, et la repeter donnerait
+   * deux fois la meme ligne.
+   *
+   * Ce que ces listes ajoutent est donc ce que la balance ne dit pas.
+   */
+  perte_de_poids: [
+    /*
+     * Le jalon le plus important de la liste, et celui qu'aucune application
+     * de perte de poids n'affiche : garder ses tractions.
+     *
+     * Une perte de poids reussie ne coute pas de force. Quand les reperes
+     * s'effondrent, c'est du muscle qui est parti avec le gras, et c'est la
+     * seule mesure honnete de la qualite de la perte — la balance, elle, ne
+     * fait pas la difference.
+     */
+    { horizon: '6 mois', label: '10 tractions strictes — le muscle qu’on garde', cible: 10, metrique: { m: 'repere', key: 'pullups' } },
+    { horizon: '3 mois', label: '30 pompes d’affilée', cible: 30, metrique: { m: 'repere', key: 'pushups' } },
+    { horizon: '6 mois', label: '25 km de course par semaine', cible: 25, metrique: { m: 'course_semaine' } },
+    { horizon: '3 mois', label: 'Sortie longue de 10 km', cible: 10, metrique: { m: 'course_longue' } },
+  ],
+  prise_de_masse: [
+    { horizon: '12 mois', label: '20 tractions strictes', cible: 20, metrique: { m: 'repere', key: 'pullups' } },
+    { horizon: '6 mois', label: '30 dips', cible: 30, metrique: { m: 'repere', key: 'dips' } },
+    { horizon: '3 mois', label: '60 squats d’affilée', cible: 60, metrique: { m: 'repere', key: 'squats' } },
+    {
+      horizon: '6 mois',
+      label: 'Tour de bras et de poitrine',
+      cible: 0,
+      metrique: {
+        m: 'non_mesure',
+        pourquoi: 'les mensurations se relèvent dans l’écran Corps, elles ne se déduisent d’aucune séance',
+      },
+    },
+  ],
   hybride: [
     { horizon: '12 mois', label: 'Marathon — 42,2 km', cible: 42.2, metrique: { m: 'course_longue' } },
     { horizon: '12 mois', label: '1 500 m nagés sans pause', cible: 1500, metrique: { m: 'nage_continue' } },
@@ -160,6 +197,8 @@ export const LIBELLE_OBJECTIF: Record<GoalType, string> = {
   street_workout: 'Street workout',
   endurance: 'Endurance',
   hybride: 'Hybride',
+  perte_de_poids: 'Perte de poids',
+  prise_de_masse: 'Prise de masse',
 }
 
 /** Objectifs actifs, le principal d'abord. */

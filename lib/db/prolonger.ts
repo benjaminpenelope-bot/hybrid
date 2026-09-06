@@ -1,7 +1,7 @@
 import { baseAncreeSur } from '@/lib/engine/ancrage'
 import { addDays, todayISO } from '@/lib/engine/date'
 import { prolongationRequise } from '@/lib/engine/horizon'
-import { baseWeeklyKm, generatePlan } from '@/lib/engine/program'
+import { baseWeeklyKm, facteurDePlafond, generatePlan, PLAFOND_KM } from '@/lib/engine/program'
 import type { GoalType, Sport } from '@/lib/engine/types'
 import { sessionToRow } from '@/lib/db/mappers'
 import { createClient } from '@/lib/supabase/server'
@@ -129,14 +129,20 @@ export async function prolongerSiNecessaire(userId: string): Promise<number> {
   /*
    * Le plafond suit la reference mesuree, et non la base : celle-ci n'est
    * plus un volume une fois ancree au milieu du plan.
+   *
+   * Le facteur depend de l'objectif : une prise de masse garde sa course en
+   * entretien plutot que de la laisser tripler, sans quoi la barre finirait
+   * par perdre l'arbitrage de la recuperation. Voir `facteurDePlafond`.
    */
-  const plafondKm = cible === null ? undefined : Math.min(cible * 3, 90)
+  const objectifType = (objectif?.type as GoalType | undefined) ?? null
+  const plafondKm =
+    cible === null ? undefined : Math.min(cible * facteurDePlafond(objectifType), PLAFOND_KM)
 
   const plan = generatePlan(requis.depuis, requis.semaines, requis.semaine, {
     restWeekday: profil.rest_weekday,
     allowDoubles: profil.allow_doubles,
     raceDate: profil.race_date,
-    goal: (objectif?.type as GoalType | undefined) ?? null,
+    goal: objectifType,
     sports: (profil.sports ?? []) as Sport[],
     availableWeekdays: profil.available_weekdays ?? [],
     reperesConnus: (reperes ?? []).map((r: { key: string }) => r.key),
