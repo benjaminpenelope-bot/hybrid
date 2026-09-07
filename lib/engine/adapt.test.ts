@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { adapt, adaptedSets, EASY_FACTOR, HARD_FACTOR } from './adapt'
+import { adapt, adaptedSets, exercicesAdaptes, EASY_FACTOR, HARD_FACTOR } from './adapt'
 import { generatePlan } from './program'
 import type { Session } from './types'
 
@@ -157,5 +157,59 @@ describe('adaptedSets', () => {
     expect(adaptedSets(1, HARD_FACTOR)).toBe(1)
     expect(adaptedSets(4, null)).toBe(4)
     expect(adaptedSets(4, 1)).toBe(4)
+  })
+})
+
+describe('exercicesAdaptes', () => {
+  const seance = (volumeFactor: number | null): Session =>
+    ({
+      id: 'x',
+      date: '2026-09-07',
+      type: 'UPPER',
+      kind: 'strength',
+      status: 'planned',
+      week: 2,
+      title: 'Haut du corps',
+      cues: [],
+      duration: 47,
+      intensity: 3,
+      volumeFactor,
+      exercises: [
+        { n: 'Tractions', sets: 4, reps: '5–6', rest: 120, rir: 2, cue: '' },
+        { n: 'Relevés', sets: 3, reps: '9–11', rest: 60, rir: 2, cue: '' },
+      ],
+    }) as Session
+
+  it('retire des séries quand la séance est allégée', () => {
+    const ex = exercicesAdaptes(seance(HARD_FACTOR))
+    expect(ex.map((e) => e.sets)).toEqual([3, 3])
+  })
+
+  it('ne touche ni aux répétitions ni à la technique', () => {
+    const ex = exercicesAdaptes(seance(HARD_FACTOR))
+    expect(ex.map((e) => e.reps)).toEqual(['5–6', '9–11'])
+  })
+
+  it('rend les exercices tels quels sans facteur', () => {
+    const s = seance(null)
+    expect(exercicesAdaptes(s)).toBe(s.exercises)
+    expect(exercicesAdaptes(seance(1))).toEqual(s.exercises)
+  })
+
+  it('ajoute des séries quand la séance est relevée', () => {
+    // 4 × 1,05 = 4,2 → 4 ; 3 × 1,05 = 3,15 → 3. L'arrondi protege d'une
+    // hausse qui n'aurait pas ete decidee.
+    expect(exercicesAdaptes(seance(EASY_FACTOR)).map((e) => e.sets)).toEqual([4, 3])
+  })
+
+  it('ne descend jamais sous une série', () => {
+    const s = seance(0.1)
+    expect(exercicesAdaptes(s).every((e) => e.sets >= 1)).toBe(true)
+  })
+
+  it('laisse la prescription en base intacte', () => {
+    const s = seance(HARD_FACTOR)
+    exercicesAdaptes(s)
+    expect(s.exercises.map((e) => e.sets)).toEqual([4, 3])
   })
 })

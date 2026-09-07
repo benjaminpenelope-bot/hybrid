@@ -46,11 +46,22 @@ export const RETEST_JOURS = 56
 /** En dessous, une série au poids du corps n'a plus de sens. */
 const REPS_MIN = 3
 
+/**
+ * Matériel qu'un palier réclame.
+ *
+ * `aucun` ne veut pas dire « les mains nues » : une barre est supposée
+ * partout, sans quoi il n'y aurait ni traction ni relevé de jambes. Il veut
+ * dire « rien de plus que ce que la séance suppose déjà ».
+ */
+export type Materiel = 'aucun' | 'lest' | 'anneaux'
+
 export interface Palier {
   /** Repère minimal, dans le mouvement de base, pour accéder à ce palier. */
   min: number
   n: string
   cue: string
+  /** Ce qu'il faut avoir pour le faire. */
+  materiel: Materiel
   /**
    * Part du maximum de base qu'on tient encore dans cette variante.
    *
@@ -69,29 +80,46 @@ export interface Palier {
  * travaille l'endurance de force plutôt que la force.
  */
 
+/*
+ * L'ordre compte a l'interieur d'un meme seuil : `palierDe` retient le
+ * DERNIER palier atteignable, donc le lest passe devant le tempo quand les
+ * deux sont possibles. Sans lest, le tempo prend sa place — il n'y a jamais
+ * de trou dans l'echelle.
+ */
 export const ECHELLE_TRACTIONS: Palier[] = [
   {
     min: 0,
     n: 'Tractions négatives',
     cue: 'Monte avec un appui ou un saut, redescends en 5 s en retenant. C’est la descente qui construit la traction.',
+    materiel: 'aucun',
     facteur: 1,
   },
   {
     min: 3,
     n: 'Tractions strictes',
     cue: 'Scapulas basses, menton au-dessus de la barre, descente contrôlée 2 s.',
+    materiel: 'aucun',
     facteur: 1,
+  },
+  {
+    min: 12,
+    n: 'Tractions tempo',
+    cue: 'Trois secondes pour descendre, une seconde de pause menton au-dessus de la barre. Sans lest, c’est le temps sous tension qui remplace la charge.',
+    materiel: 'aucun',
+    facteur: 0.55,
   },
   {
     min: 12,
     n: 'Tractions lestées',
     cue: 'Ceinture de lest ou sac à dos, environ 10 % de ton poids. Même exigence de forme : si le menton ne passe plus proprement, la série est finie.',
+    materiel: 'lest',
     facteur: 0.6,
   },
   {
     min: 20,
     n: 'Tractions archer',
     cue: 'Un bras tire, l’autre reste tendu sur la barre. Alterne à chaque répétition.',
+    materiel: 'aucun',
     facteur: 0.35,
   },
 ]
@@ -101,19 +129,35 @@ export const ECHELLE_DIPS: Palier[] = [
     min: 0,
     n: 'Dips sur banc, pieds au sol',
     cue: 'Mains derrière toi sur un banc, pieds au sol. Descends jusqu’à ce que le coude fasse un angle droit.',
+    materiel: 'aucun',
     facteur: 1,
   },
-  { min: 5, n: 'Dips', cue: 'Buste légèrement penché, coudes proches, épaules loin des oreilles.', facteur: 1 },
+  {
+    min: 5,
+    n: 'Dips',
+    cue: 'Buste légèrement penché, coudes proches, épaules loin des oreilles.',
+    materiel: 'aucun',
+    facteur: 1,
+  },
+  {
+    min: 20,
+    n: 'Dips tempo',
+    cue: 'Trois secondes pour descendre, une seconde d’arrêt en bas, sans relâcher l’épaule. Le temps sous tension remplace la charge.',
+    materiel: 'aucun',
+    facteur: 0.55,
+  },
   {
     min: 20,
     n: 'Dips lestés',
     cue: 'Environ 10 % de ton poids. Descends jusqu’à l’étirement, sans forcer sur l’épaule.',
+    materiel: 'lest',
     facteur: 0.6,
   },
   {
     min: 35,
     n: 'Dips aux anneaux',
     cue: 'Anneaux tournés vers l’avant en haut. L’instabilité fait tout le travail : reste bas en nombre.',
+    materiel: 'anneaux',
     facteur: 0.35,
   },
 ]
@@ -123,18 +167,21 @@ export const ECHELLE_MUSCLEUPS: Palier[] = [
     min: 1,
     n: 'Muscle-ups — séries courtes',
     cue: 'Séries très courtes, à distance de l’échec. Le muscle-up se travaille frais, jamais en fin de séance.',
+    materiel: 'aucun',
     facteur: 1,
   },
   {
     min: 4,
     n: 'Muscle-ups',
     cue: 'Traction explosive jusqu’au bas de la poitrine, transition franche. Arrête la série dès que le passage devient laborieux.',
+    materiel: 'aucun',
     facteur: 1,
   },
   {
     min: 10,
     n: 'Muscle-ups lestés',
     cue: 'Lest léger, 5 % du poids de corps. La transition doit rester nette.',
+    materiel: 'lest',
     facteur: 0.6,
   },
 ]
@@ -144,13 +191,21 @@ export const ECHELLE_RELEVES: Palier[] = [
     min: 0,
     n: 'Relevés de genoux suspendu',
     cue: 'Genoux vers la poitrine, bassin qui bascule. Aucun élan.',
+    materiel: 'aucun',
     facteur: 1,
   },
-  { min: 8, n: 'Relevés de jambes suspendu', cue: 'Jambes tendues, bassin qui bascule, aucun élan.', facteur: 1 },
+  {
+    min: 8,
+    n: 'Relevés de jambes suspendu',
+    cue: 'Jambes tendues, bassin qui bascule, aucun élan.',
+    materiel: 'aucun',
+    facteur: 1,
+  },
   {
     min: 20,
     n: 'Toes-to-bar',
     cue: 'Les orteils touchent la barre à chaque répétition. Dès que tu balances pour y arriver, la série est finie.',
+    materiel: 'aucun',
     facteur: 0.7,
   },
 ]
@@ -160,25 +215,60 @@ export const ECHELLE_SQUATS: Palier[] = [
     min: 0,
     n: 'Squats poids du corps',
     cue: "Talons au sol, genoux dans l'axe, descente sous la parallèle.",
+    materiel: 'aucun',
     facteur: 1,
   },
   {
     min: 40,
     n: 'Squats bulgares',
     cue: 'Pied arrière surélevé, buste droit. Une jambe travaille, l’autre équilibre.',
+    materiel: 'aucun',
     facteur: 0.35,
   },
   {
     min: 70,
     n: 'Pistol squats — progression',
     cue: 'Sur une jambe, l’autre tendue devant. Tiens-toi à un montant si la descente n’est pas contrôlée.',
+    materiel: 'aucun',
     facteur: 0.12,
   },
 ]
 
-/** Le palier le plus haut que le repère mesuré permet d'atteindre. */
-export function palierDe(echelle: Palier[], max: number): Palier {
-  return [...echelle].reverse().find((p) => max >= p.min) ?? echelle[0]!
+/**
+ * Le matériel dont l'athlète dispose, tel qu'il l'a coché au questionnaire.
+ *
+ * `undefined` et le tableau vide veulent dire « pas renseigné », et non
+ * « rien » : on autorise alors tout, comme avant que la question existe. La
+ * même règle vaut partout ailleurs — une absence de mesure n'est pas un zéro.
+ * `aucun` explicitement coché, lui, veut bien dire rien.
+ */
+export type MaterielDeclare = readonly string[] | undefined
+
+function disponible(p: Palier, materiel: MaterielDeclare): boolean {
+  if (p.materiel === 'aucun') return true
+  if (materiel === undefined || materiel.length === 0) return true
+  return materiel.includes(p.materiel)
+}
+
+/**
+ * Le palier le plus haut que le repère mesuré permet d'atteindre, et que le
+ * matériel déclaré rend possible.
+ *
+ * Le questionnaire promet « ce que tu n'as pas ne sera jamais programmé ».
+ * Prescrire une traction lestée à quelqu'un qui n'a coché ni lest ni gilet
+ * rompt cette promesse — et pire, laisse la séance sans solution : l'athlète
+ * ne peut ni la faire, ni savoir par quoi la remplacer.
+ *
+ * Chaque échelle porte donc, à chaque seuil, une variante qui ne demande
+ * rien : le tempo remplace la charge par du temps sous tension.
+ */
+export function palierDe(echelle: Palier[], max: number, materiel?: MaterielDeclare): Palier {
+  const atteignables = [...echelle].reverse()
+  return (
+    atteignables.find((p) => max >= p.min && disponible(p, materiel)) ??
+    atteignables.find((p) => disponible(p, materiel)) ??
+    echelle[0]!
+  )
 }
 
 /**

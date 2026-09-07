@@ -8,6 +8,7 @@ import {
   fourchette,
   palierDe,
   partDeLaSemaine,
+  type MaterielDeclare,
   type ReperesMesures,
 } from './force'
 import { half, sum } from './math'
@@ -117,6 +118,11 @@ export interface PlanOptions {
    * demandait de remesurer un chiffre qu'il avait deja.
    */
   reperes?: ReperesMesures
+  /**
+   * Materiel declare au questionnaire. Le formulaire promet « ce que tu n'as
+   * pas ne sera jamais programme » : c'est ici que la promesse est tenue.
+   */
+  materiel?: MaterielDeclare
   /**
    * Semaine ou la seance de force re-mesure au lieu de prescrire. Un a
    * l'inscription ; le debut du bloc quand une prolongation constate que les
@@ -421,6 +427,7 @@ export function buildStrength(
   w: number,
   reperes: ReperesMesures = {},
   semaineDeTest = 1,
+  materiel?: MaterielDeclare,
 ): Exercise[] {
   const prog = Math.floor((w - 1) / 3) // +1 rep toutes les 3 semaines, sans repere
   const reperesConnus = Object.keys(reperes)
@@ -500,7 +507,7 @@ export function buildStrength(
 
     const mu = reperes.muscleups
     if (mu !== undefined && mu >= 1) {
-      const p = palierDe(ECHELLE_MUSCLEUPS, mu)
+      const p = palierDe(ECHELLE_MUSCLEUPS, mu, materiel)
       out.push({
         n: p.n,
         sets: 4,
@@ -512,7 +519,7 @@ export function buildStrength(
     }
 
     const tr = reperes.pullups
-    const pTr = tr === undefined ? null : palierDe(ECHELLE_TRACTIONS, tr)
+    const pTr = tr === undefined ? null : palierDe(ECHELLE_TRACTIONS, tr, materiel)
     out.push(
       pTr && tr !== undefined
         ? {
@@ -534,7 +541,7 @@ export function buildStrength(
     )
 
     const di = reperes.dips
-    const pDi = di === undefined ? null : palierDe(ECHELLE_DIPS, di)
+    const pDi = di === undefined ? null : palierDe(ECHELLE_DIPS, di, materiel)
     out.push(
       pDi && di !== undefined
         ? {
@@ -582,10 +589,20 @@ export function buildStrength(
     )
 
     const po = reperes.pushups
+    /*
+     * « Pompes lestees ou declinees » nommait un materiel que l'athlete peut
+     * ne pas avoir. Les pieds sureleves suffisent a durcir le mouvement, et
+     * ne demandent qu'une chaise : sans lest declare, c'est ce que la seance
+     * annonce, plutot qu'une alternative glissee dans un titre.
+     */
+    const nomPompes =
+      materiel === undefined || materiel.length === 0 || materiel.includes('lest')
+        ? 'Pompes lestées ou déclinées'
+        : 'Pompes déclinées'
     out.push(
       po === undefined
         ? {
-            n: 'Pompes lestées ou déclinées',
+            n: nomPompes,
             sets: 3,
             reps: '10–15',
             rest: 75,
@@ -593,7 +610,7 @@ export function buildStrength(
             cue: 'Gainage verrouillé, corps en une ligne.',
           }
         : {
-            n: 'Pompes lestées ou déclinées',
+            n: nomPompes,
             sets: 3,
             reps: fourchette(po, partDeLaSemaine(0.45, w), 1),
             rest: 75,
@@ -603,7 +620,7 @@ export function buildStrength(
     )
 
     const re = reperes.legraises
-    const pRe = re === undefined ? null : palierDe(ECHELLE_RELEVES, re)
+    const pRe = re === undefined ? null : palierDe(ECHELLE_RELEVES, re, materiel)
     out.push(
       pRe && re !== undefined
         ? {
@@ -633,7 +650,7 @@ export function buildStrength(
    * la seule progression est le passage a une jambe.
    */
   const sq = reperes.squats
-  const pSq = sq === undefined ? null : palierDe(ECHELLE_SQUATS, sq)
+  const pSq = sq === undefined ? null : palierDe(ECHELLE_SQUATS, sq, materiel)
   return [
     pSq && sq !== undefined
       ? {
@@ -1387,7 +1404,7 @@ export function buildSession(
 
     case 'UPPER': {
       const exercices = doserPourObjectif(
-        buildStrength('UPPER', w, opts.reperes, opts.semaineDeTest),
+        buildStrength('UPPER', w, opts.reperes, opts.semaineDeTest, opts.materiel),
         goal,
       )
       return {
@@ -1538,7 +1555,7 @@ export function buildSession(
           'Place 24 h avant la sortie longue : reste à RIR 2–3',
           'Si les cuisses tirent encore demain matin, tu es alle trop loin',
         ],
-        exercises: doserPourObjectif(buildStrength('LOWER', w, opts.reperes, opts.semaineDeTest), goal),
+        exercises: doserPourObjectif(buildStrength('LOWER', w, opts.reperes, opts.semaineDeTest, opts.materiel), goal),
         extra:
           allowDoubles && slot === 5
             ? {

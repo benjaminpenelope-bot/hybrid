@@ -31,6 +31,7 @@ interface LigneProfil {
   base_weekly_km: number | string | null
   sports: string[] | null
   available_weekdays: number[] | null
+  equipment: string[] | null
 }
 
 const num = (v: number | string | null): number | undefined => {
@@ -81,7 +82,7 @@ export async function prolongerSiNecessaire(userId: string): Promise<number> {
 
   const { data: profil } = await supabase
     .from('profiles')
-    .select('rest_weekday, allow_doubles, race_date, base_weekly_km, sports, available_weekdays')
+    .select('rest_weekday, allow_doubles, race_date, base_weekly_km, sports, available_weekdays, equipment')
     .eq('id', userId)
     .maybeSingle<LigneProfil>()
   if (!profil) return 0
@@ -153,6 +154,7 @@ export async function prolongerSiNecessaire(userId: string): Promise<number> {
     sports: (profil.sports ?? []) as Sport[],
     availableWeekdays: profil.available_weekdays ?? [],
     reperes: reperesDepuisLignes(reperes ?? []),
+    materiel: profil.equipment ?? [],
     /*
      * Un bloc qui commence sur des reperes de plus de huit semaines les
      * re-mesure d'abord. Sans ca, l'ancrage vieillit en silence : la part du

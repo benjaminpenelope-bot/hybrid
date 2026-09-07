@@ -1,4 +1,4 @@
-import type { ISODate, Session } from './types'
+import type { Exercise, ISODate, Session } from './types'
 
 /**
  * ADAPTATION AUTOMATIQUE
@@ -80,4 +80,28 @@ export function adapt(sessions: Session[], input: AdaptInput): AdaptResult {
 export function adaptedSets(sets: number, factor: number | null | undefined): number {
   if (!factor || factor === 1) return sets
   return Math.max(1, Math.round(sets * factor))
+}
+
+/**
+ * LES EXERCICES D'UNE SÉANCE, ALLÈGEMENT COMPRIS.
+ *
+ * `adaptedSets` existait, était testée, et n'était appelée par aucun écran.
+ * L'adaptation réduisait donc la durée annoncée et écrivait « volume réduit
+ * de 15 % » dans l'objectif de la séance — puis prescrivait le nombre de
+ * séries complet. La réduction était annoncée, jamais appliquée.
+ *
+ * C'est la faute qu'on se refuse partout ailleurs : dire autre chose que ce
+ * qu'on livre. Elle est ici du côté rassurant — la séance était plus dure que
+ * promise, pas plus facile — mais elle rend le message faux, et un athlète
+ * qui suit une consigne allégée en faisant le volume plein ne récupère pas.
+ *
+ * Le facteur s'applique à la lecture et non en base : l'allègement concerne
+ * une séance, pas le plan. Le retirer plus tard ne doit rien avoir à
+ * reconstituer, et l'éditeur continue de montrer la prescription entière,
+ * qui est bien ce qu'il édite.
+ */
+export function exercicesAdaptes(session: Session): Exercise[] {
+  const f = session.volumeFactor
+  if (!f || f === 1) return session.exercises
+  return session.exercises.map((e) => ({ ...e, sets: adaptedSets(e.sets, f) }))
 }

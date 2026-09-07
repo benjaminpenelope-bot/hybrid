@@ -260,6 +260,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
     sports,
     availableWeekdays: disponibilites.availableWeekdays,
     reperes: reperesMesures,
+    materiel: force?.equipment ?? [],
     ...(baseKm !== null ? { baseKm } : {}),
   })
 

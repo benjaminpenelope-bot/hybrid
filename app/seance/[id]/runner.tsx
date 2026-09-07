@@ -9,6 +9,7 @@ import { ChoixNombre, NumPad, Scale } from '@/components/ui/numpad'
 import { propositionsDeReps } from '@/lib/ui/propositions'
 import { Ressenti } from '@/components/ui/ressenti'
 import { RestTimer } from '@/components/ui/rest-timer'
+import { exercicesAdaptes } from '@/lib/engine/adapt'
 import { pace } from '@/lib/engine/math'
 import type { Exercise, Session } from '@/lib/engine/types'
 import { SESSION_META } from '@/lib/ui/session-meta'
@@ -40,9 +41,17 @@ export function SessionRunner({ session }: { session: Session }) {
   const isStrength = session.kind === 'strength'
   const meta = SESSION_META[session.type]
 
+  /*
+   * Les exercices tels qu'ils seront reellement faits, allegement compris.
+   * La seance porte la prescription entiere ; le facteur ne s'applique qu'a
+   * la lecture, parce qu'il concerne cette seance et non le plan. Voir
+   * `exercicesAdaptes`.
+   */
+  const exercices = useMemo(() => exercicesAdaptes(session), [session])
+
   const flat = useMemo(
-    () => (isStrength ? flatten(session.exercises) : []),
-    [isStrength, session.exercises],
+    () => (isStrength ? flatten(exercices) : []),
+    [isStrength, exercices],
   )
 
   const [phase, setPhase] = useState<Phase>(

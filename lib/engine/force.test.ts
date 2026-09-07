@@ -10,6 +10,7 @@ import {
   reperesPerimes,
   RETEST_JOURS,
 } from './force'
+
 import { buildStrength } from './program'
 
 /** Les repères réels d'un compte, testés le 27 août. */
@@ -195,5 +196,40 @@ describe('la séance de test se replace au début d’un bloc', () => {
 
   it('prescrit normalement les autres semaines du bloc', () => {
     expect(buildStrength('UPPER', 26, {}, 25).some((e) => e.test !== undefined)).toBe(false)
+  })
+})
+
+describe('le matériel déclaré est respecté', () => {
+  it('propose le lest quand il est coché', () => {
+    expect(palierDe(ECHELLE_TRACTIONS, 17, ['barre', 'lest']).n).toBe('Tractions lestées')
+  })
+
+  it('remplace le lest par du tempo quand il manque, sans redescendre d’un cran', () => {
+    const p = palierDe(ECHELLE_TRACTIONS, 17, ['barre'])
+    expect(p.n).toBe('Tractions tempo')
+    // Et surtout pas un retour aux tractions strictes : le palier reste
+    // atteint, seule la facon de le durcir change.
+    expect(p.facteur).toBeLessThan(1)
+  })
+
+  it('vaut aussi pour les dips et les anneaux', () => {
+    expect(palierDe(ECHELLE_DIPS, 26, ['paralleles']).n).toBe('Dips tempo')
+    expect(palierDe(ECHELLE_DIPS, 26, ['paralleles', 'lest']).n).toBe('Dips lestés')
+    expect(palierDe(ECHELLE_DIPS, 40, ['paralleles', 'anneaux']).n).toBe('Dips aux anneaux')
+    expect(palierDe(ECHELLE_DIPS, 40, ['paralleles']).n).toBe('Dips tempo')
+  })
+
+  it('ne bride rien quand le matériel n’est pas renseigné', () => {
+    // Vide veut dire « pas renseigne », pas « rien » : c'est la meme regle
+    // que partout, une absence de mesure n'est pas un zero.
+    expect(palierDe(ECHELLE_TRACTIONS, 17, []).n).toBe('Tractions lestées')
+    expect(palierDe(ECHELLE_TRACTIONS, 17, undefined).n).toBe('Tractions lestées')
+  })
+
+  it('tient la promesse du questionnaire dans la séance entière', () => {
+    const sansLest = buildStrength('UPPER', 2, BENJAMIN, 1, ['barre', 'paralleles'])
+    expect(nomsDe(sansLest).some((n) => n.includes('lesté'))).toBe(false)
+    expect(nomsDe(sansLest)).toContain('Tractions tempo')
+    expect(nomsDe(sansLest)).toContain('Dips tempo')
   })
 })
