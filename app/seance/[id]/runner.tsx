@@ -377,8 +377,15 @@ export function SessionRunner({ session }: { session: Session }) {
                   {flat.length - cursor} série{flat.length - cursor > 1 ? 's' : ''}
                 </span>
               </div>
+              {/*
+                Quatre lignes au plus. La liste complete tenait sur l'ecran
+                d'un grand telephone et sur aucun autre : elle poussait la
+                phrase sous la barre d'onglets, ou personne ne la lit. Le
+                reste se compte, il n'a pas besoin d'etre detaille — savoir
+                qu'il reste deux exercices suffit a doser la serie qui vient.
+              */}
               <div className="flex flex-col gap-2">
-                {aVenir.map((e, i) => (
+                {aVenir.slice(0, 4).map((e, i) => (
                   <div key={`${e.n}-${i}`} className="flex items-baseline justify-between gap-3">
                     <span className="min-w-0 flex-1 truncate text-[13px]">{e.n}</span>
                     <span className="num shrink-0 text-[12.5px] text-mut">
@@ -386,6 +393,12 @@ export function SessionRunner({ session }: { session: Session }) {
                     </span>
                   </div>
                 ))}
+                {aVenir.length > 4 && (
+                  <p className="text-[12px] text-dim">
+                    et {aVenir.length - 4} autre{aVenir.length - 4 > 1 ? 's' : ''} exercice
+                    {aVenir.length - 4 > 1 ? 's' : ''} ensuite
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -395,7 +408,7 @@ export function SessionRunner({ session }: { session: Session }) {
             vivant lui appartiennent, et en embarquer une base reviendrait a
             redistribuer son travail. Voir `lib/ui/motivation`.
           */}
-          <p className="entre mt-5 px-2 text-center text-[13px] leading-relaxed text-dim">
+          <p className="entre mb-2 mt-5 px-2 text-center text-[13px] leading-relaxed text-dim">
             {phrase}
           </p>
         </section>
