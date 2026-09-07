@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ChipGroup } from '@/components/ui/chip'
 import { ChoixNombre, NumPad, Scale } from '@/components/ui/numpad'
+import { motivation } from '@/lib/ui/motivation'
 import { propositionsDeReps } from '@/lib/ui/propositions'
 import { Ressenti } from '@/components/ui/ressenti'
 import { RestTimer } from '@/components/ui/rest-timer'
@@ -94,6 +95,33 @@ export function SessionRunner({ session }: { session: Session }) {
   const [enFile, setEnFile] = useState(false)
 
   const current = flat[cursor]
+
+  /*
+   * Ce qu'il reste a faire, regroupe par exercice : la liste plate compte des
+   * series, l'athlete raisonne en exercices. Le premier element est
+   * l'exercice de la serie qui vient, avec ses series restantes et non son
+   * total.
+   */
+  const aVenir = useMemo(() => {
+    const out: { n: string; series: number; reps: string }[] = []
+    for (const f of flat.slice(cursor)) {
+      const dernier = out[out.length - 1]
+      if (dernier && dernier.n === f.exercise.n) dernier.series++
+      else out.push({ n: f.exercise.n, series: 1, reps: f.exercise.reps })
+    }
+    return out
+  }, [flat, cursor])
+
+  const phrase = useMemo(
+    () =>
+      motivation({
+        serie: cursor,
+        total: flat.length,
+        finDExercice: current !== undefined && current.setIndex + 1 === current.exercise.sets,
+        graine: session.id,
+      }),
+    [cursor, flat.length, current, session.id],
+  )
   const isTest = !!current?.exercise.test
   const propositions = current ? propositionsDeReps(current.exercise.reps, current.exercise.unit) : []
   const elapsedMinutes = () => Math.max(1, Math.round((Date.now() - startedAt) / 60000))
@@ -320,11 +348,56 @@ export function SessionRunner({ session }: { session: Session }) {
       {phase === 'rest' && current && (
         <section>
           <RestTimer seconds={current.exercise.rest} onDone={() => setPhase('work')} />
+
           <div className="card mt-3">
             <div className="eyebrow mb-2">Ensuite</div>
             <p className="text-[14px]">{current.exercise.n}</p>
-            <p className="num mt-1 text-[12.5px] text-mut">Objectif : {current.exercise.reps}</p>
+            <p className="num mt-1 text-[12.5px] text-mut">
+              Objectif : {current.exercise.reps}
+              {current.exercise.rir > 0 ? ` · RIR ${current.exercise.rir}` : ''} · série{' '}
+              {current.setIndex + 1} sur {current.exercise.sets}
+            </p>
+            {/* La consigne technique, ici aussi : c'est pendant le repos qu'on
+                a le temps de la lire, pas la barre en main. */}
+            <p className="mt-2.5 text-[12px] leading-relaxed text-dim">{current.exercise.cue}</p>
           </div>
+
+          {/*
+            CE QUI RESTE.
+            
+            L'ecran ne montrait que la serie suivante. Pendant deux minutes de
+            repos on regarde plus loin que ca — savoir s'il reste un exercice
+            ou quatre change la facon dont on dose la serie qui vient.
+          */}
+          {aVenir.length > 0 && (
+            <div className="card mt-3">
+              <div className="mb-2.5 flex items-baseline justify-between">
+                <span className="eyebrow">Ce qu’il reste</span>
+                <span className="num text-[11.5px] text-dim">
+                  {flat.length - cursor} série{flat.length - cursor > 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2">
+                {aVenir.map((e, i) => (
+                  <div key={`${e.n}-${i}`} className="flex items-baseline justify-between gap-3">
+                    <span className="min-w-0 flex-1 truncate text-[13px]">{e.n}</span>
+                    <span className="num shrink-0 text-[12.5px] text-mut">
+                      {e.series} × {e.reps}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/*
+            Les phrases sont ecrites pour l'application : celles d'un auteur
+            vivant lui appartiennent, et en embarquer une base reviendrait a
+            redistribuer son travail. Voir `lib/ui/motivation`.
+          */}
+          <p className="entre mt-5 px-2 text-center text-[13px] leading-relaxed text-dim">
+            {phrase}
+          </p>
         </section>
       )}
 
