@@ -568,15 +568,16 @@ describe('la semaine 1 ne remesure pas ce qui est connu', () => {
    * plus tôt.
    */
   it('ne re-teste pas un repère déjà mesuré', () => {
-    const ex = buildStrength('UPPER', 1, ['pullups', 'dips'])
+    const ex = buildStrength('UPPER', 1, { pullups: 12, dips: 20 })
     expect(testsDe(ex)).toEqual(['muscleups', 'legraises'])
   })
 
   it('rend la séance ordinaire quand les quatre sont connus', () => {
-    const ex = buildStrength('UPPER', 1, ['pullups', 'dips', 'muscleups', 'legraises'])
+    const reperes = { pullups: 12, dips: 20, muscleups: 3, legraises: 15 }
+    const ex = buildStrength('UPPER', 1, reperes)
     expect(testsDe(ex)).toEqual([])
     // Et non la seule série de volume qui accompagnait les tests.
-    expect(ex).toEqual(buildStrength('UPPER', 2))
+    expect(ex).toEqual(buildStrength('UPPER', 1, reperes))
   })
 
   it('laisse le bas du corps intact : il ne porte aucun test', () => {

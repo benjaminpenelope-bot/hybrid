@@ -1,4 +1,5 @@
 import { baseAncreeSur } from '@/lib/engine/ancrage'
+import { reperesDepuisLignes, reperesPerimes } from '@/lib/engine/force'
 import { addDays, todayISO } from '@/lib/engine/date'
 import { prolongationRequise } from '@/lib/engine/horizon'
 import { baseWeeklyKm, facteurDePlafond, generatePlan, PLAFOND_KM } from '@/lib/engine/program'
@@ -98,11 +99,17 @@ export async function prolongerSiNecessaire(userId: string): Promise<number> {
     .eq('priority', 'principal')
     .maybeSingle<{ type: string }>()
 
+  /*
+   * Les reperes avec leurs valeurs, et non plus seulement leurs noms : ce
+   * sont eux qui chiffrent les series du prochain bloc. Les valeurs
+   * partielles sont gardees — un plancher sous-estime, donc il ne peut pas
+   * mener a prescrire trop.
+   */
   const { data: reperes } = await supabase
     .from('benchmarks')
-    .select('key')
+    .select('key, value, tested_at')
     .eq('user_id', userId)
-    .eq('partial', false)
+    .order('tested_at')
 
   /*
    * La base du prochain bloc part de ce qui a ete couru, pas de ce qui a ete
@@ -145,7 +152,15 @@ export async function prolongerSiNecessaire(userId: string): Promise<number> {
     goal: objectifType,
     sports: (profil.sports ?? []) as Sport[],
     availableWeekdays: profil.available_weekdays ?? [],
-    reperesConnus: (reperes ?? []).map((r: { key: string }) => r.key),
+    reperes: reperesDepuisLignes(reperes ?? []),
+    /*
+     * Un bloc qui commence sur des reperes de plus de huit semaines les
+     * re-mesure d'abord. Sans ca, l'ancrage vieillit en silence : la part du
+     * maximum continue de monter sur un maximum perime, et le plan redevient
+     * progressivement trop facile — exactement le defaut qu'on vient de
+     * corriger, revenu deux mois plus tard.
+     */
+    ...(reperesPerimes(reperes ?? [], today) ? { semaineDeTest: requis.semaine } : {}),
     ...(baseKm !== null ? { baseKm } : {}),
     ...(plafondKm !== undefined ? { plafondKm } : {}),
   })

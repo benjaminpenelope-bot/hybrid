@@ -1,4 +1,15 @@
 import { addDays, daysBetween, weekday as weekdayOf } from './date'
+import {
+  ECHELLE_DIPS,
+  ECHELLE_MUSCLEUPS,
+  ECHELLE_RELEVES,
+  ECHELLE_SQUATS,
+  ECHELLE_TRACTIONS,
+  fourchette,
+  palierDe,
+  partDeLaSemaine,
+  type ReperesMesures,
+} from './force'
 import { half, sum } from './math'
 import type {
   Exercise,
@@ -105,7 +116,13 @@ export interface PlanOptions {
    * quelqu'un qui l'avait passee quinze jours plus tot. Le programme
    * demandait de remesurer un chiffre qu'il avait deja.
    */
-  reperesConnus?: string[]
+  reperes?: ReperesMesures
+  /**
+   * Semaine ou la seance de force re-mesure au lieu de prescrire. Un a
+   * l'inscription ; le debut du bloc quand une prolongation constate que les
+   * reperes ont plus de huit semaines. Voir `RETEST_JOURS`.
+   */
+  semaineDeTest?: number
   /**
    * Plafond de volume hebdomadaire, en kilometres. Fourni quand le plan est
    * ancre en cours de route : la base n'est plus alors interpretable comme un
@@ -386,14 +403,29 @@ export function noteDeDosage(objectif?: GoalType | null): string {
   return (objectif && DOSAGES[objectif]?.note) ?? ''
 }
 
+/**
+ * Prescription de force.
+ *
+ * `reperes` porte les maximums mesures, et c'est lui qui chiffre les series :
+ * voir `lib/engine/force`. Un mouvement sans repere retombe exactement sur la
+ * prescription d'avant — la constante n'a pas disparu, elle est devenue le
+ * repli de ce qu'on ne sait pas.
+ *
+ * `semaineDeTest` est la semaine ou la seance re-mesure au lieu de prescrire.
+ * Elle vaut un a l'inscription ; une prolongation la place au debut du bloc
+ * quand les reperes ont plus de huit semaines, sans quoi l'ancrage vieillit
+ * en silence.
+ */
 export function buildStrength(
   kind: 'UPPER' | 'LOWER',
   w: number,
-  reperesConnus: readonly string[] = [],
+  reperes: ReperesMesures = {},
+  semaineDeTest = 1,
 ): Exercise[] {
-  const prog = Math.floor((w - 1) / 3) // +1 rep toutes les 3 semaines
+  const prog = Math.floor((w - 1) / 3) // +1 rep toutes les 3 semaines, sans repere
+  const reperesConnus = Object.keys(reperes)
   if (kind === 'UPPER') {
-    if (w === 1) {
+    if (w === semaineDeTest) {
       const tests: Exercise[] = [
         {
           n: 'TEST — Tractions max strictes',
@@ -453,58 +485,173 @@ export function buildStrength(
         ]
       }
     }
-    return [
-      {
-        n: 'Tractions strictes',
+    /*
+     * L'ordre n'est pas decoratif : le muscle-up passe en premier parce que
+     * c'est le seul mouvement de la seance qui demande de la vitesse et une
+     * transition precise. Le travailler fatigue ne l'ameliore pas, il
+     * l'abime.
+     *
+     * Le reste garde deux repetitions en reserve, comme avant : ce qui rend
+     * la seance exigeante ici est le palier et le nombre ancre sur le
+     * maximum, pas l'echec. La philosophie de la seance ne change pas, sa
+     * calibration si.
+     */
+    const out: Exercise[] = []
+
+    const mu = reperes.muscleups
+    if (mu !== undefined && mu >= 1) {
+      const p = palierDe(ECHELLE_MUSCLEUPS, mu)
+      out.push({
+        n: p.n,
         sets: 4,
-        reps: `${5 + prog}–${8 + prog}`,
-        rest: 120,
+        reps: fourchette(mu, partDeLaSemaine(0.4, w), p.facteur, 0.15),
+        rest: 180,
         rir: 2,
-        cue: 'Scapulas basses, menton au-dessus de la barre, descente contrôlée 2 s.',
-      },
-      {
-        n: 'Dips',
-        sets: 4,
-        reps: `${7 + prog}–${11 + prog}`,
-        rest: 120,
-        rir: 2,
-        cue: 'Buste légèrement penché, coudes proches, épaules loin des oreilles.',
-      },
-      {
-        n: 'Tractions supination',
-        sets: 3,
-        reps: `${6 + prog}–${9 + prog}`,
-        rest: 90,
-        rir: 2,
-        cue: 'Amplitude complète, pas de balancier.',
-      },
-      {
-        n: 'Pompes lestées ou déclinées',
-        sets: 3,
-        reps: '10–15',
-        rest: 75,
-        rir: 2,
-        cue: 'Gainage verrouillé, corps en une ligne.',
-      },
-      {
-        n: 'Relevés de jambes suspendu',
-        sets: 3,
-        reps: '8–12',
-        rest: 60,
-        rir: 2,
-        cue: 'Bassin qui bascule, aucun élan.',
-      },
-    ]
+        cue: p.cue,
+      })
+    }
+
+    const tr = reperes.pullups
+    const pTr = tr === undefined ? null : palierDe(ECHELLE_TRACTIONS, tr)
+    out.push(
+      pTr && tr !== undefined
+        ? {
+            n: pTr.n,
+            sets: 4,
+            reps: fourchette(tr, partDeLaSemaine(0.5, w), pTr.facteur),
+            rest: 120,
+            rir: 2,
+            cue: pTr.cue,
+          }
+        : {
+            n: 'Tractions strictes',
+            sets: 4,
+            reps: `${5 + prog}–${8 + prog}`,
+            rest: 120,
+            rir: 2,
+            cue: 'Scapulas basses, menton au-dessus de la barre, descente contrôlée 2 s.',
+          },
+    )
+
+    const di = reperes.dips
+    const pDi = di === undefined ? null : palierDe(ECHELLE_DIPS, di)
+    out.push(
+      pDi && di !== undefined
+        ? {
+            n: pDi.n,
+            sets: 4,
+            reps: fourchette(di, partDeLaSemaine(0.5, w), pDi.facteur),
+            rest: 120,
+            rir: 2,
+            cue: pDi.cue,
+          }
+        : {
+            n: 'Dips',
+            sets: 4,
+            reps: `${7 + prog}–${11 + prog}`,
+            rest: 120,
+            rir: 2,
+            cue: 'Buste légèrement penché, coudes proches, épaules loin des oreilles.',
+          },
+    )
+
+    /*
+     * La supination reste stricte, quel que soit le palier atteint sur la
+     * traction pronation : c'est le mouvement de volume de la seance, et on
+     * ne cumule pas deux variantes lourdes sur le meme groupe. Sa part est
+     * donc plus basse.
+     */
+    out.push(
+      tr === undefined
+        ? {
+            n: 'Tractions supination',
+            sets: 3,
+            reps: `${6 + prog}–${9 + prog}`,
+            rest: 90,
+            rir: 2,
+            cue: 'Amplitude complète, pas de balancier.',
+          }
+        : {
+            n: 'Tractions supination',
+            sets: 3,
+            reps: fourchette(tr, partDeLaSemaine(0.42, w), 1),
+            rest: 90,
+            rir: 2,
+            cue: 'Amplitude complète, pas de balancier. Prise en supination : tu en tiens plus qu’en pronation, c’est normal.',
+          },
+    )
+
+    const po = reperes.pushups
+    out.push(
+      po === undefined
+        ? {
+            n: 'Pompes lestées ou déclinées',
+            sets: 3,
+            reps: '10–15',
+            rest: 75,
+            rir: 2,
+            cue: 'Gainage verrouillé, corps en une ligne.',
+          }
+        : {
+            n: 'Pompes lestées ou déclinées',
+            sets: 3,
+            reps: fourchette(po, partDeLaSemaine(0.45, w), 1),
+            rest: 75,
+            rir: 2,
+            cue: 'Gainage verrouillé, corps en une ligne. Pieds surélevés ou sac lesté pour rester dans la fourchette.',
+          },
+    )
+
+    const re = reperes.legraises
+    const pRe = re === undefined ? null : palierDe(ECHELLE_RELEVES, re)
+    out.push(
+      pRe && re !== undefined
+        ? {
+            n: pRe.n,
+            sets: 3,
+            reps: fourchette(re, partDeLaSemaine(0.45, w), pRe.facteur),
+            rest: 60,
+            rir: 2,
+            cue: pRe.cue,
+          }
+        : {
+            n: 'Relevés de jambes suspendu',
+            sets: 3,
+            reps: '8–12',
+            rest: 60,
+            rir: 2,
+            cue: 'Bassin qui bascule, aucun élan.',
+          },
+    )
+
+    return out
   }
+  /*
+   * Le squat au poids du corps plafonne vite : au-dela d'une quarantaine de
+   * repetitions, on travaille l'endurance de force et non la force. C'est
+   * exactement le cas ou ajouter des repetitions ne sert plus a rien, et ou
+   * la seule progression est le passage a une jambe.
+   */
+  const sq = reperes.squats
+  const pSq = sq === undefined ? null : palierDe(ECHELLE_SQUATS, sq)
   return [
-    {
-      n: 'Squats poids du corps',
-      sets: 4,
-      reps: `${15 + prog * 2}`,
-      rest: 75,
-      rir: 3,
-      cue: "Talons au sol, genoux dans l'axe, descente sous la parallèle.",
-    },
+    pSq && sq !== undefined
+      ? {
+          n: pSq.n,
+          sets: 4,
+          reps: fourchette(sq, partDeLaSemaine(0.5, w), pSq.facteur, 0.1),
+          rest: 75,
+          rir: 3,
+          cue: pSq.cue,
+        }
+      : {
+          n: 'Squats poids du corps',
+          sets: 4,
+          reps: `${15 + prog * 2}`,
+          rest: 75,
+          rir: 3,
+          cue: "Talons au sol, genoux dans l'axe, descente sous la parallèle.",
+        },
     {
       n: 'Fentes bulgares',
       sets: 3,
@@ -1238,13 +1385,23 @@ export function buildSession(
         ],
       }
 
-    case 'UPPER':
+    case 'UPPER': {
+      const exercices = doserPourObjectif(
+        buildStrength('UPPER', w, opts.reperes, opts.semaineDeTest),
+        goal,
+      )
       return {
         ...base,
         type: 'UPPER',
         kind: 'strength',
         title: 'Haut du corps',
-        duration: 50,
+        /*
+         * Le muscle-up ajoute un sixieme mouvement, et trois minutes de repos
+         * entre ses series. Annoncer cinquante minutes pour une seance qui en
+         * demande cinquante-cinq ferait mentir la charge autant que le
+         * planning.
+         */
+        duration: exercices.length >= 6 ? 55 : 50,
         intensity: 3,
         goal: 'Force relative sur barre. Tractions et dips en progression douce.',
         why: `La force relative se construit loin de l'échec, en repetant des séries propres semaine après semaine. Le jour de test est la seule exception.${dosage}`,
@@ -1253,8 +1410,9 @@ export function buildSession(
           'Échauffe les épaules et les coudes 5 min avant la première traction',
           'Repos complet entre les séries : la qualité prime sur la densite',
         ],
-        exercises: doserPourObjectif(buildStrength('UPPER', w, opts.reperesConnus), goal),
+        exercises: exercices,
       }
+    }
 
     case 'RUN': {
       const km =
@@ -1380,7 +1538,7 @@ export function buildSession(
           'Place 24 h avant la sortie longue : reste à RIR 2–3',
           'Si les cuisses tirent encore demain matin, tu es alle trop loin',
         ],
-        exercises: doserPourObjectif(buildStrength('LOWER', w, opts.reperesConnus), goal),
+        exercises: doserPourObjectif(buildStrength('LOWER', w, opts.reperes, opts.semaineDeTest), goal),
         extra:
           allowDoubles && slot === 5
             ? {

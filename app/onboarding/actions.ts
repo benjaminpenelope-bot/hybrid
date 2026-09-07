@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { sessionToRow } from '@/lib/db/mappers'
 import { todayISO } from '@/lib/engine/date'
+import { reperesDepuisLignes } from '@/lib/engine/force'
 import { baseWeeklyKm, generatePlan } from '@/lib/engine/program'
 import type { BenchmarkKey } from '@/lib/engine/types'
 import { createClient } from '@/lib/supabase/server'
@@ -231,6 +232,26 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
    * prise de masse et perte de poids ne demandent ni les memes repetitions,
    * ni les memes repos, ni la meme reserve. Voir `doserPourObjectif`.
    */
+  /*
+   * Les reperes, relus APRES l'insertion des declarations.
+   *
+   * Le plan chiffre ses series en part du maximum : il lui faut donc les
+   * valeurs, et toutes — celles mesurees en seance comme celles qui viennent
+   * d'etre declarees au questionnaire. Les lire avant l'insertion aurait
+   * ancre le plan sur la moitie de ce qu'on sait.
+   *
+   * Une valeur partielle — « au moins vingt-cinq » — est un plancher. On la
+   * retient quand meme : elle sous-estime, donc elle ne peut pas mener a
+   * prescrire trop. C'est l'inverse du score, qui l'ecarte parce qu'une note
+   * calculee sur un plancher serait fausse dans l'autre sens.
+   */
+  const { data: lignesReperes } = await supabase
+    .from('benchmarks')
+    .select('key, value, tested_at')
+    .eq('user_id', user.id)
+    .order('tested_at')
+  const reperesMesures = reperesDepuisLignes(lignesReperes ?? [])
+
   const plan = generatePlan(today, PLAN_WEEKS, 1, {
     restWeekday,
     allowDoubles: disponibilites.allowDoubles,
@@ -238,7 +259,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
     goal: objectifs.principal.type,
     sports,
     availableWeekdays: disponibilites.availableWeekdays,
-    reperesConnus: [...mesure],
+    reperes: reperesMesures,
     ...(baseKm !== null ? { baseKm } : {}),
   })
 

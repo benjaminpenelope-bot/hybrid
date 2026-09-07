@@ -14,6 +14,7 @@ import {
   type Slot,
 } from './program'
 import { baseDuProchainBloc, volumeHebdoReel } from './ancrage'
+import { reperesDepuisLignes, type ReperesMesures } from './force'
 import { addDays } from './date'
 import type { AthleteState, GoalType, ISODate, SessionType, Sport } from './types'
 
@@ -61,6 +62,12 @@ export interface OptionsProjection {
    * plafond qui s'en déduirait mordrait dès la première semaine projetée.
    */
   plafondKm?: number
+  /**
+   * Repères mesurés. Sans eux, la projection de force annonce la
+   * prescription de repli — celle de quelqu'un dont on ne sait rien — et non
+   * celle que l'athlète recevra réellement.
+   */
+  reperes?: ReperesMesures
 }
 
 /**
@@ -90,6 +97,7 @@ export function projection({
   semaines = 12,
   semaineActuelle = 1,
   plafondKm,
+  reperes,
 }: OptionsProjection): Jalon[] {
   /*
    * Depart et arrivee sont deux numeros de semaine dans le meme plan, pas
@@ -152,7 +160,7 @@ export function projection({
      * de la semaine 2, la premiere ou les series sont chiffrees.
      */
     const chiffres = (w: number) =>
-      doserPourObjectif(buildStrength('UPPER', w), goal).filter(
+      doserPourObjectif(buildStrength('UPPER', w, reperes), goal).filter(
         (e) => !e.test && /^\d/.test(e.reps),
       )
     const depart = chiffres(Math.max(2, w0))
@@ -233,6 +241,7 @@ export function projectionDeLAthlete(
     ...(reel !== null
       ? { plafondKm: Math.min(reel * facteurDePlafond(objectif), PLAFOND_KM) }
       : {}),
+    reperes: reperesDeLEtat(state),
   })
 
   return {
@@ -242,4 +251,21 @@ export function projectionDeLAthlete(
     quand: dateDeLHorizon(today, semaines),
     ancree: mesuree,
   }
+}
+
+
+/**
+ * Les repères de l'état, dans la forme que la prescription attend.
+ *
+ * `AthleteState` les porte déjà résolus — une entrée par mouvement, la mesure
+ * la plus récente — mais avec leur date et leur caractère partiel. On repasse
+ * par `reperesDepuisLignes` plutôt que de refaire le tri ici : une seule
+ * règle décide de ce qui fait foi, et elle vit dans `force`.
+ */
+function reperesDeLEtat(state: AthleteState): ReperesMesures {
+  return reperesDepuisLignes(
+    Object.entries(state.benchmarks)
+      .filter(([, b]) => b != null)
+      .map(([key, b]) => ({ key, value: b!.value, tested_at: b!.testedAt })),
+  )
 }
