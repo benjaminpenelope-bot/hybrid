@@ -531,13 +531,19 @@ export function SessionRunner({ session }: { session: Session }) {
               400. La pastille rend le cas courant instantane, « Autre » garde
               le pave pour le reste.
             */}
+            {/*
+              Les pastilles couvrent le cas courant, « Autre » ouvre minutes
+              et secondes. Le pave au pas de cinq minutes ne permettait ni 47
+              minutes, ni 47'30" : l'allure aux cent metres en heritait, et
+              une donnee approchee ne vaut pas mieux qu'une donnee absente.
+            */}
             <ChoixNombre
               label="Durée"
               value={swimMinutes}
               onChange={setSwimMinutes}
               options={[30, 45, 60]}
               unit="min"
-              step={5}
+              saisie="duree"
             />
             <ChoixNombre
               label="Plus longue distance sans pause"

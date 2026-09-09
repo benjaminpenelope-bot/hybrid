@@ -12,6 +12,7 @@ export function NumPad({
   min = 0,
   max = 9999,
   hint,
+  labelVisible = true,
 }: {
   label: string
   value: number
@@ -21,13 +22,19 @@ export function NumPad({
   min?: number
   max?: number
   hint?: string
+  /**
+   * `false` quand le libelle est deja rendu au-dessus — c'est le cas dans
+   * `ChoixNombre`, ou il s'affichait deux fois de suite des qu'on ouvrait
+   * « Autre ». Il reste dans le DOM pour les lecteurs d'ecran.
+   */
+  labelVisible?: boolean
 }) {
   const id = useId()
   const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v * 100) / 100))
 
   return (
     <div className="mb-4">
-      <label htmlFor={id} className="eyebrow mb-[7px] block">
+      <label htmlFor={id} className={labelVisible ? 'eyebrow mb-[7px] block' : 'sr-only'}>
         {label}
       </label>
       <div className="flex items-center gap-2">
@@ -130,6 +137,7 @@ export function ChoixNombre({
   unit,
   step = 1,
   hint,
+  saisie = 'nombre',
 }: {
   label: string
   value: number
@@ -138,6 +146,15 @@ export function ChoixNombre({
   unit?: string
   step?: number
   hint?: string
+  /**
+   * Ce que « Autre » ouvre.
+   *
+   * `duree` donne deux champs, minutes et secondes. Les pastilles restent le
+   * cas courant — une nage se declare en 30, 45 ou 60 minutes neuf fois sur
+   * dix — mais la dixieme doit pouvoir etre exacte. Un pave au pas de cinq
+   * minutes ne permettait ni 47 minutes, ni 47'30".
+   */
+  saisie?: 'nombre' | 'duree'
 }) {
   /*
    * Le pavé s'ouvre de lui-même quand la valeur ne figure pas dans les
@@ -186,7 +203,18 @@ export function ChoixNombre({
 
       {libre && (
         <div className="mt-2.5">
-          <NumPad label={label} value={value} onChange={onChange} unit={unit} step={step} />
+          {saisie === 'duree' ? (
+            <DureeMinSec label={label} value={value} onChange={onChange} labelVisible={false} />
+          ) : (
+            <NumPad
+              label={label}
+              value={value}
+              onChange={onChange}
+              unit={unit}
+              step={step}
+              labelVisible={false}
+            />
+          )}
         </div>
       )}
 
@@ -214,12 +242,15 @@ export function DureeMinSec({
   value,
   onChange,
   hint,
+  labelVisible = true,
 }: {
   label: string
   /** Durée en minutes, décimales comprises. */
   value: number
   onChange: (v: number) => void
   hint?: string
+  /** `false` quand le libelle est deja rendu au-dessus. Voir `NumPad`. */
+  labelVisible?: boolean
 }) {
   const idMin = useId()
   const idSec = useId()
@@ -243,7 +274,7 @@ export function DureeMinSec({
 
   return (
     <div className="mb-4">
-      <span className="eyebrow mb-[7px] block">{label}</span>
+      {labelVisible && <span className="eyebrow mb-[7px] block">{label}</span>}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <label htmlFor={idMin} className="sr-only">
