@@ -35,6 +35,10 @@ import { useEffect, useRef } from 'react'
  * la bande devient deux fois moins haute, donc moins encombrante en pied
  * d'ecran, et c'est justement la partie ou les deux brins se croisent — la
  * plus dense de l'image.
+ *
+ * La coupe est franche, et il n'y en a qu'une : en haut. Le bas n'est pas
+ * coupe du tout, l'image se prolongeant sous le conteneur pour couvrir
+ * l'espace que la page laisse apres elle. Voir le masque.
  */
 const PART = 0.5
 
@@ -103,46 +107,33 @@ export function BandeVideo({ pleine = false }: { pleine?: boolean }) {
           transform: 'translate(-50%, -50%) rotate(90deg)',
           mixBlendMode: 'screen',
           /*
-           * LA COUPE SE FAIT AU MASQUE, JAMAIS A `overflow: hidden`.
+           * UNE SEULE ARETE, EN HAUT. LE BAS N'EST PAS COUPE.
            *
-           * Un `overflow` sur le conteneur y ouvrirait un contexte
-           * d'empilement, et un melange ne se fait qu'avec le fond du
-           * contexte qui le contient : la video se melangerait avec du vide
-           * au lieu de la page, et son cadre noir redeviendrait opaque.
-           * C'est le rectangle qu'on voyait avant. Le masque, lui, ne groupe
-           * rien.
+           * Le masque garde du quart jusqu'au bord de la source, et non du
+           * quart aux trois quarts. Consequence : l'helice se peint
+           * quarante-cinq pixels SOUS le conteneur — il n'y a pas
+           * d'`overflow: hidden` pour l'en empecher — et cette bavure couvre
+           * exactement l'espace que la page laisse apres elle, la reserve de
+           * la barre flottante comprise.
            *
-           * DEUX COUCHES, croisees.
+           * C'est ce qui fait qu'on ne voit jamais de coupe en bas : il n'y
+           * en a pas. La video s'arrete a son propre bord, et ce bord tombe
+           * en dehors de ce qu'on peut atteindre en defilant. Tirer la bande
+           * vers le bas ne suffisait pas — la marge negative reduit aussi la
+           * hauteur defilable, donc l'ecart restait identique.
            *
-           * `to right` coupe la bande en hauteur : le masque s'applique dans
-           * le repere propre de l'element, avant rotation, et sa largeur
-           * locale est la hauteur de la bande une fois couchee. Les bords
-           * sont adoucis plutot que francs — une coupe nette se lit comme
-           * une video tronquee, un fondu comme une bande.
+           * `to right` et non `to bottom` : le masque s'applique dans le
+           * repere propre de l'element, avant rotation. Sa largeur locale est
+           * la hauteur de la bande une fois couchee.
            *
-           * `to bottom` estompe les deux extremites. L'helice remplit bien
-           * toute la source, mesure faite image par image ; mais un brin qui
-           * s'amincit pres d'un bord se lit comme un trou. Estompe, il se lit
-           * comme une fin voulue.
+           * Aucun degrade : une arete franche se lit comme une bande, un
+           * fondu comme une video qui s'eteint.
            */
           ...(pleine
             ? {}
             : (() => {
-                const b = (1 - PART) / 2
-                const pct = (v: number) => `${(v * 100).toFixed(1)}%`
-                const hauteur = `linear-gradient(to right, transparent 0, transparent ${pct(b - 0.03)}, #000 ${pct(b + 0.03)}, #000 ${pct(1 - b - 0.03)}, transparent ${pct(1 - b + 0.03)}, transparent 100%)`
-                const bouts =
-                  'linear-gradient(to bottom, transparent 0, #000 7%, #000 93%, transparent 100%)'
-                const couches = `${hauteur}, ${bouts}`
-                return {
-                  WebkitMaskImage: couches,
-                  maskImage: couches,
-                  // Les deux couches se croisent : ne reste que ce que les
-                  // deux gardent. Sans cela elles s'additionnent, et la
-                  // coupe en hauteur ne coupe plus rien.
-                  WebkitMaskComposite: 'source-in',
-                  maskComposite: 'intersect',
-                }
+                const coupe = `linear-gradient(to right, transparent 0, transparent ${((1 - PART) / 2) * 100}%, #000 ${((1 - PART) / 2) * 100}%, #000 100%)`
+                return { WebkitMaskImage: coupe, maskImage: coupe }
               })()),
           // Luminosite seule : le noir de la source vaut zero, voir la note
           // dans `anneau-video`. Un contraste n'eteindrait que l'helice.

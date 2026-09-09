@@ -273,7 +273,26 @@ export default async function Page() {
           Reservee au telephone, comme les raccourcis qu'elle suit : sur
           grand ecran la colonne de droite occupe deja le bas.
         */}
-        <div className="-mx-4 mt-8">
+        {/* La bande ferme la page : voir la marge ci-dessous. */}
+        <div
+          className="-mx-4 mt-8"
+          style={{
+            /*
+             * La reserve de la barre flottante, annulee.
+             *
+             * `body` garde quatre-vingt-quatorze pixels pour la barre et
+             * l'encoche. Sans cette marge, la bande s'arretait au-dessus et
+             * il restait un bandeau noir dessous.
+             *
+             * Elle ne suffit pas seule — la marge negative reduit aussi la
+             * hauteur defilable, donc l'ecart se reproduisait plus haut.
+             * C'est sa combinaison avec le masque sans coupe basse qui
+             * marche : l'helice deborde du conteneur de quarante-cinq pixels,
+             * et ce debord tombe alors exactement sur le bas de l'ecran.
+             */
+            marginBottom: 'calc(-1 * (env(safe-area-inset-bottom, 0px) + 94px))',
+          }}
+        >
           <BandeVideo />
         </div>
       </div>

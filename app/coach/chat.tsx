@@ -395,7 +395,7 @@ export function CoachChat({
       )}
 
       {!busy && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap gap-2">
           {/* Trois au plus : au-dela, la rangee passe sur trois lignes et le
               choix cesse d'etre immediat. */}
           {suggestions.slice(0, 3).map((s) => (
@@ -412,7 +412,7 @@ export function CoachChat({
       )}
 
       <form
-        className="mt-3.5 flex items-end gap-2"
+        className="mt-6 flex items-end gap-2"
         onSubmit={(e) => {
           e.preventDefault()
           void send(input)
@@ -461,11 +461,6 @@ export function CoachChat({
         </Button>
       </form>
 
-      {/* Le compteur est monte dans l'en-tete : il n'a plus a etre repete
-          ici, et la mention tient sur une ligne. */}
-      <p className="mt-3 text-[11.5px] leading-relaxed text-dim">
-        Il ne modifie rien sans ta confirmation, et ne pose aucun diagnostic.
-      </p>
     </>
   )
 }
