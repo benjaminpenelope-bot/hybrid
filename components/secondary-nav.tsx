@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { IconBilan, IconObjectifs, IconRecuperation } from '@/components/ui/icons'
+import { IconBilan, IconObjectifs, IconRecuperation, IconTrajectoire } from '@/components/ui/icons'
 
 /**
  * RACCOURCIS DE L'ACCUEIL
@@ -17,15 +17,23 @@ import { IconBilan, IconObjectifs, IconRecuperation } from '@/components/ui/icon
  * pictogramme se reconnaît avant d'être lu, et ces trois écrans se
  * distinguent mieux par ce qu'ils montrent que par la longueur de leur nom.
  */
+/*
+ * Quatre cartes sur deux colonnes depuis que la trajectoire s'ajoute. La note
+ * ci-dessus expliquait qu'un quatrieme lien tombait seul sur une deuxieme
+ * ligne : c'etait vrai d'une grille de trois. Deux colonnes en font deux
+ * rangees pleines, et la recuperation garde sa porte — sans elle, son ecran
+ * n'etait plus atteignable que par un signal.
+ */
 const LIENS = [
   { href: '/objectifs', label: 'Objectifs', Icon: IconObjectifs },
-  { href: '/recuperation', label: 'Récupération', Icon: IconRecuperation },
+  { href: '/projection', label: 'Trajectoire', Icon: IconTrajectoire },
   { href: '/bilan', label: 'Bilan', Icon: IconBilan },
+  { href: '/recuperation', label: 'Récupération', Icon: IconRecuperation },
 ] as const
 
 export function SecondaryNav() {
   return (
-    <nav className="mt-6 grid grid-cols-3 gap-2.5" aria-label="Autres écrans">
+    <nav className="mt-6 grid grid-cols-2 gap-2.5" aria-label="Autres écrans">
       {LIENS.map((l) => (
         <Link
           key={l.href}

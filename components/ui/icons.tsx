@@ -47,6 +47,7 @@ import {
   Gauge,
   Layers,
   Medal,
+  ChartSpline,
   Route,
   Scale,
   Timer,
@@ -80,6 +81,9 @@ export const IconObjectifs = fabrique(Target)
 export const IconRecuperation = fabrique(Moon)
 export const IconBilan = fabrique(ClipboardList)
 export const IconReglages = fabrique(Settings2)
+/* Trajectoire : une courbe qui monte et continue. `IconPerfs` est deja une
+   tendance, mais elle regarde derriere — celle-ci trace un chemin. */
+export const IconTrajectoire = fabrique(ChartSpline)
 
 /* ── Disciplines ── */
 export const IconCourse = fabrique(Footprints)

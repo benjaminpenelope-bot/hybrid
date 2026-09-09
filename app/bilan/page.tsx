@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { UNITE_CHARGE } from '@/lib/engine/load'
 import { Stat } from '@/components/ui/stat'
@@ -84,41 +85,26 @@ export default async function Page() {
       </section>
 
       {/*
-        OU CA MENE.
-
-        Le bilan regardait derriere, exclusivement. Un athlete qui ouvre
-        l'application le dimanche soir veut aussi savoir a quoi ressemblera
-        novembre — c'est la seule question a laquelle un carnet de seances ne
-        repond jamais.
-
-        Rien n'est predit ici : chaque ligne lit le plan deja genere, ancre
-        sur ce qui a ete reellement couru. Une prediction pourrait etre
-        fausse, une lecture de plan ne peut pas l'etre.
+        La projection a son ecran a elle depuis qu'elle est devenue une
+        courbe : la repeter ici en donnerait deux lectures du meme chiffre,
+        et c'est exactement ainsi que deux affichages finissent par diverger.
+        Le bilan regarde derriere, la trajectoire regarde devant.
       */}
       {cap.jalons.length > 0 && (
-        <section className="mt-6">
-          <h2 className="eyebrow mb-1">Où ça mène — semaine {cap.semaineVisee}</h2>
-          <p className="mb-3 text-[12px] leading-5 text-dim">
-            Au {formatDate(cap.quand)}, si tu suis le plan.{' '}
-            {cap.ancree
-              ? 'Le départ vient de tes quatre dernières semaines, pas de ce que tu as déclaré.'
-              : 'Le départ vient encore de ce que tu as déclaré : trois sorties enregistrées suffiront à le mesurer.'}
-          </p>
-          <div className="card divide-y divide-line py-0">
-            {cap.jalons.map((j) => (
-              <div key={j.quoi} className="flex items-center justify-between gap-3 py-2.5">
-                <span className="min-w-0 flex-1 truncate text-[13px]">{j.quoi}</span>
-                <span className="num flex shrink-0 items-center gap-2 text-[13px]">
-                  <span className="text-dim">{j.depart}</span>
-                  <span className="text-dim" aria-hidden>
-                    →
-                  </span>
-                  <span className="text-text">{j.arrivee}</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
+        <Link
+          href="/projection"
+          className="lisere glass mt-6 flex items-center justify-between gap-4 rounded-card p-5 transition-[background-color] duration-200 active:scale-[0.99]"
+        >
+          <span className="min-w-0">
+            <span className="eyebrow">Ta trajectoire</span>
+            <span className="mt-1.5 block text-[13px] leading-relaxed text-mut">
+              Où le plan te mène, semaine {cap.semaineVisee} — au {formatDate(cap.quand)}.
+            </span>
+          </span>
+          <span className="num shrink-0 text-[22px] text-dim" aria-hidden>
+            →
+          </span>
+        </Link>
       )}
 
       <div className="mt-6 grid grid-cols-2 gap-2 lg:grid-cols-4">
