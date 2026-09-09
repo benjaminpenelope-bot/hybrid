@@ -15,6 +15,7 @@ import { phaseAt } from '@/lib/engine/program'
 import { badgeState } from '@/lib/engine/prs'
 import { marathonReadiness } from '@/lib/engine/scoring'
 import { currentUserId } from '@/lib/supabase/server'
+import { trajectoire, type Discipline, type Trajectoire } from '@/lib/engine/trajectoire'
 import { PerfTabs } from './perf-tabs'
 
 export const dynamic = 'force-dynamic'
@@ -41,6 +42,19 @@ export default async function Page() {
     ? Math.floor((new Date(race).getTime() - new Date(today).getTime()) / (7 * 86400000))
     : null
 
+  /*
+   * La meme courbe que la trajectoire, sans sa moitie droite : `apres: 0`
+   * n'ajoute aucun point projete, et la bascule vaut alors la longueur.
+   * L'ecran des perfs regarde ce qui a ete fait ; c'est la trajectoire qui
+   * regarde devant, et les deux ne doivent pas se doubler.
+   */
+  const passe = Object.fromEntries(
+    (['course', 'natation', 'force'] as Discipline[]).map((d) => [
+      d,
+      trajectoire(state, today, { avant: 12, apres: 0, discipline: d }),
+    ]),
+  ) as Record<Discipline, Trajectoire>
+
   return (
     <main className="wrap py-[18px]">
       <h1 className="dsp mb-4 text-[22px]">Perfs</h1>
@@ -60,6 +74,7 @@ export default async function Page() {
         swimMinutes={swimMinutes}
         swimBlocker={swimBlocker(state, today)}
         badges={badgeState(state)}
+        passe={passe}
       />
     </main>
   )

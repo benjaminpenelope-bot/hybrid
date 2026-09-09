@@ -29,16 +29,24 @@ const MARGE = { haut: 16, bas: 20, gauche: 4, droite: 4 }
 export function CourbeTrajectoire({
   points,
   bascule,
+  unite,
+  couleur,
+  legende,
 }: {
   points: SemaineTrajectoire[]
+  /** Index du premier point projeté. Égal à la longueur : tout est mesuré. */
   bascule: number
+  unite: string
+  couleur: string
+  /** Ce que la valeur désigne, à droite du nombre. */
+  legende: string
 }) {
   const gid = useId().replace(/:/g, '')
   const svg = useRef<SVGSVGElement | null>(null)
   const [survol, setSurvol] = useState<number | null>(null)
 
   const geo = useMemo(() => {
-    const max = Math.max(1, ...points.map((p) => p.km))
+    const max = Math.max(1, ...points.map((p) => p.valeur))
     const echelle = max * 1.15
     const larg = L - MARGE.gauche - MARGE.droite
     const haut = H - MARGE.haut - MARGE.bas
@@ -53,7 +61,7 @@ export function CourbeTrajectoire({
   const d = (de: number, a: number): string =>
     points
       .slice(de, a)
-      .map((p, k) => `${k === 0 ? 'M' : 'L'} ${geo.x(de + k).toFixed(1)} ${geo.y(p.km).toFixed(1)}`)
+      .map((p, k) => `${k === 0 ? 'M' : 'L'} ${geo.x(de + k).toFixed(1)} ${geo.y(p.valeur).toFixed(1)}`)
       .join(' ')
 
   /*
@@ -72,6 +80,8 @@ export function CourbeTrajectoire({
   const dernier = points.length - 1
   const actif = survol ?? dernier
   const p = points[actif]!
+  /** Une courbe sans projection : `bascule` vaut alors la longueur. */
+  const projete = bascule < points.length
 
   const viser = (clientX: number) => {
     const el = svg.current
@@ -98,14 +108,20 @@ export function CourbeTrajectoire({
       */}
       <div className="mb-2 flex items-baseline justify-between gap-3">
         <div className="min-w-0">
-          <span className="num text-[30px] leading-none">{fr(p.km)}</span>
-          <span className="ml-1.5 text-[12.5px] text-mut">km cette semaine-là</span>
+          <span className="num text-[30px] leading-none">
+            {unite === 'km' ? fr(p.valeur) : Math.round(p.valeur)}
+          </span>
+          <span className="ml-1.5 text-[12.5px] text-mut">
+            {unite} {legende}
+          </span>
         </div>
         <span className="shrink-0 text-right text-[11.5px] leading-tight text-dim">
           {formatDate(p.lundi)}
           <br />
           <span className={p.reel ? 'text-mut' : ''}>
-            {p.reel ? 'couru' : p.decharge ? 'décharge prévue' : 'prévu'}
+            {/* « enregistre » plutot que « couru » : le meme composant sert
+                la nage et la barre. */}
+            {p.reel ? 'enregistré' : p.decharge ? 'décharge prévue' : 'prévu'}
           </span>
         </span>
       </div>
@@ -116,19 +132,19 @@ export function CourbeTrajectoire({
         className="w-full touch-none"
         style={{ height: 132 }}
         role="img"
-        aria-label={`Volume de course par semaine, de ${formatDate(points[0]!.lundi)} à ${formatDate(points[dernier]!.lundi)}. ${bascule} semaines mesurées puis ${points.length - bascule} semaines prévues, jusqu'à ${fr(points[dernier]!.km)} km.`}
+        aria-label={`${legende}, de ${formatDate(points[0]!.lundi)} à ${formatDate(points[dernier]!.lundi)}. ${bascule} semaines mesurées puis ${points.length - bascule} semaines prévues, jusqu'à ${fr(points[dernier]!.valeur)} ${unite}.`}
         onPointerDown={(e) => viser(e.clientX)}
         onPointerMove={(e) => e.buttons > 0 && viser(e.clientX)}
         onPointerLeave={() => setSurvol(null)}
       >
         <defs>
           <linearGradient id={`aire-${gid}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--run)" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="var(--run)" stopOpacity="0" />
+            <stop offset="0%" stopColor={couleur} stopOpacity="0.28" />
+            <stop offset="100%" stopColor={couleur} stopOpacity="0" />
           </linearGradient>
           {/* L'argent de la marque pour ce qui n'a pas encore eu lieu. */}
           <linearGradient id={`futur-${gid}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--run)" />
+            <stop offset="0%" stopColor={couleur} />
             <stop offset="55%" stopColor="var(--brand)" />
             <stop offset="100%" stopColor="var(--brand)" />
           </linearGradient>
@@ -150,7 +166,7 @@ export function CourbeTrajectoire({
         )}
 
         {passe && (
-          <path d={passe} fill="none" stroke="var(--run)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={passe} fill="none" stroke={couleur} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
         )}
         <path
           d={futur}
@@ -169,7 +185,7 @@ export function CourbeTrajectoire({
             <circle
               key={pt.lundi}
               cx={geo.x(i)}
-              cy={geo.y(pt.km)}
+              cy={geo.y(pt.valeur)}
               r="2.6"
               fill="var(--bg)"
               stroke="var(--line2)"
@@ -178,9 +194,25 @@ export function CourbeTrajectoire({
           ) : null,
         )}
 
-        {/* L'arrivee. C'est le point de l'ecran, il est le seul a briller. */}
-        <circle cx={geo.x(dernier)} cy={geo.y(points[dernier]!.km)} r="7" fill="var(--brand)" opacity="0.16" />
-        <circle cx={geo.x(dernier)} cy={geo.y(points[dernier]!.km)} r="3.4" fill="var(--brand)" />
+        {/*
+          L'arrivee. Elle brille en argent quand elle est une destination, et
+          prend la couleur de la discipline quand elle n'est que le dernier
+          point mesure : sans projection, il n'y a rien a rejoindre, et un
+          eclat argente promettrait un ailleurs qui n'existe pas.
+        */}
+        <circle
+          cx={geo.x(dernier)}
+          cy={geo.y(points[dernier]!.valeur)}
+          r="7"
+          fill={projete ? 'var(--brand)' : couleur}
+          opacity="0.16"
+        />
+        <circle
+          cx={geo.x(dernier)}
+          cy={geo.y(points[dernier]!.valeur)}
+          r="3.4"
+          fill={projete ? 'var(--brand)' : couleur}
+        />
 
         {survol !== null && (
           <>
@@ -192,7 +224,7 @@ export function CourbeTrajectoire({
               stroke="var(--mut)"
               strokeWidth="1"
             />
-            <circle cx={geo.x(survol)} cy={geo.y(points[survol]!.km)} r="3.6" fill="var(--text)" />
+            <circle cx={geo.x(survol)} cy={geo.y(points[survol]!.valeur)} r="3.6" fill="var(--text)" />
           </>
         )}
       </svg>

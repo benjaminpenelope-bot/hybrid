@@ -211,6 +211,12 @@ export interface Profile {
    * planificateur retombe alors sur le microcycle complet.
    */
   availableWeekdays: number[]
+  /**
+   * Materiel declare au questionnaire, sous la mention « ce que tu n'as pas
+   * ne sera jamais programme ». Vide veut dire « pas renseigne » et autorise
+   * tout, comme partout ailleurs : une absence de mesure n'est pas un zero.
+   */
+  equipment: string[]
 }
 
 /** Sports proposes a l'onboarding. Miroir de l'enum `sport`. */

@@ -12,6 +12,8 @@ import type { Blocker } from '@/lib/engine/advice'
 import { SWIM_RUNGS } from '@/lib/engine/advice'
 import type { CalendarAssessment, MarathonVerdict } from '@/lib/engine/marathon'
 import { badgeState } from '@/lib/engine/prs'
+import { CourbeTrajectoire } from '@/components/courbe-trajectoire'
+import { DISCIPLINES, type Discipline, type Trajectoire } from '@/lib/engine/trajectoire'
 import { FONCTIONS } from '@/lib/ui/fonctions'
 
 const PHASES = ['BASE', 'BUILD', 'SPECIFIC', 'TAPER', 'RACE'] as const
@@ -34,6 +36,7 @@ export function PerfTabs({
   swimMinutes,
   swimBlocker,
   badges,
+  passe,
 }: {
   run: RunStats
   swim: SwimStats
@@ -50,6 +53,8 @@ export function PerfTabs({
   swimMinutes: number
   swimBlocker: Blocker | null
   badges: ReturnType<typeof badgeState>
+  /** Douze semaines mesurées par discipline, sans projection. */
+  passe: Record<Discipline, Trajectoire>
 }) {
   const [tab, setTab] = useState<Tab>('running')
 
@@ -78,6 +83,27 @@ export function PerfTabs({
 
       {tab === 'running' && (
         <section>
+      {/*
+        LES DOUZE DERNIERES SEMAINES, MESUREES.
+
+        La meme courbe que l'ecran Trajectoire, amputee de sa moitie droite :
+        celui-ci regarde ce qui a ete fait, l'autre regarde devant, et les
+        deux ne doivent pas se doubler. Un composant, deux cadrages.
+      */}
+      {passe.course.points.length > 1 && (
+        <section className="card mb-3">
+          <p className="eyebrow mb-2.5" style={{ color: DISCIPLINES.course.couleur }}>
+            {DISCIPLINES.course.mesure}
+          </p>
+          <CourbeTrajectoire
+            points={passe.course.points}
+            bascule={passe.course.points.length}
+            unite={DISCIPLINES.course.unite}
+            couleur={DISCIPLINES.course.couleur}
+            legende={'cette semaine-là'}
+          />
+        </section>
+      )}
           {/*
             La carte de preparation marathon est en veille : elle s'affichait
             a tout le monde, calculee contre un marathon sous quatre heures,
@@ -250,6 +276,27 @@ export function PerfTabs({
 
       {tab === 'natation' && (
         <section>
+      {/*
+        LES DOUZE DERNIERES SEMAINES, MESUREES.
+
+        La meme courbe que l'ecran Trajectoire, amputee de sa moitie droite :
+        celui-ci regarde ce qui a ete fait, l'autre regarde devant, et les
+        deux ne doivent pas se doubler. Un composant, deux cadrages.
+      */}
+      {passe.natation.points.length > 1 && (
+        <section className="card mb-3">
+          <p className="eyebrow mb-2.5" style={{ color: DISCIPLINES.natation.couleur }}>
+            {DISCIPLINES.natation.mesure}
+          </p>
+          <CourbeTrajectoire
+            points={passe.natation.points}
+            bascule={passe.natation.points.length}
+            unite={DISCIPLINES.natation.unite}
+            couleur={DISCIPLINES.natation.couleur}
+            legende={'sans pause, cette semaine-là'}
+          />
+        </section>
+      )}
           <div
             className="card"
             style={{ background: 'linear-gradient(160deg, rgba(47,151,174,0.10), transparent 65%)' }}
@@ -335,6 +382,27 @@ export function PerfTabs({
 
       {tab === 'street' && (
         <section>
+      {/*
+        LES DOUZE DERNIERES SEMAINES, MESUREES.
+
+        La meme courbe que l'ecran Trajectoire, amputee de sa moitie droite :
+        celui-ci regarde ce qui a ete fait, l'autre regarde devant, et les
+        deux ne doivent pas se doubler. Un composant, deux cadrages.
+      */}
+      {passe.force.points.length > 1 && (
+        <section className="card mb-3">
+          <p className="eyebrow mb-2.5" style={{ color: DISCIPLINES.force.couleur }}>
+            {DISCIPLINES.force.mesure}
+          </p>
+          <CourbeTrajectoire
+            points={passe.force.points}
+            bascule={passe.force.points.length}
+            unite={DISCIPLINES.force.unite}
+            couleur={DISCIPLINES.force.couleur}
+            legende={'cette semaine-là'}
+          />
+        </section>
+      )}
           <div className="grid grid-cols-2 gap-2">
             {street.cards.map((c) => (
               <Stat

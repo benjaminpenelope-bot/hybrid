@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { loadState } from '@/lib/db/queries'
 import { todayISO } from '@/lib/engine/date'
 import { projectionDeLAthlete } from '@/lib/engine/projection'
-import { trajectoire } from '@/lib/engine/trajectoire'
+import { trajectoire, type Discipline, type Trajectoire } from '@/lib/engine/trajectoire'
 import { currentUserId } from '@/lib/supabase/server'
 import { TrajectoireVue } from './trajectoire-vue'
 
@@ -22,11 +22,27 @@ export default async function Page() {
   const today = todayISO()
 
   /*
-   * Une seule trajectoire, calculee au plus long. Changer d'horizon est alors
-   * une decoupe cote client, instantanee, et un meme chiffre ne peut pas
-   * differer d'une vue a l'autre. Voir `surHorizon`.
+   * Une trajectoire par discipline PRATIQUEE, calculee au plus long. Changer
+   * d'horizon devient alors une decoupe cote client, instantanee, et un meme
+   * chiffre ne peut pas differer d'une vue a l'autre. Voir `surHorizon`.
+   *
+   * On ne propose que ce qui est declare : un onglet natation chez qui ne
+   * nage pas n'aurait rien a montrer, et un onglet vide se lit comme une
+   * panne plutot que comme une absence.
    */
-  const complete = trajectoire(state, today, { avant: 10, apres: 52 })
+  const sports = state.profile.sports ?? []
+  const pratique: Record<Discipline, boolean> = {
+    course: sports.length === 0 || sports.includes('running'),
+    natation: sports.includes('swimming'),
+    force: sports.includes('strength') || sports.includes('street_workout'),
+  }
+  const completes = Object.fromEntries(
+    (['course', 'natation', 'force'] as Discipline[])
+      .filter((d) => pratique[d])
+      .map((d) => [d, trajectoire(state, today, { avant: 10, apres: 52, discipline: d })]),
+  ) as Partial<Record<Discipline, Trajectoire>>
+
+  const complete = completes.course ?? Object.values(completes)[0]!
 
   /*
    * Les autres disciplines gardent leur forme « depart → arrivee » : la nage
@@ -54,7 +70,7 @@ export default async function Page() {
         Semaine {complete.semaineActuelle} de ton programme
       </p>
 
-      <TrajectoireVue complete={complete} jalons={jalons} />
+      <TrajectoireVue completes={completes} jalons={jalons} />
     </main>
   )
 }

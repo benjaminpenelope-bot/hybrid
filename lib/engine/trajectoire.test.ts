@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { surHorizon, trajectoire } from './trajectoire'
+import { repsPrescrites, surHorizon, trajectoire } from './trajectoire'
 import type { AthleteState, ISODate, Session } from './types'
 
 /** Lundi 7 septembre 2026. */
@@ -57,7 +57,7 @@ describe('trajectoire', () => {
   it('mesure le passé sur les séances enregistrées', () => {
     const t = trajectoire(etat(histoire), JOUR, { avant: 4, apres: 4 })
     const semaineDu25 = t.points.find((p) => p.lundi === '2026-08-24')
-    expect(semaineDu25?.km).toBe(12)
+    expect(semaineDu25?.valeur).toBe(12)
     expect(semaineDu25?.reel).toBe(true)
   })
 
@@ -89,14 +89,14 @@ describe('trajectoire', () => {
     // Une decharge est un creux : elle court moins que la semaine d'avant.
     for (const d of decharges) {
       const i = t.points.indexOf(d)
-      if (i > 0) expect(d.km).toBeLessThan(t.points[i - 1]!.km)
+      if (i > 0) expect(d.valeur).toBeLessThan(t.points[i - 1]!.valeur)
     }
   })
 
   it('totalise ce que le plan fait courir d’ici l’horizon', () => {
     const t = trajectoire(etat(histoire), JOUR, { avant: 4, apres: 6 })
-    const somme = t.points.slice(t.bascule).reduce((a, p) => a + p.km, 0)
-    expect(t.kmAVenir).toBe(Math.round(somme))
+    const somme = t.points.slice(t.bascule).reduce((a, p) => a + p.valeur, 0)
+    expect(t.cumulAVenir).toBe(Math.round(somme))
   })
 
   it('date les paliers que la sortie longue atteint', () => {
@@ -160,14 +160,14 @@ describe('changement d’horizon', () => {
     expect(court.points).toHaveLength(complet.bascule + 8)
     // Une semaine vaut la meme chose quel que soit l'horizon regarde.
     for (let i = 0; i < court.points.length; i++) {
-      expect(court.points[i]!.km).toBe(complet.points[i]!.km)
+      expect(court.points[i]!.valeur).toBe(complet.points[i]!.valeur)
     }
   })
 
   it('recalcule l’arrivée et le total sur la découpe', () => {
     const court = surHorizon(complet, 6)
-    expect(court.arrivee).toBe(court.points[court.points.length - 1]!.km)
-    expect(court.kmAVenir).toBeLessThan(complet.kmAVenir)
+    expect(court.arrivee).toBe(court.points[court.points.length - 1]!.valeur)
+    expect(court.cumulAVenir!).toBeLessThan(complet.cumulAVenir!)
   })
 
   it('ne garde que les paliers atteints dans l’horizon', () => {
@@ -176,5 +176,80 @@ describe('changement d’horizon', () => {
       expect(p.semaine).toBeLessThanOrEqual(court.points[court.points.length - 1]!.semaine)
     }
     expect(court.paliers.length).toBeLessThanOrEqual(complet.paliers.length)
+  })
+})
+
+describe('disciplines', () => {
+  const nage = (date: string, continu: number, week: number): Session =>
+    ({ id: date + continu, date, type: 'SWIM', kind: 'swim', status: 'done', week,
+       title: 'Nage', cues: [], duration: 45, intensity: 2, exercises: [],
+       log: { distance: 600, continuous: continu, minutes: 45 } }) as Session
+
+  const barre = (date: string, reps: number, week: number): Session =>
+    ({ id: date + reps, date, type: 'UPPER', kind: 'strength', status: 'done', week,
+       title: 'Haut', cues: [], duration: 50, intensity: 3, exercises: [],
+       log: { reps, minutes: 50 } }) as Session
+
+  const complet = etat([...histoire, nage('2026-08-26', 100, 2), barre('2026-08-24', 180, 2)])
+
+  it('natation : le passé est la meilleure distance enchaînée, pas la somme', () => {
+    const s = etat([nage('2026-08-25', 100, 2), nage('2026-08-27', 150, 2)])
+    const t = trajectoire(s, JOUR, { avant: 4, apres: 4, discipline: 'natation' })
+    const semaine = t.points.find((p) => p.lundi === '2026-08-24')
+    // 150 et non 250 : un palier ne s'additionne pas.
+    expect(semaine?.valeur).toBe(150)
+  })
+
+  it('natation : la projection lit l’échelle du programme', () => {
+    const t = trajectoire(complet, JOUR, { avant: 2, apres: 30, discipline: 'natation' })
+    const futurs = t.points.slice(t.bascule)
+    // L'echelle monte par paliers, jamais elle ne redescend.
+    for (let i = 1; i < futurs.length; i++) {
+      expect(futurs[i]!.valeur).toBeGreaterThanOrEqual(futurs[i - 1]!.valeur)
+    }
+    expect(t.paliers.length).toBeGreaterThan(0)
+  })
+
+  it('natation : pas de cumul, un palier ne s’additionne pas', () => {
+    const t = trajectoire(complet, JOUR, { avant: 2, apres: 12, discipline: 'natation' })
+    expect(t.cumulAVenir).toBeNull()
+  })
+
+  it('force : le passé compte les répétitions enregistrées', () => {
+    const t = trajectoire(complet, JOUR, { avant: 4, apres: 4, discipline: 'force' })
+    expect(t.points.find((p) => p.lundi === '2026-08-24')?.valeur).toBe(180)
+  })
+
+  it('force : la projection prescrit un volume, elle ne prédit aucun maximum', () => {
+    const t = trajectoire(complet, JOUR, { avant: 2, apres: 12, discipline: 'force' })
+    expect(t.points.slice(t.bascule).every((p) => p.valeur > 0)).toBe(true)
+    // Aucun palier : le programme prescrit des series, il ne devine pas un max.
+    expect(t.paliers).toEqual([])
+    expect(t.cumulAVenir).not.toBeNull()
+  })
+
+  it('la course reste inchangée', () => {
+    const a = trajectoire(etat(histoire), JOUR, { avant: 4, apres: 6 })
+    const b = trajectoire(etat(histoire), JOUR, { avant: 4, apres: 6, discipline: 'course' })
+    expect(a).toEqual(b)
+  })
+})
+
+describe('répétitions prescrites', () => {
+  it('prend le bas de la fourchette, pas le haut', () => {
+    expect(repsPrescrites('7–10')).toBe(7)
+  })
+
+  it('compte double un exercice par jambe', () => {
+    expect(repsPrescrites('10 / jambe')).toBe(20)
+  })
+
+  it('écarte le gainage : ce sont des secondes', () => {
+    expect(repsPrescrites('45 s', 's')).toBe(0)
+  })
+
+  it('écarte un test : le nombre est justement celui qu’on ne connaît pas', () => {
+    expect(repsPrescrites('AMRAP')).toBe(0)
+    expect(repsPrescrites('50 % du max')).toBe(0)
   })
 })

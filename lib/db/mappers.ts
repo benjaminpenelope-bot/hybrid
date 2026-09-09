@@ -45,6 +45,7 @@ export interface ProfileRow {
   base_weekly_km: string | number | null
   onboarded_at: string | null
   sports: string[] | null
+  equipment: string[] | null
   available_weekdays: number[] | null
 }
 
@@ -147,6 +148,7 @@ export function rowToProfile(row: ProfileRow): Profile {
     // historique plutot que sur un programme vide.
     sports: (row.sports ?? []) as Sport[],
     availableWeekdays: row.available_weekdays ?? [],
+    equipment: row.equipment ?? [],
   }
 }
 
