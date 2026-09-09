@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { addDays, DAYS_FR_LONG, formatDate, mondayOf, weekday } from '@/lib/engine/date'
+import { dureeAffichee } from '@/lib/engine/duree'
 import { sessionLoad, UNITE_CHARGE } from '@/lib/engine/load'
 import { sum } from '@/lib/engine/math'
 import type { ExerciseRef } from '@/lib/ui/exercises'
@@ -545,9 +546,9 @@ function CarteSeance({
           </span>
         )}
       </span>
-      <span className="num shrink-0 text-[12px] text-dim">
-        {seance.duration ? `${seance.duration}'` : '—'}
-      </span>
+      {/* Realise plutot que prevu des qu'une mesure existe. Voir
+          `dureeDeLaSeance`. */}
+      <span className="num shrink-0 text-[12px] text-dim">{dureeAffichee(seance)}</span>
     </button>
   )
 }

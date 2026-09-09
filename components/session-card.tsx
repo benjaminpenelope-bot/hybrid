@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { dureeDeLaSeance, dureeEnTexte } from '@/lib/engine/duree'
 import { SESSION_CHANNEL, SESSION_META, teinte } from '@/lib/ui/session-meta'
 import type { Session } from '@/lib/engine/types'
 
@@ -31,6 +32,7 @@ export function SessionCard({ session }: { session: Session | undefined }) {
   }
 
   const meta = SESSION_META[session.type]
+  const duree = dureeDeLaSeance(session)
   const canal = SESSION_CHANNEL[session.type]
   const done = session.status === 'done'
 
@@ -76,7 +78,14 @@ export function SessionCard({ session }: { session: Session | undefined }) {
             <meta.Icon size={14} />
             {meta.label}
           </span>
-          <span className="num text-[13px] text-mut">{session.duration} min</span>
+          {/*
+            La duree realisee l'emporte sur la duree prevue des qu'elle
+            existe : `session.duration` est une prescription, `log.minutes`
+            une mesure. Voir `dureeDeLaSeance`.
+          */}
+          <span className="num text-[13px] text-mut">
+            {duree.mesuree ? dureeEnTexte(duree.minutes) : `${duree.minutes} min`}
+          </span>
         </div>
 
         <h3 className="dsp text-[27px] leading-[1.05]">{session.title}</h3>

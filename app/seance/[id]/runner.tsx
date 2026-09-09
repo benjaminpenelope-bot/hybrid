@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ChipGroup } from '@/components/ui/chip'
-import { ChoixNombre, NumPad, Scale } from '@/components/ui/numpad'
+import { ChoixNombre, DureeMinSec, NumPad, Scale } from '@/components/ui/numpad'
 import { motivation } from '@/lib/ui/motivation'
 import { propositionsDeReps } from '@/lib/ui/propositions'
 import { Ressenti } from '@/components/ui/ressenti'
@@ -435,7 +435,12 @@ export function SessionRunner({ session }: { session: Session }) {
                 ? { hint: 'Facultatif : laisse à 0 sur home-trainer, la durée suffit.' }
                 : {})}
             />
-            <NumPad label="Durée" value={minutes} onChange={setMinutes} unit="min" />
+            {/*
+              Minutes ET secondes : une sortie se chronometre. En minutes
+              rondes, 36'40" devenait 36, et l'allure passait de 6:40 a 6:33
+              au kilometre sans que rien ne le signale.
+            */}
+            <DureeMinSec label="Durée" value={minutes} onChange={setMinutes} />
 
             {/* L'allure au kilometre ne veut rien dire a velo : on montre la vitesse. */}
             <div className="mb-4 flex items-center justify-between rounded-[11px] border border-line bg-bg2 px-3 py-3">

@@ -196,3 +196,98 @@ export function ChoixNombre({
     </div>
   )
 }
+
+/**
+ * DURÉE EN MINUTES ET SECONDES
+ *
+ * Le `NumPad` en minutes entières suffisait à une séance de force, jamais à
+ * une sortie chronométrée : 36'40" y devenait 36, et les quarante secondes
+ * disparaissaient sans que rien ne le dise. Sur 5,5 km, c'est sept secondes
+ * au kilomètre d'écart sur l'allure — assez pour fausser un record et pour
+ * qu'un athlète ne se reconnaisse pas dans ses propres chiffres.
+ *
+ * La valeur reste exprimée en minutes décimales, comme partout ailleurs dans
+ * le moteur : c'est la saisie qu'on découpe, pas la donnée.
+ */
+export function DureeMinSec({
+  label,
+  value,
+  onChange,
+  hint,
+}: {
+  label: string
+  /** Durée en minutes, décimales comprises. */
+  value: number
+  onChange: (v: number) => void
+  hint?: string
+}) {
+  const idMin = useId()
+  const idSec = useId()
+
+  /*
+   * On repart des secondes totales et non de `value` : 36 + 40/60 vaut
+   * 36,666666666666664, dont la partie fractionnaire multipliee par soixante
+   * redonne 39,999999999999964. Arrondir la seconde une seule fois, au plus
+   * pres du total, evite de voir 39 s'afficher a la place de 40.
+   */
+  const total = Math.max(0, Math.round((Number.isFinite(value) ? value : 0) * 60))
+  const min = Math.floor(total / 60)
+  const sec = total % 60
+
+  /** Quatre decimales : de quoi porter la seconde exacte sans trainer de bruit. */
+  const poser = (m: number, s: number) =>
+    onChange(Math.round(((m * 60 + s) / 60) * 10000) / 10000)
+
+  const champ =
+    'num w-full rounded-[11px] border border-line2 bg-bg2 px-3 py-3 text-center text-[22px] text-text outline-none focus:border-mut'
+
+  return (
+    <div className="mb-4">
+      <span className="eyebrow mb-[7px] block">{label}</span>
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <label htmlFor={idMin} className="sr-only">
+            {label} — minutes
+          </label>
+          <input
+            id={idMin}
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={600}
+            value={min}
+            onChange={(e) => poser(Math.min(600, Math.max(0, Math.floor(Number(e.target.value) || 0))), sec)}
+            className={champ}
+          />
+          <span className="num pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-dim">
+            min
+          </span>
+        </div>
+        <div className="relative flex-1">
+          <label htmlFor={idSec} className="sr-only">
+            {label} — secondes
+          </label>
+          {/*
+            Les secondes sont bornees a 59 plutot que reportees sur les
+            minutes : saisir 75 et voir le champ d'a cote bouger tout seul
+            surprend plus que ca n'aide.
+          */}
+          <input
+            id={idSec}
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={59}
+            value={sec}
+            onChange={(e) => poser(min, Math.min(59, Math.max(0, Math.floor(Number(e.target.value) || 0))))}
+            className={champ}
+          />
+          <span className="num pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-dim">
+            s
+          </span>
+        </div>
+      </div>
+      {hint && <p className="mt-1.5 text-[11.5px] leading-relaxed text-dim">{hint}</p>}
+    </div>
+  )
+}

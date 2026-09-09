@@ -206,7 +206,20 @@ export function SessionEditor({ session, profile }: { session: Session; profile:
 
         <div className="flex flex-col gap-2">
           {exercises.map((e, i) => (
-            <div key={`${i}-${e.n}`} className="card">
+            /*
+              LA CLE NE DOIT PAS CONTENIR LE NOM.
+
+              Elle valait `${i}-${e.n}`. Le nom etant justement ce que le
+              champ ci-dessous modifie, la cle changeait a chaque lettre
+              tapee : React demontait la ligne et en remontait une neuve,
+              donc l'input perdait le focus et le clavier se fermait. Il
+              fallait retoucher le champ apres chaque caractere.
+
+              L'index suffit, et il est sur ici : la ligne n'a aucun etat
+              interne, tout est pilote par `exercises`, et monter, descendre
+              ou supprimer reecrit le tableau entier.
+            */
+            <div key={i} className="card">
               <div className="mb-3 flex items-start gap-2">
                 <input
                   value={e.n}
