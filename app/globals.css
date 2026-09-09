@@ -764,3 +764,61 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * L'ANNEAU DU COACH
+ *
+ * Trois etats, et c'est leur contraste qui les rend lisibles : au repos
+ * l'anneau est immobile et sombre, il s'allume quand le coach lit tes
+ * donnees, et il se calme quand il ecrit. Un halo qui respire en permanence
+ * ne dirait rien — c'est le passage d'un etat a l'autre qui informe.
+ */
+@keyframes souffle-coach {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(1.12);
+  }
+}
+
+/* Le trait qui tourne autour de l'anneau pendant la reflexion. Meme technique
+   que le lisere : un conique masque en anneau, voir `.lisere`. */
+@keyframes tour-coach {
+  to {
+    --tour: 360deg;
+  }
+}
+
+@layer components {
+  .anneau-tour {
+    position: absolute;
+    inset: -3px;
+    border-radius: 9999px;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--tour),
+      rgb(255 255 255 / 0) 0deg,
+      rgb(255 255 255 / 0) 200deg,
+      rgb(255 255 255 / 0.85) 300deg,
+      rgb(255 255 255 / 0) 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    animation: tour-coach 1.4s linear infinite;
+    pointer-events: none;
+  }
+
+  .souffle {
+    animation: souffle-coach 2.2s ease-in-out infinite;
+  }
+}

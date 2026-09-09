@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { AvatarCoach, type EtatCoach } from '@/components/coach/avatar-coach'
 import { Button } from '@/components/ui/button'
 import { fenetre } from '@/lib/coach/historique'
 import type { ToolName } from '@/lib/coach/tools'
@@ -68,10 +69,15 @@ export function CoachChat({
   opening,
   history,
   suggestions,
+  restantJour,
+  plan,
 }: {
   opening: string
   history: Message[]
   suggestions: string[]
+  /** Messages encore disponibles aujourd'hui. */
+  restantJour: number
+  plan: 'free' | 'pro'
 }) {
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>(history)
@@ -83,6 +89,18 @@ export function CoachChat({
   const [offre, setOffre] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
+  const zone = useRef<HTMLTextAreaElement>(null)
+
+  /*
+   * L'etat se deduit, il ne se pilote pas : tant qu'aucun mot n'est arrive,
+   * le coach lit ; des que le flux commence, il ecrit. Un troisieme etat
+   * gere a la main finirait par mentir a la premiere erreur reseau.
+   */
+  const etat: EtatCoach = !busy ? 'repos' : streaming === '' ? 'reflechit' : 'ecrit'
+
+  /** Le compteur bouge a l'envoi, sans attendre le rechargement du serveur. */
+  const [envoyes, setEnvoyes] = useState(0)
+  const restant = Math.max(0, restantJour - envoyes)
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -100,6 +118,7 @@ export function CoachChat({
     setNotice(null)
     setOffre(null)
     setBusy(true)
+    setEnvoyes((n) => n + 1)
     void saveCoachMessage('user', trimmed)
 
     try {
@@ -197,8 +216,71 @@ export function CoachChat({
     if (result.ok) router.refresh()
   }
 
+  const libelleEtat =
+    etat === 'reflechit' ? 'Il lit tes données…' : etat === 'ecrit' ? 'Il répond…' : 'Prêt'
+
   return (
     <>
+      {/*
+        L'EN-TETE.
+        
+        L'ecran s'ouvrait sur un titre et une carte grise : le coach n'avait
+        ni visage ni etat, et l'attente entre l'envoi et la reponse se
+        passait devant un rectangle qui clignotait. L'anneau donne une forme
+        a ce qui travaille, et la ligne d'etat dit ce qu'il fait.
+      */}
+      {/*
+        COLLE EN HAUT, et ce n'est pas un effet.
+        
+        La conversation defile vers le bas a chaque envoi : sans cela,
+        l'anneau se serait anime hors de l'ecran, exactement pendant les
+        secondes ou il a quelque chose a dire. Un etat qu'on ne voit pas au
+        moment ou il change ne sert a rien.
+      */}
+      <div
+        className="glass sticky top-2 z-20 mb-4 flex items-center gap-3.5 rounded-card p-3.5"
+        style={{
+          /*
+           * Un fond sombre SOUS le verre, et pas seulement le flou d'arriere-
+           * plan. Colle en haut, la barre ne se fiait qu'a `backdrop-filter`
+           * pour son fond : selon ce que le compositeur echantillonnait
+           * derriere elle, elle virait au gris clair et le texte devenait
+           * illisible. Le verre reste, il repose maintenant sur du noir.
+           */
+          background:
+            'linear-gradient(180deg, rgb(255 255 255 / 0.065), rgb(255 255 255 / 0.022)), rgb(var(--bg-c) / 0.88)',
+        }}
+      >
+        <AvatarCoach etat={etat} taille={54} />
+        <div className="min-w-0 flex-1">
+          <p className="dsp text-[17px] leading-none">Coach</p>
+          <p
+            className="mt-1.5 text-[12.5px] leading-none transition-colors duration-300"
+            style={{ color: etat === 'repos' ? 'var(--dim)' : 'var(--text)' }}
+          >
+            {libelleEtat}
+          </p>
+        </div>
+
+        {/*
+          Le compteur etait invisible : on decouvrait le plafond en s'y
+          cognant, au milieu d'une question. Il s'affiche maintenant avant,
+          et devient orange quand il ne reste qu'un message.
+        */}
+        <span
+          className="num shrink-0 text-right text-[11.5px] leading-tight"
+          style={{ color: restant <= 1 ? 'var(--warn)' : 'var(--dim)' }}
+        >
+          {restant}
+          <br />
+          <span className="text-[10px]">
+            message{restant > 1 ? 's' : ''}
+            <br />
+            aujourd&rsquo;hui
+          </span>
+        </span>
+      </div>
+
       <div className="flex flex-col gap-2.5">
         <article className="card text-[13.5px] leading-relaxed">{opening}</article>
 
@@ -221,9 +303,22 @@ export function CoachChat({
           </article>
         )}
 
+        {/*
+          Plus de carte d'attente : l'anneau de l'en-tete porte cet etat, et
+          deux annonces du meme fait au meme instant en font une de trop.
+          Trois points suffisent a dire que la place est reservee.
+        */}
         {busy && streaming === '' && (
-          <article className="max-w-[88%] animate-pulse self-start rounded-card border border-line bg-card p-3 text-[13px] text-mut">
-            Le coach lit tes données…
+          <article className="self-start rounded-card border border-line bg-card px-4 py-3.5">
+            <span className="flex items-center gap-1.5" aria-label="Le coach réfléchit">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="block h-1.5 w-1.5 rounded-full bg-mut"
+                  style={{ animation: `souffle-coach 1.2s ease-in-out ${i * 0.16}s infinite` }}
+                />
+              ))}
+            </span>
           </article>
         )}
 
@@ -315,27 +410,49 @@ export function CoachChat({
       )}
 
       <form
-        className="mt-3.5 flex gap-2"
+        className="mt-3.5 flex items-end gap-2"
         onSubmit={(e) => {
           e.preventDefault()
           void send(input)
         }}
       >
-        <input
+        {/*
+          Une zone qui grandit, et non un champ d'une ligne : une question
+          precise en fait deux ou trois, et on les ecrivait jusqu'ici a
+          l'aveugle, le debut ayant defile hors du champ.
+          
+          Entree envoie, Maj+Entree passe a la ligne — la convention de toutes
+          les messageries, et celle que le pouce attend.
+        */}
+        <textarea
+          ref={zone}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          rows={1}
+          onChange={(e) => {
+            setInput(e.target.value)
+            const el = e.target
+            el.style.height = 'auto'
+            el.style.height = `${Math.min(el.scrollHeight, 132)}px`
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              void send(input)
+            }
+          }}
           placeholder="Écris au coach…"
           aria-label="Message au coach"
-          className="min-w-0 flex-1 rounded-[11px] border border-line2 bg-bg2 px-[13px] py-3 text-base text-text outline-none focus:border-mut"
+          className="min-w-0 flex-1 resize-none rounded-[16px] border border-line2 bg-bg2 px-[13px] py-3 text-base leading-6 text-text outline-none transition-[border-color] duration-200 focus:border-mut"
         />
-        <Button type="submit" disabled={busy || input.trim() === ''} className="w-[92px] shrink-0">
+        <Button type="submit" disabled={busy || input.trim() === ''} className="shrink-0">
           Envoyer
         </Button>
       </form>
 
       <p className="mt-3 text-[11.5px] leading-relaxed text-dim">
-        Le coach lit tes séances, tes scores et ta charge. Il ne modifie jamais rien sans ta
+        Le coach lit tes séances, ton corps et ta récupération. Il ne modifie jamais rien sans ta
         confirmation, et ne pose aucun diagnostic médical.
+        {plan === 'free' && ' L’offre gratuite donne 3 messages par jour.'}
       </p>
     </>
   )

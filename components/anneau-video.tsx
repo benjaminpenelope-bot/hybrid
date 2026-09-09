@@ -22,7 +22,20 @@ import { useEffect, useRef } from 'react'
  * n'en montrer qu'un, et la balise masquee ne rend meme pas de dimensions
  * exploitables.
  */
-export function AnneauVideo({ className = '' }: { className?: string }) {
+export function AnneauVideo({
+  className = '',
+  anime = true,
+  luminosite = 1.7,
+}: {
+  className?: string
+  /**
+   * `false` immobilise l'anneau sur une image du cycle. Le coach s'en sert
+   * pour distinguer l'attente du travail : au repos il ne tourne pas, et
+   * c'est ce contraste qui rend la reflexion lisible quand elle arrive.
+   */
+  anime?: boolean
+  luminosite?: number
+}) {
   const ref = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
@@ -39,7 +52,7 @@ export function AnneauVideo({ className = '' }: { className?: string }) {
     const reduit = window.matchMedia('(prefers-reduced-motion: reduce)')
 
     const appliquer = () => {
-      if (reduit.matches) {
+      if (reduit.matches || !anime) {
         v.pause()
         // Un instant du cycle où le faisceau est ouvert : la forme reste
         // reconnaissable sans qu'aucun pixel ne bouge.
@@ -52,7 +65,7 @@ export function AnneauVideo({ className = '' }: { className?: string }) {
     appliquer()
     reduit.addEventListener('change', appliquer)
     return () => reduit.removeEventListener('change', appliquer)
-  }, [])
+  }, [anime])
 
   return (
     <video
@@ -76,7 +89,8 @@ export function AnneauVideo({ className = '' }: { className?: string }) {
          * luminosite, qui multiplie — donc qui releve les gris du trace sans
          * jamais ressusciter un noir nul.
          */
-        filter: 'brightness(1.7)',
+        filter: `brightness(${luminosite})`,
+        transition: 'filter 420ms ease, opacity 420ms ease',
         /*
          * Le masque n'efface plus un rectangle — il n'y en a pas — mais il
          * adoucit la fin du halo, qui sinon s'arrete net au bord du cadre.

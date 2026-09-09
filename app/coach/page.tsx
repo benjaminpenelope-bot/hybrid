@@ -4,6 +4,7 @@ import { quickPrompts } from '@/lib/coach/context'
 import { openingMessage } from '@/lib/coach/local'
 import { todayISO } from '@/lib/engine/date'
 import { MAX_TOURS_ENVOYES } from '@/lib/coach/historique'
+import { etatQuota } from '@/lib/coach/quota'
 import { createClient, currentUserId } from '@/lib/supabase/server'
 import { CoachChat } from './chat'
 
@@ -37,13 +38,24 @@ export default async function Page() {
     .reverse()
     .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
 
+  /*
+   * Le plafond du jour, affiche avant d'etre atteint. On le decouvrait
+   * jusqu'ici en s'y cognant, au milieu d'une question — la reponse ne
+   * venait pas, et le message d'erreur arrivait a la place.
+   */
+  const quota = await etatQuota(userId, today)
+
   return (
     <main className="wrap py-[18px]">
-      <h1 className="dsp mb-4 text-[22px]">Coach</h1>
+      {/* Le titre passe dans l'en-tete du chat, qui porte deja le nom, l'etat
+          et le compteur. Deux titres l'un sous l'autre ne disaient rien de
+          plus que le premier. */}
       <CoachChat
         opening={openingMessage(state, today)}
         history={history}
         suggestions={quickPrompts(state, today)}
+        restantJour={quota.restantJour}
+        plan={quota.plan}
       />
     </main>
   )

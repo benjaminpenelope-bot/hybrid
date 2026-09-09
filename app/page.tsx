@@ -119,7 +119,7 @@ function Hero() {
         */}
         <p className="entre mt-5 max-w-[30rem] text-[17px] leading-7 text-mut" style={{ animationDelay: '180ms' }}>
           Toutes tes disciplines dans un seul programme.{' '}
-          <span className="text-text">Cent pour cent le tien.</span>
+          <span className="text-text">100&nbsp;% le tien.</span>
         </p>
 
         {/*
