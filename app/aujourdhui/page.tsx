@@ -6,6 +6,7 @@ import { MenuProfil } from '@/components/menu-profil'
 import { LoadChart } from '@/components/load-chart'
 import { RecoveryCard } from '@/components/recovery-card'
 import { ScoreRing } from '@/components/score-ring'
+import { BandeVideo } from '@/components/bande-video'
 import { SecondaryNav } from '@/components/secondary-nav'
 import { SessionCard } from '@/components/session-card'
 import { SubScores } from '@/components/sub-scores'
@@ -257,6 +258,24 @@ export default async function Page() {
 
       <div className="lg:hidden">
         <SecondaryNav />
+
+        {/*
+          L'HELICE EN PIED D'ECRAN.
+          
+          La meme bande que la page d'accueil, posee sous les raccourcis :
+          c'est le dernier element avant la barre d'onglets, et il ferme
+          l'ecran au lieu de le laisser s'arreter sur une grille.
+          
+          `-mx-4` la sort du rembourrage de `wrap` pour qu'elle touche les
+          deux bords. Bordee, elle se lirait comme une carte de plus ; a fond
+          perdu, elle se lit comme un pied de page.
+          
+          Reservee au telephone, comme les raccourcis qu'elle suit : sur
+          grand ecran la colonne de droite occupe deja le bas.
+        */}
+        <div className="-mx-4 mt-8">
+          <BandeVideo />
+        </div>
       </div>
 
     </main>
