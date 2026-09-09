@@ -444,7 +444,17 @@ export function CoachChat({
           aria-label="Message au coach"
           className="min-w-0 flex-1 resize-none rounded-[16px] border border-line2 bg-bg2 px-[13px] py-3 text-base leading-6 text-text outline-none transition-[border-color] duration-200 focus:border-mut"
         />
-        <Button type="submit" disabled={busy || input.trim() === ''} className="shrink-0">
+        {/*
+          La largeur est imposee, et ce n'est pas cosmetique : `Button` met
+          `w-full` par defaut, et sans largeur explicite il ecrase la zone de
+          saisie a trente pixels. La note de `components/ui/button` decrit
+          exactement ce piege — je viens d'y retomber.
+        */}
+        <Button
+          type="submit"
+          disabled={busy || input.trim() === ''}
+          className="w-[96px] shrink-0"
+        >
           Envoyer
         </Button>
       </form>
