@@ -20,8 +20,10 @@ export default function LandingPage() {
     <main className="relative overflow-hidden">
       <Header />
       <Hero />
-      {/* La bande fait le passage entre la promesse et sa demonstration. */}
-      <BandeVideo />
+      {/* La bande fait le passage entre la promesse et sa demonstration : elle
+          y est entiere, la ou le pied d'ecran de l'application n'en garde que
+          la moitie centrale. */}
+      <BandeVideo pleine />
       <Demonstration />
       <Ecran />
       <Coach />

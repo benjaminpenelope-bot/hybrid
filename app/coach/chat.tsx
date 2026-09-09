@@ -70,14 +70,12 @@ export function CoachChat({
   history,
   suggestions,
   restantJour,
-  plan,
 }: {
   opening: string
   history: Message[]
   suggestions: string[]
   /** Messages encore disponibles aujourd'hui. */
   restantJour: number
-  plan: 'free' | 'pro'
 }) {
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>(history)
@@ -236,53 +234,55 @@ export function CoachChat({
         l'anneau se serait anime hors de l'ecran, exactement pendant les
         secondes ou il a quelque chose a dire. Un etat qu'on ne voit pas au
         moment ou il change ne sert a rien.
+        
+        FOND NOIR, ET NON DU VERRE. Le noir de la video vaut exactement zero,
+        et `mix-blend-mode: screen` le fait disparaitre dans le fond de la
+        page. Sur un fond translucide plus clair, la difference se voyait :
+        un carre sombre autour de l'anneau. Le meme noir des deux cotes, et
+        il n'y a plus de bord a remarquer. Le relief tient au filet et a
+        l'ombre, pas a la teinte.
       */}
       <div
-        className="glass sticky top-2 z-20 mb-4 flex items-center gap-3.5 rounded-card p-3.5"
+        className="sticky top-2 z-20 mb-4 flex items-center gap-3.5 rounded-card p-3.5"
         style={{
-          /*
-           * Un fond sombre SOUS le verre, et pas seulement le flou d'arriere-
-           * plan. Colle en haut, la barre ne se fiait qu'a `backdrop-filter`
-           * pour son fond : selon ce que le compositeur echantillonnait
-           * derriere elle, elle virait au gris clair et le texte devenait
-           * illisible. Le verre reste, il repose maintenant sur du noir.
-           */
-          background:
-            'linear-gradient(180deg, rgb(255 255 255 / 0.065), rgb(255 255 255 / 0.022)), rgb(var(--bg-c) / 0.88)',
+          background: 'rgb(var(--bg-c))',
+          border: '1px solid rgb(255 255 255 / 0.075)',
+          boxShadow: 'inset 0 1px 0 rgb(255 255 255 / 0.09), 0 10px 34px rgb(0 0 0 / 0.6)',
         }}
       >
-        <AvatarCoach etat={etat} taille={54} />
+        <AvatarCoach etat={etat} taille={52} />
         <div className="min-w-0 flex-1">
           <p className="dsp text-[17px] leading-none">Coach</p>
-          <p
-            className="mt-1.5 text-[12.5px] leading-none transition-colors duration-300"
-            style={{ color: etat === 'repos' ? 'var(--dim)' : 'var(--text)' }}
-          >
-            {libelleEtat}
+          {/*
+            UNE SEULE LIGNE. L'etat et le compteur occupaient deux elements,
+            dont une colonne de trois lignes en dix pixels — « 3 / messages /
+            aujourd'hui » — pour dire un chiffre. Ils tiennent ensemble, et
+            le compteur s'efface pendant que le coach travaille : ce n'est
+            pas le moment de compter.
+          */}
+          <p className="mt-1.5 truncate text-[12.5px] leading-none">
+            <span
+              className="transition-colors duration-300"
+              style={{ color: etat === 'repos' ? 'var(--dim)' : 'var(--text)' }}
+            >
+              {libelleEtat}
+            </span>
+            {etat === 'repos' && (
+              <span style={{ color: restant <= 1 ? 'var(--warn)' : 'var(--dim)' }}>
+                {' · '}
+                {restant} message{restant > 1 ? 's' : ''} aujourd&rsquo;hui
+              </span>
+            )}
           </p>
         </div>
-
-        {/*
-          Le compteur etait invisible : on decouvrait le plafond en s'y
-          cognant, au milieu d'une question. Il s'affiche maintenant avant,
-          et devient orange quand il ne reste qu'un message.
-        */}
-        <span
-          className="num shrink-0 text-right text-[11.5px] leading-tight"
-          style={{ color: restant <= 1 ? 'var(--warn)' : 'var(--dim)' }}
-        >
-          {restant}
-          <br />
-          <span className="text-[10px]">
-            message{restant > 1 ? 's' : ''}
-            <br />
-            aujourd&rsquo;hui
-          </span>
-        </span>
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <article className="card text-[13.5px] leading-relaxed">{opening}</article>
+        {/* Une bulle du coach, et non une carte pleine largeur : c'est lui
+            qui parle, la conversation doit se lire d'un seul rythme. */}
+        <article className="max-w-[88%] self-start rounded-card border border-line bg-card p-3 text-[13.5px] leading-relaxed">
+          {opening}
+        </article>
 
         {messages.map((m, i) => (
           <article
@@ -396,7 +396,9 @@ export function CoachChat({
 
       {!busy && (
         <div className="mt-4 flex flex-wrap gap-2">
-          {suggestions.map((s) => (
+          {/* Trois au plus : au-dela, la rangee passe sur trois lignes et le
+              choix cesse d'etre immediat. */}
+          {suggestions.slice(0, 3).map((s) => (
             <button
               key={s}
               type="button"
@@ -459,10 +461,10 @@ export function CoachChat({
         </Button>
       </form>
 
+      {/* Le compteur est monte dans l'en-tete : il n'a plus a etre repete
+          ici, et la mention tient sur une ligne. */}
       <p className="mt-3 text-[11.5px] leading-relaxed text-dim">
-        Le coach lit tes séances, ton corps et ta récupération. Il ne modifie jamais rien sans ta
-        confirmation, et ne pose aucun diagnostic médical.
-        {plan === 'free' && ' L’offre gratuite donne 3 messages par jour.'}
+        Il ne modifie rien sans ta confirmation, et ne pose aucun diagnostic.
       </p>
     </>
   )

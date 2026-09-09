@@ -55,7 +55,6 @@ export default async function Page() {
         history={history}
         suggestions={quickPrompts(state, today)}
         restantJour={quota.restantJour}
-        plan={quota.plan}
       />
     </main>
   )
