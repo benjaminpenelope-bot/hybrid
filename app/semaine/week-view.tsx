@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
+import { IconPrecedent, IconSuivant } from '@/components/ui/icons'
 import { addDays, DAYS_FR_LONG, formatDate, mondayOf, weekday } from '@/lib/engine/date'
 import { dureeAffichee } from '@/lib/engine/duree'
 import { sessionLoad, UNITE_CHARGE } from '@/lib/engine/load'
@@ -140,32 +141,60 @@ export function WeekView({
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
+      {/*
+        UNE SEULE PASTILLE DE VERRE, comme la barre d'onglets.
+
+        Les deux fleches portaient la classe `field` — celle des champs de
+        saisie — et pour glyphes les caracteres typographiques « ‹ » et
+        « › ». Deux erreurs qui se voyaient ensemble : un bouton habille en
+        champ de formulaire, et un signe de ponctuation maigre au milieu
+        d'une interface dont tous les pictogrammes ont la meme graisse.
+
+        Le verre reunit les trois elements en un seul objet plutot que trois
+        boites separees par du vide, et le libelle se lit alors comme
+        l'etiquette du controle et non comme un titre pose entre deux
+        boutons.
+      */}
+      <div className="glass mb-4 flex items-center gap-1 rounded-full p-1.5">
         <button
           type="button"
           onClick={() => setOffset(offset - 1)}
           aria-label="Semaine précédente"
-          className="h-11 w-11 field font-display text-[18px]"
+          className="grid h-11 w-11 shrink-0 touch-manipulation place-items-center rounded-full text-mut transition-[background-color,color] duration-200 active:scale-[0.94] active:bg-[rgb(255_255_255/0.09)]"
         >
-          ‹
+          <IconPrecedent size={20} />
         </button>
-        <div className="text-center">
-          <div className="dsp text-[16px]">{weekLabel}</div>
-          {offset !== 0 && (
-            <button type="button" onClick={() => setOffset(0)} className="eyebrow mt-0.5 text-dim">
-              Revenir à aujourd&apos;hui
-            </button>
-          )}
-        </div>
+
+        <span className="dsp min-w-0 flex-1 truncate text-center text-[15px] leading-none">
+          {weekLabel}
+        </span>
+
         <button
           type="button"
           onClick={() => setOffset(offset + 1)}
           aria-label="Semaine suivante"
-          className="h-11 w-11 field font-display text-[18px]"
+          className="grid h-11 w-11 shrink-0 touch-manipulation place-items-center rounded-full text-mut transition-[background-color,color] duration-200 active:scale-[0.94] active:bg-[rgb(255_255_255/0.09)]"
         >
-          ›
+          <IconSuivant size={20} />
         </button>
       </div>
+
+      {/* Le retour vit sous la pastille et non dedans : a l'interieur, il
+          faisait grandir le controle d'une ligne des qu'on quittait la
+          semaine en cours. */}
+      {offset !== 0 && (
+        <div className="-mt-1.5 mb-4 flex justify-center">
+          {/* Une pastille de verre elle aussi : souligne, le lien se lisait
+              comme du texte et non comme un bouton. */}
+          <button
+            type="button"
+            onClick={() => setOffset(0)}
+            className="glass eyebrow touch-manipulation rounded-full px-4 py-2.5 text-mut transition-transform duration-200 active:scale-[0.97]"
+          >
+            Revenir à aujourd&rsquo;hui
+          </button>
+        </div>
+      )}
 
       <div className="mb-5 grid grid-cols-3 gap-2 lg:grid-cols-6">
         <div className="rounded-card border border-line bg-card p-3">

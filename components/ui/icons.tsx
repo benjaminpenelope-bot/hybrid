@@ -48,6 +48,8 @@ import {
   Layers,
   Medal,
   ChartSpline,
+  ChevronLeft,
+  ChevronRight,
   Route,
   Scale,
   Timer,
@@ -118,6 +120,14 @@ export const IconPriseDeMasse = fabrique(Scale)
 /* ── Cartes du coach ── */
 export const IconVerdict = fabrique(CircleCheck)
 export const IconAllege = fabrique(TrendingDown)
+
+/* ── Navigation dans le temps ── */
+/* Deux chevrons dessines, la ou l'ecran Semaine posait les caracteres
+   typographiques « ‹ » et « › ». Un glyphe de police n'a ni la graisse ni les
+   terminaisons des autres pictogrammes : a cote d'eux il paraissait maigre et
+   mal centre, parce qu'il l'etait. */
+export const IconPrecedent = fabrique(ChevronLeft)
+export const IconSuivant = fabrique(ChevronRight)
 
 /* ── Barre du coach ── */
 export const IconEnvoyer = fabrique(ArrowUp)
