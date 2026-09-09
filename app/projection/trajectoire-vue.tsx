@@ -182,7 +182,9 @@ export function TrajectoireVue({
         <p className="mb-3 text-[12px] leading-5 text-dim">
           {t.discipline === 'natation'
             ? 'La semaine où le programme vise chaque palier de distance sans pause. Ce ne sont pas des prédictions : ces séances sont déjà écrites.'
-            : 'La semaine où ta sortie longue atteint chaque distance. Ce ne sont pas des prédictions : ces séances sont déjà écrites dans ton programme.'}
+            : t.discipline === 'force'
+              ? 'Ce que la barre peut dater, et ce qu’elle ne peut pas.'
+              : 'La semaine où ta sortie longue atteint chaque distance. Ce ne sont pas des prédictions : ces séances sont déjà écrites dans ton programme.'}
         </p>
 
         {t.paliers.length > 0 ? (
