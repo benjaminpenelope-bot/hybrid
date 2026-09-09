@@ -413,6 +413,17 @@ export function CoachChat({
 
       <form
         className="mt-6 flex items-end gap-2"
+        /*
+         * La saisie descend vers la barre d'onglets.
+         *
+         * `body` reserve quatre-vingt-quatorze pixels pour la barre
+         * flottante et l'encoche, et `main` en ajoute dix-huit : la zone
+         * restait a une cinquantaine de pixels au-dessus de la barre, ce qui
+         * se lit comme un trou dans un ecran de conversation. On en reprend
+         * une trentaine et on garde le reste — le pouce a besoin de ne pas
+         * confondre le champ avec l'onglet juste dessous.
+         */
+        style={{ marginBottom: '-32px' }}
         onSubmit={(e) => {
           e.preventDefault()
           void send(input)

@@ -36,9 +36,10 @@ import { useEffect, useRef } from 'react'
  * d'ecran, et c'est justement la partie ou les deux brins se croisent — la
  * plus dense de l'image.
  *
- * La coupe est franche, et il n'y en a qu'une : en haut. Le bas n'est pas
- * coupe du tout, l'image se prolongeant sous le conteneur pour couvrir
- * l'espace que la page laisse apres elle. Voir le masque.
+ * LE HAUT RESTE ENTIER, ET LE BAS N'A PAS DE COUPE A MONTRER. Le conteneur
+ * ne reserve que la moitie de la hauteur, la video est calee par le haut, et
+ * son debord tombe hors de l'ecran. Aucun masque, aucun degrade : de la
+ * geometrie. Voir le calage et la marge de l'appelant.
  */
 const PART = 0.5
 
@@ -104,37 +105,39 @@ export function BandeVideo({ pleine = false }: { pleine?: boolean }) {
         preload="metadata"
         className="absolute left-1/2 top-1/2 h-[100vw] w-[47.37vw] object-cover"
         style={{
-          transform: 'translate(-50%, -50%) rotate(90deg)',
+          /*
+           * LE HAUT DE LA VIDEO SUR LE HAUT DE LA BANDE.
+           *
+           * Centree, la video depassait de part et d'autre du conteneur et
+           * c'est son milieu qu'on voyait : le haut de l'image etait perdu.
+           * Le decalage vertical vaut la moitie de la hauteur retiree, soit
+           * un quart de la hauteur de la video couchee.
+           *
+           * `translateY` est en TETE de la liste, donc appliquee en dernier :
+           * une transformation ecrite apres la rotation s'appliquerait dans
+           * le repere tourne, et la bande partirait sur le cote.
+           */
+          transform: pleine
+            ? 'translate(-50%, -50%) rotate(90deg)'
+            : `translateY(${((1 - PART) / 2) * 47.37}vw) translate(-50%, -50%) rotate(90deg)`,
           mixBlendMode: 'screen',
           /*
-           * UNE SEULE ARETE, EN HAUT. LE BAS N'EST PAS COUPE.
+           * AUCUN MASQUE. La geometrie suffit, et c'est mieux.
            *
-           * Le masque garde du quart jusqu'au bord de la source, et non du
-           * quart aux trois quarts. Consequence : l'helice se peint
-           * quarante-cinq pixels SOUS le conteneur — il n'y a pas
-           * d'`overflow: hidden` pour l'en empecher — et cette bavure couvre
-           * exactement l'espace que la page laisse apres elle, la reserve de
-           * la barre flottante comprise.
+           * Le conteneur ne reserve que la moitie de la hauteur de la video,
+           * et la video est calee par le haut : elle se peint donc en entier,
+           * debordant vers le bas de la moitie qui n'a pas de place. Il n'y a
+           * pas d'`overflow: hidden` pour l'en empecher — et c'est voulu, un
+           * `overflow` y ouvrirait un contexte d'empilement, le melange se
+           * ferait avec du vide au lieu de la page, et le cadre noir de la
+           * video redeviendrait opaque.
            *
-           * C'est ce qui fait qu'on ne voit jamais de coupe en bas : il n'y
-           * en a pas. La video s'arrete a son propre bord, et ce bord tombe
-           * en dehors de ce qu'on peut atteindre en defilant. Tirer la bande
-           * vers le bas ne suffisait pas — la marge negative reduit aussi la
-           * hauteur defilable, donc l'ecart restait identique.
-           *
-           * `to right` et non `to bottom` : le masque s'applique dans le
-           * repere propre de l'element, avant rotation. Sa largeur locale est
-           * la hauteur de la bande une fois couchee.
-           *
-           * Aucun degrade : une arete franche se lit comme une bande, un
-           * fondu comme une video qui s'eteint.
+           * Combine a la marge negative de l'appelant, qui annule la reserve
+           * de la barre flottante, ce debord tombe exactement sur le bas de
+           * l'ecran. Resultat : le haut montre le premier pixel de l'image,
+           * et le bas n'a aucune coupe a montrer puisque la video s'arrete a
+           * son propre bord, hors de portee du defilement.
            */
-          ...(pleine
-            ? {}
-            : (() => {
-                const coupe = `linear-gradient(to right, transparent 0, transparent ${((1 - PART) / 2) * 100}%, #000 ${((1 - PART) / 2) * 100}%, #000 100%)`
-                return { WebkitMaskImage: coupe, maskImage: coupe }
-              })()),
           // Luminosite seule : le noir de la source vaut zero, voir la note
           // dans `anneau-video`. Un contraste n'eteindrait que l'helice.
           filter: 'brightness(2.6)',
