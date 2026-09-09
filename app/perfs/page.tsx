@@ -15,7 +15,12 @@ import { phaseAt } from '@/lib/engine/program'
 import { badgeState } from '@/lib/engine/prs'
 import { marathonReadiness } from '@/lib/engine/scoring'
 import { currentUserId } from '@/lib/supabase/server'
-import { trajectoire, type Discipline, type Trajectoire } from '@/lib/engine/trajectoire'
+import {
+  semainesDepuisLeDebut,
+  trajectoire,
+  type Discipline,
+  type Trajectoire,
+} from '@/lib/engine/trajectoire'
 import { PerfTabs } from './perf-tabs'
 
 export const dynamic = 'force-dynamic'
@@ -47,11 +52,17 @@ export default async function Page() {
    * n'ajoute aucun point projete, et la bascule vaut alors la longueur.
    * L'ecran des perfs regarde ce qui a ete fait ; c'est la trajectoire qui
    * regarde devant, et les deux ne doivent pas se doubler.
+   *
+   * Tout depuis l'ouverture du compte, et non une fenetre glissante de douze
+   * semaines : c'est l'ecran ou l'on vient voir le chemin parcouru, et une
+   * fenetre qui avance efface le debut au fur et a mesure qu'on progresse.
+   * Le moteur s'arrete de lui-meme a la premiere seance enregistree.
    */
+  const depuisLeDebut = semainesDepuisLeDebut(state, today)
   const passe = Object.fromEntries(
     (['course', 'natation', 'force'] as Discipline[]).map((d) => [
       d,
-      trajectoire(state, today, { avant: 12, apres: 0, discipline: d }),
+      trajectoire(state, today, { avant: depuisLeDebut, apres: 0, discipline: d }),
     ]),
   ) as Record<Discipline, Trajectoire>
 

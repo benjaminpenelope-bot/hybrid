@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { repsPrescrites, surHorizon, trajectoire } from './trajectoire'
+import { repsPrescrites, semainesDepuisLeDebut, surHorizon, trajectoire } from './trajectoire'
 import type { AthleteState, ISODate, Session } from './types'
 
 /** Lundi 7 septembre 2026. */
@@ -251,5 +251,61 @@ describe('répétitions prescrites', () => {
   it('écarte un test : le nombre est justement celui qu’on ne connaît pas', () => {
     expect(repsPrescrites('AMRAP')).toBe(0)
     expect(repsPrescrites('50 % du max')).toBe(0)
+  })
+})
+
+describe('vue depuis l’ouverture du compte', () => {
+  it('compte les semaines depuis la première séance', () => {
+    // Premiere seance le 18 aout, semaine du 17 ; aujourd'hui semaine du 7
+    // septembre : trois semaines separent les deux lundis.
+    expect(semainesDepuisLeDebut(etat(histoire), JOUR)).toBe(3)
+  })
+
+  it('rend zéro sans aucune séance', () => {
+    expect(semainesDepuisLeDebut(etat([]), JOUR)).toBe(0)
+  })
+
+  it('borne un compte ancien', () => {
+    expect(semainesDepuisLeDebut(etat([sortie('2015-01-05', 5, 1)]), JOUR)).toBe(156)
+  })
+
+  it('couvre tout l’historique sans jamais remonter avant lui', () => {
+    const s = etat(histoire)
+    const t = trajectoire(s, JOUR, { avant: semainesDepuisLeDebut(s, JOUR), apres: 0 })
+    expect(t.bascule).toBe(t.points.length)
+    expect(t.points[0]!.lundi).toBe('2026-08-17')
+    expect(t.points.every((p) => p.reel)).toBe(true)
+  })
+
+  it('ne marque aucune décharge sur le passé', () => {
+    // Une semaine legere peut etre une decharge prescrite ou une semaine
+    // manquee : rien dans la donnee ne permet de trancher.
+    const t = trajectoire(etat(histoire), JOUR, { avant: 8, apres: 8 })
+    expect(t.points.slice(0, t.bascule).some((p) => p.decharge)).toBe(false)
+    expect(t.points.slice(t.bascule).some((p) => p.decharge)).toBe(true)
+  })
+})
+
+describe('semaine en cours', () => {
+  const avecAujourdhui = [...histoire, sortie('2026-09-08', 5.5, 4)]
+
+  it('revient dans le passé quand il n’y a pas de projection', () => {
+    const s = etat(avecAujourdhui)
+    const t = trajectoire(s, JOUR, { avant: semainesDepuisLeDebut(s, JOUR), apres: 0 })
+    const dernier = t.points[t.points.length - 1]!
+    expect(dernier.lundi).toBe('2026-09-07')
+    expect(dernier.reel).toBe(true)
+    // La sortie du jour meme doit compter : sans elle, la courbe s'arretait
+    // au dimanche precedent et le kilometrage du jour disparaissait.
+    expect(dernier.valeur).toBe(5.5)
+  })
+
+  it('reste dans la projection dès qu’il y en a une', () => {
+    const t = trajectoire(etat(avecAujourdhui), JOUR, { avant: 4, apres: 4 })
+    const bascule = t.points[t.bascule]!
+    expect(bascule.lundi).toBe('2026-09-07')
+    expect(bascule.reel).toBe(false)
+    // Et elle n'est jamais comptee deux fois.
+    expect(t.points.filter((p) => p.lundi === '2026-09-07')).toHaveLength(1)
   })
 })

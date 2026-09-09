@@ -1,5 +1,5 @@
 import { baseDuProchainBloc, volumeHebdoReel } from './ancrage'
-import { addDays, mondayOf } from './date'
+import { addDays, daysBetween, mondayOf } from './date'
 import { sum } from './math'
 import { reperesDepuisLignes } from './force'
 import {
@@ -294,19 +294,44 @@ export function trajectoire(
       lundi,
       valeur: mesure(lundi),
       reel: true,
-      decharge: isDeloadWeek(semaineActuelle - i),
+      /*
+       * Jamais de decharge sur une semaine passee. Le creux est visible de
+       * lui-meme, et le nommer supposerait qu'il vient du plan : une semaine
+       * legere peut aussi bien etre une decharge prescrite qu'une semaine
+       * manquee, et rien dans la donnee ne permet de trancher — surtout
+       * apres une regeneration de plan, ou la numerotation repart.
+       */
+      decharge: false,
+      repere: null,
+    })
+  }
+
+  /*
+   * SANS PROJECTION, LA SEMAINE EN COURS REVIENT DANS LE PASSE.
+   *
+   * Elle ouvre normalement la partie projetee : elle n'est pas finie, donc
+   * la compter comme mesuree afficherait un creux qui n'est que du temps
+   * restant — c'est le principe du bilan, qui ne juge jamais une semaine
+   * qu'on est en train de vivre.
+   *
+   * Mais quand il n'y a pas de projection, plus rien ne la couvre : la
+   * courbe s'arretait au dimanche precedent, et une sortie faite le jour
+   * meme n'apparaissait nulle part. Sur un ecran qui montre ce qui a ete
+   * fait, c'est une donnee reelle qui manque, pas une prudence.
+   */
+  if (apres === 0) {
+    points.push({
+      semaine: semaineActuelle,
+      lundi: lundiCourant,
+      valeur: mesure(lundiCourant),
+      reel: true,
+      decharge: false,
       repere: null,
     })
   }
 
   const bascule = points.length
 
-  /*
-   * La semaine en cours ouvre la partie projetee : elle n'est pas finie, donc
-   * la compter comme mesuree afficherait un creux qui n'est que du temps
-   * restant. C'est le meme principe que le bilan, qui ne juge jamais une
-   * semaine qu'on est en train de vivre.
-   */
   for (let i = 0; i < apres; i++) {
     const w = semaineActuelle + i
     points.push({
@@ -364,6 +389,21 @@ export function trajectoire(
     quand: dernier?.lundi ?? today,
     paliers,
   }
+}
+
+/**
+ * Nombre de semaines écoulées depuis la première séance enregistrée.
+ *
+ * Sert d'horizon arrière : l'écran des performances montre tout depuis
+ * l'ouverture du compte, et non une fenêtre glissante. Borné à trois ans,
+ * pour qu'un compte ancien ne fasse pas boucler la construction sur des
+ * centaines de semaines vides.
+ */
+export function semainesDepuisLeDebut(state: AthleteState, today: ISODate): number {
+  const premiere = state.sessions.map((s) => s.date).sort()[0]
+  if (premiere === undefined) return 0
+  const ecart = daysBetween(mondayOf(premiere), mondayOf(today)) / 7
+  return Math.min(156, Math.max(0, Math.ceil(ecart)))
 }
 
 /**
