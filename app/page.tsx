@@ -7,29 +7,13 @@ import { AnneauVideo } from '@/components/anneau-video'
 import { BarreCoach } from '@/components/landing/barre-coach'
 import { BandeVideo } from '@/components/bande-video'
 import { Vitrine } from '@/components/landing/vitrine'
-import {
-  IconAllege,
-  IconAucun,
-  IconForce,
-  IconCourse,
-  IconNatation,
-  IconRecuperation,
-  IconVelo,
-  IconVerdict,
-} from '@/components/ui/icons'
+import { IconAllege, IconAucun, IconRecuperation, IconVerdict } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
   title: 'HYBRID · Un entraîneur. Tous tes entraînements.',
   description:
-    "L'entraîneur intelligent qui adapte ton programme à ton objectif, tes sports, ta charge et ta récupération.",
+    'Toutes tes disciplines dans un seul programme. Construit sur ce que tu fais, refait quand tu changes.',
 }
-
-const SPORTS = [
-  { nom: 'Course', Icon: IconCourse },
-  { nom: 'Force', Icon: IconForce },
-  { nom: 'Natation', Icon: IconNatation },
-  { nom: 'Vélo', Icon: IconVelo },
-] as const
 
 export default function LandingPage() {
   return (
@@ -125,9 +109,17 @@ function Hero() {
           Tous tes <span className="argent">entraînements</span>.
         </h1>
 
-        <p className="entre mt-5 max-w-[30rem] text-[16px] leading-7 text-mut" style={{ animationDelay: '180ms' }}>
-          Course, force, natation, vélo. Un seul programme, qui se réajuste à ta charge et à ta
-          récupération plutôt qu'à un calendrier théorique.
+        {/*
+          Une promesse, pas un catalogue.
+          
+          La ligne enumerait « course, force, natation, velo » et une rangee de
+          pictogrammes la repetait plus bas. Lister ce qu'un produit sait faire
+          demande au visiteur de deviner ce qu'il y gagne : la liste dit quatre
+          sports, la promesse dit un programme.
+        */}
+        <p className="entre mt-5 max-w-[30rem] text-[17px] leading-7 text-mut" style={{ animationDelay: '180ms' }}>
+          Toutes tes disciplines dans un seul programme.{' '}
+          <span className="text-text">Cent pour cent le tien.</span>
         </p>
 
         {/*
@@ -142,10 +134,9 @@ function Hero() {
           className="entre glass lisere mt-9 w-full max-w-[430px] rounded-[26px] p-6"
           style={{ animationDelay: '280ms' }}
         >
-          <p className="dsp text-[20px]">Crée ton compte</p>
+          <p className="dsp text-[20px]">Commence aujourd&rsquo;hui</p>
           <p className="mx-auto mt-2 max-w-[26rem] text-[13.5px] leading-6 text-mut">
-            Gratuit, sans carte bancaire. Ton premier programme est construit à la fin du
-            questionnaire.
+            Ton programme est prêt à la fin du questionnaire. Gratuit, sans carte.
           </p>
 
           <input type="hidden" name="inscription" value="1" />
@@ -167,24 +158,8 @@ function Hero() {
           <button type="submit" className="btn btn-solid w-full">
             Commencer
           </button>
-
-          <p className="mt-3 text-[12px] leading-5 text-dim">
-            14 jours de HYBRID PRO offerts, sans carte. À leur terme tu repasses sur l'offre
-            gratuite, sans rien à faire.
-          </p>
         </form>
 
-        <ul
-          className="entre mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
-          style={{ animationDelay: '380ms' }}
-        >
-          {SPORTS.map((s) => (
-            <li key={s.nom} className="flex items-center gap-2 text-[13.5px] text-mut">
-              <s.Icon size={18} />
-              {s.nom}
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   )
@@ -202,13 +177,13 @@ function Demonstration() {
     <section className="relative px-4 pt-6 sm:px-6">
       <div className="relative z-10 mx-auto max-w-[760px]">
         <div className="mx-auto mb-8 max-w-[560px] text-center">
-          <p className="eyebrow">La forme de ta semaine</p>
+          <p className="eyebrow">Ta semaine</p>
           <h2 className="dsp mt-3 text-[clamp(1.7rem,5.5vw,2.4rem)]">
-            Chaque objectif donne une semaine différente.
+            Ton objectif dessine ta semaine.
           </h2>
           <p className="mt-4 text-[14.5px] leading-7 text-mut">
-            Ce ne sont pas des exemples dessinés pour la vitrine : ces sept cases lisent le
-            générateur du produit. La semaine affichée est celle qu&rsquo;il construirait.
+            Change d&rsquo;objectif, les sept jours se réécrivent. Ce n&rsquo;est pas une maquette :
+            c&rsquo;est ton programme, en train de se construire.
           </p>
         </div>
 
@@ -230,14 +205,13 @@ function Ecran() {
 
       <div className="relative z-10 mx-auto max-w-[1080px]">
         <div className="mx-auto mb-10 max-w-[560px] text-center">
-          <p className="eyebrow">L&rsquo;écran du matin</p>
+          <p className="eyebrow">Chaque matin</p>
           <h2 className="dsp mt-3 text-[clamp(1.7rem,5.5vw,2.4rem)]">
-            Une décision, puis les chiffres qui l&rsquo;ont prise.
+            Une décision. Pas un tableau de bord.
           </h2>
           <p className="mt-4 text-[14.5px] leading-7 text-mut">
-            Ce n&rsquo;est pas une capture d&rsquo;écran : ce sont les composants de
-            l&rsquo;application, rendus avec un historique de démonstration. Le verdict, la séance et
-            son « pourquoi » sortent du moteur.
+            Tu ouvres l&rsquo;app, tu sais quoi faire. Rien à interpréter, rien à calculer — et le
+            détail est là si tu veux vérifier.
           </p>
         </div>
 
@@ -267,7 +241,7 @@ const AUTOUR = [
   {
     titre: 'Ce sur quoi il se base',
     corps: 'Récupération 79/100',
-    detail: 'Charge des 7 jours : 1015 — la durée de chaque séance, fois son effort.',
+    detail: 'Ton sommeil, ta fatigue, et tout ce que tu as encaissé cette semaine.',
     Icone: IconRecuperation,
     jauge: 0.79,
   },
@@ -281,7 +255,7 @@ const AUTOUR = [
   {
     titre: 'Ce qu’il refuse de faire',
     corps: 'À TESTER',
-    detail: 'Un repère non mesuré ne devient jamais un chiffre.',
+    detail: 'Ce que tu n’as pas mesuré, il ne l’invente pas.',
     Icone: IconAucun,
     jauge: null,
   },
@@ -299,12 +273,11 @@ function Coach() {
         <div className="mx-auto max-w-[640px] text-center">
           <p className="eyebrow">Le coach</p>
           <h2 className="dsp mt-3 text-[clamp(1.9rem,6vw,2.8rem)]">
-            Il décide, et il montre pourquoi.
+            Il décide. Et il montre pourquoi.
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-mut">
-            La plupart des applications enregistrent tes séances. Celle-ci tranche : elle te dit
-            quoi faire aujourd&rsquo;hui, et elle ouvre le détail des chiffres qui l&rsquo;ont
-            décidé.
+            Les autres applications enregistrent ce que tu as fait. La tienne décide ce que tu fais
+            aujourd&rsquo;hui.
           </p>
         </div>
 
@@ -348,8 +321,7 @@ function Coach() {
           <div className="order-2 mx-auto w-full max-w-[560px] md:order-4 md:col-span-3 md:mt-8">
             <BarreCoach />
             <p className="mt-3.5 text-center text-[12.5px] leading-6 text-dim">
-              Il répond avec tes chiffres, jamais avec des généralités — et ne modifie jamais rien
-              sans ta confirmation.
+              Il répond avec tes chiffres. Jamais avec des généralités.
             </p>
           </div>
         </div>
@@ -429,14 +401,14 @@ const OFFRES = [
     nom: 'HYBRID',
     prix: '0 €',
     periode: 'pour toujours',
-    resume: 'Le programme, les séances, le suivi et la projection. Entièrement.',
+    resume: 'Ton programme entier. Pas une version d’essai.',
     points: [
-      'Programme construit sur tes sports et ton objectif',
-      'Séances détaillées, avec le pourquoi de chacune',
-      'Suivi du corps, des performances et de la charge',
-      'Où le plan mène, daté, recalculé sur ce que tu fais',
-      'Coach : 3 messages par jour',
-      'Export de tes données, suppression du compte',
+      'Un programme construit sur tes sports et ton objectif',
+      'Chaque séance détaillée, et le pourquoi de chacune',
+      'Ton corps, tes perfs et ta charge suivis au jour le jour',
+      'Ta trajectoire, datée, recalculée sur ce que tu fais',
+      'Le coach, 3 messages par jour',
+      'Tes données t’appartiennent : export et suppression',
     ],
     cta: 'Créer mon compte',
     phare: false,
@@ -445,14 +417,14 @@ const OFFRES = [
     nom: 'HYBRID PRO',
     prix: '9,99 €',
     periode: 'par mois · ou 79,99 € par an, soit 6,67 € par mois',
-    resume: 'Ce qui dure : la mémoire de tes semaines, et la sortie vers ta montre.',
+    resume: 'La mémoire de tes semaines, et ton programme à ton poignet.',
     points: [
-      'Tout ce que contient l’offre gratuite',
-      'L’historique complet de tes bilans, semaine après semaine',
-      'Ton programme dans ton calendrier, donc à ton poignet',
-      'Le modèle le plus fin, qui raisonne davantage',
-      'Adaptation de la semaine en cours, coach sans compter',
-      '14 jours d’essai, sans carte bancaire, sans rien à résilier',
+      'Tout le gratuit, sans exception',
+      'Toutes tes semaines gardées, comparées, aussi loin que tu remontes',
+      'Ton programme dans ton calendrier, donc sur ta montre',
+      'Le coach le plus fin, qui prend le temps de réfléchir',
+      'Ta semaine en cours réajustée, et le coach sans compter',
+      '14 jours offerts, sans carte, sans rien à résilier',
     ],
     cta: 'Essayer 14 jours',
     phare: true,
@@ -471,9 +443,8 @@ function Tarifs() {
             Tout le programme est gratuit.
           </h2>
           <p className="mt-4 text-[15px] leading-7 text-mut">
-            Le programme, les séances, le suivi et la projection ne se paient pas. PRO ajoute la
-            mémoire de tes semaines, la sortie vers ta montre, et un coach qui réfléchit plus
-            longtemps.
+            Pas de version bridée, pas de séance derrière un mur. PRO ajoute la mémoire de tes
+            semaines et ton programme à ton poignet.
           </p>
         </div>
 
@@ -522,9 +493,8 @@ function Tarifs() {
         </div>
 
         <p className="mx-auto mt-8 max-w-[38rem] text-center text-[13.5px] leading-7 text-mut">
-          <b className="text-text">Aucune carte n&rsquo;est demandée pour l&rsquo;essai.</b> À son
-          terme, tu repasses automatiquement sur l&rsquo;offre gratuite si tu ne t&rsquo;abonnes
-          pas. Rien ne se déclenche sans que tu l&rsquo;aies choisi.
+          <b className="text-text">Aucune carte pour l&rsquo;essai.</b> À son terme, tu reviens sur
+          le gratuit tout seul. Rien ne se déclenche sans toi.
         </p>
       </div>
     </section>
@@ -557,7 +527,7 @@ function Pied() {
       <div className="mx-auto flex max-w-[1120px] flex-col items-center gap-4 text-center">
         <LogoMark size={26} />
         <p className="text-[12.5px] leading-6 text-dim">
-          Tes données d&rsquo;entraînement, tes photos et tes mesures ne sont visibles que par toi.
+          Tes séances, tes photos, tes mesures. Personne d&rsquo;autre que toi ne les voit.
         </p>
         <Link href="/login" className="text-[13px] text-mut underline underline-offset-4">
           Se connecter
