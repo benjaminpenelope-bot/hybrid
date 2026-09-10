@@ -689,3 +689,72 @@ describe('plafond de volume : la somme des sorties le respecte', () => {
     for (const v of kmDesCourses(52, 30, micro, 90).values()) expect(v).toBeLessThanOrEqual(40)
   })
 })
+
+describe('substitution : ce qui est declare doit se voir', () => {
+  const semaine = (goal: GoalType, sports: Sport[]) =>
+    Object.values(microcycleEffectif(microcycleDe(goal), sports, true))
+  const compte = (types: SessionType[], t: SessionType) => types.filter((x) => x === t).length
+
+  it('ne transforme pas trois créneaux de force en trois courses', () => {
+    /*
+     * Le cas reel : course, velo, natation declares, pas de force. Les trois
+     * creneaux de force de la perte de poids devenaient trois courses, et le
+     * programme comptait trente-deux courses sans une seule nage ni un seul
+     * velo — alors que les deux etaient declares.
+     */
+    const s = semaine('perte_de_poids', ['running', 'cycling', 'swimming'])
+    expect(compte(s, 'BIKE')).toBeGreaterThan(0)
+    expect(compte(s, 'SWIM')).toBeGreaterThan(0)
+    expect(compte(s, 'RUN') + compte(s, 'LONG')).toBeLessThanOrEqual(4)
+  })
+
+  it('fait apparaître chaque discipline déclarée', () => {
+    for (const sports of [
+      ['running', 'cycling', 'swimming'],
+      ['running', 'swimming'],
+      ['swimming', 'cycling'],
+    ] as Sport[][]) {
+      const s = semaine('perte_de_poids', sports)
+      for (const sport of sports) {
+        const attendus: Record<string, SessionType[]> = {
+          running: ['RUN', 'LONG'],
+          cycling: ['BIKE', 'RIDE'],
+          swimming: ['SWIM'],
+          strength: ['UPPER', 'LOWER'],
+          street_workout: ['UPPER', 'LOWER'],
+        }
+        const presents = attendus[sport]!.some((t) => s.includes(t))
+        expect(presents, `${sport} absent pour ${sports.join('+')}`).toBe(true)
+      }
+    }
+  })
+
+  it('garde la famille avant l’équilibre', () => {
+    /*
+     * Une nage manquante sur un plan marathon redevient une course, et non
+     * de la force : le velo n'est pas declare, et courir est de la meme
+     * famille. C'est la famille qui decide en premier, l'equilibre ne
+     * tranche qu'entre egaux.
+     */
+    const s = semaine('marathon', ['running', 'strength'])
+    expect(compte(s, 'RUN')).toBe(3)
+    expect(compte(s, 'SWIM')).toBe(0)
+  })
+
+  it('ne change rien pour qui pratique tout ce que son plan demande', () => {
+    const avant = semaine('marathon', ['running', 'swimming', 'street_workout'])
+    expect(avant).toEqual(['REST', 'UPPER', 'RUN', 'SWIM', 'RUN', 'LOWER', 'LONG'])
+  })
+
+  it('alterne plutôt que d’empiler quand deux disciplines seulement', () => {
+    const s = semaine('perte_de_poids', ['swimming', 'cycling'])
+    // Trois de chaque, jamais six d'une seule.
+    expect(compte(s, 'BIKE')).toBeGreaterThanOrEqual(2)
+    expect(compte(s, 'SWIM')).toBeGreaterThanOrEqual(2)
+  })
+
+  it('n’invente aucune discipline non déclarée', () => {
+    const s = semaine('perte_de_poids', ['running'])
+    for (const t of s) expect(['REST', 'RUN', 'LONG']).toContain(t)
+  })
+})

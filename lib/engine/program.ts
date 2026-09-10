@@ -1052,11 +1052,43 @@ export function microcycleEffectif(
   sports: Sport[],
   allowDoubles = false,
 ): Record<Slot, SessionType> {
+  const TOUS = [0, 1, 2, 3, 4, 5, 6] as Slot[]
   const out = {} as Record<Slot, SessionType>
-  for (const slot of [0, 1, 2, 3, 4, 5, 6] as Slot[]) {
-    const voulu =
-      slot === 5 && micro[slot] === 'SWIM' && allowDoubles ? 'LOWER' : micro[slot]
-    out[slot] = typeRetenu(voulu, sports)
+
+  const voulu = (slot: Slot): SessionType =>
+    slot === 5 && micro[slot] === 'SWIM' && allowDoubles ? 'LOWER' : micro[slot]
+
+  /*
+   * DEUX PASSAGES, et c'est le second qui compte.
+   *
+   * Le premier place ce qui tient tel quel. Le second remplace ce qui reste,
+   * en regardant la semaine deja posee : a l'interieur d'un rang de
+   * remplacants, la discipline la moins presente gagne. Voir `REMPLACANTS`.
+   *
+   * Un seul passage remplacait chaque creneau sans regard sur les autres, et
+   * l'ordre de la liste tranchait toujours pareil : trois creneaux de force
+   * sans force declaree donnaient trois courses de plus, meme chez qui avait
+   * declare le velo et la natation.
+   */
+  const aRemplacer: Slot[] = []
+  for (const slot of TOUS) {
+    const t = voulu(slot)
+    if (sports.length === 0 || typePraticable(t, sports)) out[slot] = t
+    else aRemplacer.push(slot)
+  }
+
+  const compte = (): Map<SessionKind, number> => {
+    const c = new Map<SessionKind, number>()
+    for (const slot of TOUS) {
+      const t = out[slot]
+      if (t === undefined || t === 'REST') continue
+      c.set(KIND_OF[t], (c.get(KIND_OF[t]) ?? 0) + 1)
+    }
+    return c
+  }
+
+  for (const slot of aRemplacer) {
+    out[slot] = remplacantEquilibre(voulu(slot), sports, compte())
   }
 
   /*
@@ -1074,7 +1106,7 @@ export function microcycleEffectif(
    */
   const FORCE: SessionType[] = ['UPPER', 'LOWER']
   let dernier: { type: SessionType; slot: Slot } | null = null
-  for (const slot of [0, 1, 2, 3, 4, 5, 6] as Slot[]) {
+  for (const slot of TOUS) {
     const t = out[slot]
     if (!FORCE.includes(t)) continue
     if (dernier && dernier.type === t && slot - dernier.slot < 3) {
@@ -1261,19 +1293,33 @@ const SPORTS_DU_TYPE: Record<SessionType, Sport[]> = {
 }
 
 /**
- * Remplacants acceptables, du plus proche au plus eloigne. On reste d'abord
- * dans la meme famille — une nage se remplace par une course avant de se
- * remplacer par de la force — pour que l'equilibre du microcycle survive a la
- * substitution.
+ * REMPLACANTS ACCEPTABLES, PAR RANGS.
+ *
+ * Le premier rang est la meme famille — une nage se remplace par un velo
+ * avant de se remplacer par de la force — pour que l'equilibre du microcycle
+ * survive a la substitution. On ne descend au rang suivant que si le premier
+ * ne contient rien de praticable.
+ *
+ * A L'INTERIEUR D'UN RANG, C'EST LE MOINS REPRESENTE QUI GAGNE, et c'est tout
+ * l'objet de ce decoupage. La liste etait plate et ordonnee une fois pour
+ * toutes, `RUN` avant `BIKE` et `SWIM` : une athlete declarant course, velo
+ * et natation, sans force, voyait ses trois creneaux de force devenir trois
+ * courses de plus. Son programme comptait trente-deux courses, aucune nage,
+ * aucun velo — alors qu'elle avait justement declare les deux.
+ *
+ * Le rang permet de garder l'intention de l'objectif : une nage manquante sur
+ * un plan marathon redevient une course, parce que le velo n'est pas declare
+ * et que courir est de la meme famille. Ce n'est pas l'equilibre qui decide
+ * en premier, c'est la famille — l'equilibre ne tranche qu'entre egaux.
  */
-const REMPLACANTS: Record<SessionType, SessionType[]> = {
-  SWIM: ['BIKE', 'RUN', 'UPPER'],
-  RUN: ['BIKE', 'SWIM', 'UPPER'],
-  LONG: ['RIDE', 'SWIM', 'LOWER'],
-  BIKE: ['RUN', 'SWIM', 'UPPER'],
-  RIDE: ['LONG', 'SWIM', 'LOWER'],
-  UPPER: ['LOWER', 'RUN', 'BIKE', 'SWIM'],
-  LOWER: ['UPPER', 'RUN', 'BIKE', 'SWIM'],
+const REMPLACANTS: Record<SessionType, SessionType[][]> = {
+  SWIM: [['BIKE', 'RUN'], ['UPPER']],
+  RUN: [['BIKE', 'SWIM'], ['UPPER']],
+  LONG: [['RIDE', 'SWIM'], ['LOWER']],
+  BIKE: [['RUN', 'SWIM'], ['UPPER']],
+  RIDE: [['LONG', 'SWIM'], ['LOWER']],
+  UPPER: [['LOWER'], ['RUN', 'BIKE', 'SWIM']],
+  LOWER: [['UPPER'], ['RUN', 'BIKE', 'SWIM']],
   REST: [],
 }
 
@@ -1299,8 +1345,39 @@ export function typePraticable(type: SessionType, sports: Sport[]): boolean {
 export function typeRetenu(type: SessionType, sports: Sport[]): SessionType {
   if (sports.length === 0) return type
   if (typePraticable(type, sports)) return type
-  const remplacant = REMPLACANTS[type].find((t) => typePraticable(t, sports))
-  return remplacant ?? 'REST'
+  for (const rang of REMPLACANTS[type]) {
+    const remplacant = rang.find((t) => typePraticable(t, sports))
+    if (remplacant !== undefined) return remplacant
+  }
+  return 'REST'
+}
+
+/**
+ * Comme `typeRetenu`, mais en regardant la semaine qu'on est en train de
+ * construire : a l'interieur d'un rang, le remplacant retenu est celui dont
+ * la discipline est la moins presente. C'est ce qui evite d'empiler cinq
+ * courses chez qui a declare trois sports.
+ *
+ * `deja` compte les seances par discipline, repos exclu.
+ */
+function remplacantEquilibre(
+  type: SessionType,
+  sports: Sport[],
+  deja: Map<SessionKind, number>,
+): SessionType {
+  if (sports.length === 0) return type
+  if (typePraticable(type, sports)) return type
+
+  for (const rang of REMPLACANTS[type]) {
+    const candidats = rang.filter((t) => typePraticable(t, sports))
+    if (candidats.length === 0) continue
+    // A egalite, l'ordre du rang tranche : il va du plus proche au plus
+    // eloigne de la seance d'origine.
+    return candidats.reduce((meilleur, t) =>
+      (deja.get(KIND_OF[t]) ?? 0) < (deja.get(KIND_OF[meilleur]) ?? 0) ? t : meilleur,
+    )
+  }
+  return 'REST'
 }
 
 export function buildSession(
