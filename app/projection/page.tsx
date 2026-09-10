@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation'
 import { loadState } from '@/lib/db/queries'
-import { todayISO } from '@/lib/engine/date'
 import { projectionDeLAthlete } from '@/lib/engine/projection'
 import { trajectoire, type Discipline, type Trajectoire } from '@/lib/engine/trajectoire'
 import { currentUserId } from '@/lib/supabase/server'
 import { TrajectoireVue } from './trajectoire-vue'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 /** Doit rester aligne sur les pastilles de `TrajectoireVue`. */
 const HORIZONS = [4, 12, 26, 52] as const
@@ -19,7 +19,7 @@ export default async function Page() {
   const state = await loadState(userId)
   if (!state || state.sessions.length === 0) redirect('/onboarding')
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
 
   /*
    * Une trajectoire par discipline PRATIQUEE, calculee au plus long. Changer

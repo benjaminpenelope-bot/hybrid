@@ -2,13 +2,14 @@ import { teinte } from '@/lib/ui/session-meta'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { loadState } from '@/lib/db/queries'
-import { formatDate, todayISO } from '@/lib/engine/date'
+import { formatDate } from '@/lib/engine/date'
 import { computeRecovery, ZONES } from '@/lib/engine/recovery'
 import { summarize } from '@/lib/engine/summary'
 import { currentUserId } from '@/lib/supabase/server'
 import { ZONE_CHANNEL, ZONE_COLOR } from '@/components/recovery-card'
 import { SESSION_META } from '@/lib/ui/session-meta'
 import { CompleterRpe } from './completer-rpe'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Séance terminée · Hybrid' }
@@ -21,7 +22,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   const session = state?.sessions.find((s) => s.id === params.id)
   if (!state || !session) redirect('/aujourdhui')
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
   const summary = summarize(state, session)
   const recovery = computeRecovery(state, today)
   const meta = SESSION_META[session.type]

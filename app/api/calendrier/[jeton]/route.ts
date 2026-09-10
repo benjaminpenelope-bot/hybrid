@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 import { calendrierIcs } from '@/lib/calendrier/ics'
 import { compteDuJeton } from '@/lib/calendrier/jeton'
 import { estPro, lireAbonnement } from '@/lib/coach/abonnement'
-import { todayISO } from '@/lib/engine/date'
 import { stateFromRows } from '@/lib/db/mappers'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 /**
  * CALENDRIER DU PROGRAMME
@@ -59,7 +59,7 @@ export async function GET(_: Request, { params }: { params: { jeton: string } })
     limitations: [],
   })
 
-  const ics = calendrierIcs(state, todayISO())
+  const ics = calendrierIcs(state, jourDeLAthlete())
 
   return new NextResponse(ics, {
     headers: {

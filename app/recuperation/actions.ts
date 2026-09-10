@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { todayISO } from '@/lib/engine/date'
 import { createClient } from '@/lib/supabase/server'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export interface SaveResult {
   ok: boolean
@@ -39,7 +39,7 @@ export async function saveWellness(input: WellnessInput): Promise<SaveResult> {
   const { error } = await supabase.from('wellness').upsert(
     {
       user_id: user.id,
-      date: todayISO(),
+      date: jourDeLAthlete(),
       sleep: parsed.data.sleep,
       fatigue: parsed.data.fatigue,
       motivation: parsed.data.motivation,

@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { loadState } from '@/lib/db/queries'
-import { todayISO } from '@/lib/engine/date'
 import { nextRung, swimBlocker, swimTechniqueAdvice } from '@/lib/engine/advice'
 import { sum } from '@/lib/engine/math'
 import { runStats, streetStats, swimStats } from '@/lib/engine/perf'
@@ -22,6 +21,7 @@ import {
   type Trajectoire,
 } from '@/lib/engine/trajectoire'
 import { PerfTabs } from './perf-tabs'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Perfs · Hybrid' }
@@ -33,7 +33,7 @@ export default async function Page() {
   const state = await loadState(userId)
   if (!state || state.sessions.length === 0) redirect('/onboarding')
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
   const week = state.sessions.find((s) => s.status === 'planned')?.week ?? 1
   const race = state.profile.raceDate
   const phase = phaseAt(today, week, race)

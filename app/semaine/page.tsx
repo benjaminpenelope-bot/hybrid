@@ -2,9 +2,9 @@ import { redirect } from 'next/navigation'
 import { loadExercises } from '@/lib/db/exercises'
 import { prolongerSiNecessaire } from '@/lib/db/prolonger'
 import { loadState } from '@/lib/db/queries'
-import { todayISO } from '@/lib/engine/date'
 import { currentUserId } from '@/lib/supabase/server'
 import { WeekView } from './week-view'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Semaine · Hybrid' }
@@ -25,7 +25,7 @@ export default async function Page() {
   return (
     <main className="wrap wrap-large py-[18px]">
       <h1 className="dsp mb-4 text-[22px]">Semaine</h1>
-      <WeekView sessions={state.sessions} today={todayISO()} exercices={exercices} />
+      <WeekView sessions={state.sessions} today={jourDeLAthlete()} exercices={exercices} />
     </main>
   )
 }

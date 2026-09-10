@@ -1,11 +1,12 @@
 import { baseAncreeSur } from '@/lib/engine/ancrage'
 import { reperesDepuisLignes, reperesPerimes } from '@/lib/engine/force'
-import { addDays, todayISO } from '@/lib/engine/date'
+import { addDays } from '@/lib/engine/date'
 import { prolongationRequise } from '@/lib/engine/horizon'
 import { baseWeeklyKm, facteurDePlafond, generatePlan, PLAFOND_KM } from '@/lib/engine/program'
 import type { GoalType, Sport } from '@/lib/engine/types'
 import { sessionToRow } from '@/lib/db/mappers'
 import { createClient } from '@/lib/supabase/server'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 /**
  * PROLONGATION DU PROGRAMME
@@ -67,7 +68,7 @@ function volumeHebdoReelDepuisLignes(
  */
 export async function prolongerSiNecessaire(userId: string): Promise<number> {
   const supabase = createClient()
-  const today = todayISO()
+  const today = jourDeLAthlete()
 
   const { data: derniere } = await supabase
     .from('sessions')

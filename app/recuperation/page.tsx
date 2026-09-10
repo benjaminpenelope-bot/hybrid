@@ -4,12 +4,12 @@ import { LoadChart } from '@/components/load-chart'
 import { ZONE_COLOR } from '@/components/recovery-card'
 import { loadState } from '@/lib/db/queries'
 import { computeAlerts } from '@/lib/engine/alerts'
-import { todayISO } from '@/lib/engine/date'
 import { loadSeries, LOAD_BANDS } from '@/lib/engine/load'
 import { computeRecovery, ZONES } from '@/lib/engine/recovery'
 import { wellnessOn } from '@/lib/engine/state'
 import { currentUserId } from '@/lib/supabase/server'
 import { WellnessForm } from './wellness-form'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Récupération · Hybrid' }
@@ -21,7 +21,7 @@ export default async function Page() {
   const state = await loadState(userId)
   if (!state || state.sessions.length === 0) redirect('/onboarding')
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
   const recovery = computeRecovery(state, today)
   const alerts = computeAlerts(state, today)
   const series = loadSeries(state, 14, today)

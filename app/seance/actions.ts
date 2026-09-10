@@ -5,7 +5,6 @@ import { redirect } from 'next/navigation'
 import { loadState } from '@/lib/db/queries'
 import { sessionToRow } from '@/lib/db/mappers'
 import { adapt } from '@/lib/engine/adapt'
-import { todayISO } from '@/lib/engine/date'
 import { sum } from '@/lib/engine/math'
 import { KIND_OF } from '@/lib/engine/program'
 import { detectPRs, toRecords } from '@/lib/engine/prs'
@@ -14,6 +13,7 @@ import type { SessionLog, TestResult } from '@/lib/engine/types'
 import { createClient } from '@/lib/supabase/server'
 import { editSessionSchema, type EditSessionInput } from '@/lib/validation/edit-session'
 import { finishSessionSchema, type FinishSessionInput } from '@/lib/validation/session'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export interface FinishResult {
   ok: boolean
@@ -45,7 +45,7 @@ export async function finishSession(input: FinishSessionInput): Promise<FinishRe
   const session = state?.sessions.find((s) => s.id === data.sessionId)
   if (!state || !session) return { ok: false, message: 'Séance introuvable.' }
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
 
   /* ── Le log, construit depuis la seule discipline concernée ── */
   let log: SessionLog = { source: 'manual' }

@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { todayISO } from '@/lib/engine/date'
 import { createClient } from '@/lib/supabase/server'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 /**
  * LIMITATIONS : LES CLORE, ET EN AJOUTER
@@ -49,7 +49,7 @@ export async function cloreLimitation(id: string): Promise<LimitationResult> {
 
   const { error } = await supabase
     .from('limitations')
-    .update({ ended_on: todayISO() })
+    .update({ ended_on: jourDeLAthlete() })
     .eq('id', id)
     .eq('user_id', user.id)
   if (error) return { ok: false, message: error.message }
@@ -98,7 +98,7 @@ export async function ajouterLimitation(input: unknown): Promise<LimitationResul
     user_id: user.id,
     zone: parsed.data.zone,
     description: parsed.data.description || null,
-    started_on: todayISO(),
+    started_on: jourDeLAthlete(),
   })
   if (error) return { ok: false, message: error.message }
 

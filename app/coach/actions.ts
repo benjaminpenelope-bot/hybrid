@@ -4,10 +4,11 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { loadState } from '@/lib/db/queries'
 import { TOOL_SCHEMAS, type ToolName } from '@/lib/coach/tools'
-import { todayISO, weekday } from '@/lib/engine/date'
+import { weekday } from '@/lib/engine/date'
 import { KIND_OF, rotatePostpone } from '@/lib/engine/program'
 import type { SessionLog } from '@/lib/engine/types'
 import { createClient } from '@/lib/supabase/server'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export interface CoachResult {
   ok: boolean
@@ -152,7 +153,7 @@ export async function applyProposal(name: string, input: unknown): Promise<Coach
         unit: data.key === 'swim_continuous' ? 'm' : 'reps',
         partial: data.partiel,
         note: 'Déclaré au coach',
-        tested_at: todayISO(),
+        tested_at: jourDeLAthlete(),
       })
       if (error) return { ok: false, message: error.message }
       return done()

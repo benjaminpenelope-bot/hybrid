@@ -3,11 +3,11 @@ import { CartePas } from '@/components/carte-pas'
 import { FONCTIONS } from '@/lib/ui/fonctions'
 import { loadState } from '@/lib/db/queries'
 import { weightTrend } from '@/lib/engine/body'
-import { todayISO } from '@/lib/engine/date'
 import { bilanDesPas } from '@/lib/engine/pas'
 import { currentUserId } from '@/lib/supabase/server'
 import { signedPhotoUrl } from './actions'
 import { BodyView } from './body-view'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Corps · Hybrid' }
@@ -19,7 +19,7 @@ export default async function Page() {
   const state = await loadState(userId)
   if (!state) redirect('/onboarding')
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
   const weights = [...state.weights].sort((a, b) => a.date.localeCompare(b.date))
   const { rate, weekly } = weightTrend(state, today)
 

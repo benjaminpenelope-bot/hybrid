@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { jourDeLAthlete } from '@/lib/db/jour'
 import { sessionToRow } from '@/lib/db/mappers'
-import { todayISO } from '@/lib/engine/date'
 import { reperesDepuisLignes } from '@/lib/engine/force'
 import { baseWeeklyKm, generatePlan } from '@/lib/engine/program'
 import type { BenchmarkKey } from '@/lib/engine/types'
@@ -75,7 +75,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
 
   const { profil, sports, objectifs, disponibilites, limitations, running, swimming, force } =
     parsed.data
-  const today = todayISO()
+  const today = jourDeLAthlete()
 
   /*
    * Le generateur actuel cale tout le microcycle sur un jour de repos unique.

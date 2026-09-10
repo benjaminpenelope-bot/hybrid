@@ -28,7 +28,7 @@ import { VerdictCard } from '@/components/verdict-card'
 import { computeAlerts } from '@/lib/engine/alerts'
 import { decide } from '@/lib/engine/decide'
 import { weightTrend } from '@/lib/engine/body'
-import { formatDate, todayISO } from '@/lib/engine/date'
+import { formatDate } from '@/lib/engine/date'
 import { disciplineSplit, weeklySeries } from '@/lib/engine/history'
 import { loadSeries } from '@/lib/engine/load'
 import { sum } from '@/lib/engine/math'
@@ -39,6 +39,7 @@ import { hasSupabaseEnv } from '@/lib/supabase/env'
 import { currentUserId } from '@/lib/supabase/server'
 import { SESSION_META } from '@/lib/ui/session-meta'
 import { ConfigurationRequise } from '@/app/configuration-requise'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,7 +65,7 @@ export default async function Page() {
   const state = await loadState(userId)
   if (!state || state.sessions.length === 0) redirect('/onboarding')
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
   const scores = computeScores(state, today)
   const recovery = computeRecovery(state, today)
   const alerts = computeAlerts(state, today)

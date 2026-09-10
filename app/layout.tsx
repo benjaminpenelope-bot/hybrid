@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
+import { JourLocal } from '@/components/jour-local'
 import { OfflineBar } from '@/components/offline-bar'
 import { NavOffset, TabBar } from '@/components/tab-bar'
 import './globals.css'
@@ -38,6 +39,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`${inter.variable}`}>
       <body className="font-sans">
+        {/* Le fuseau de l'athlete et le passage de minuit. Ne rend rien. */}
+        <JourLocal />
         <NavOffset>
           <OfflineBar />
           {children}

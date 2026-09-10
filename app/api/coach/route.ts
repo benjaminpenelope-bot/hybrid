@@ -8,8 +8,8 @@ import { contextBlock, COACH_SYSTEM } from '@/lib/coach/prompt'
 import { MAX_TOURS_ENVOYES } from '@/lib/coach/historique'
 import { enregistrerUsage, etatQuota, messageQuota, MODELES } from '@/lib/coach/quota'
 import { COACH_TOOLS, TOOL_LABELS, validateProposal, type ToolName } from '@/lib/coach/tools'
-import { todayISO } from '@/lib/engine/date'
 import { currentUserId } from '@/lib/supabase/server'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 /**
  * COACH — route serveur uniquement.
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
   const state = await loadState(userId)
   if (!state) return NextResponse.json({ error: 'Données introuvables.' }, { status: 404 })
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
   const history = parsed.data.messages
   const lastUser = [...history].reverse().find((m) => m.role === 'user')?.content ?? ''
 

@@ -3,11 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { loadState } from '@/lib/db/queries'
-import { todayISO } from '@/lib/engine/date'
 import { rotatePostpone } from '@/lib/engine/program'
 import { moveToDate, REFUS } from '@/lib/engine/reorder'
 import { createClient } from '@/lib/supabase/server'
 import { pastSessionSchema } from '@/lib/validation/session'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export interface ActionResult {
   ok: boolean
@@ -202,7 +202,7 @@ export async function addPastSession(input: unknown): Promise<ActionResult> {
   if (!user) return { ok: false, message: 'Session expirée.' }
 
   const s = parsed.data
-  if (s.date > todayISO()) {
+  if (s.date > jourDeLAthlete()) {
     return {
       ok: false,
       message: "Cette date est dans le futur. Une séance à venir se planifie, elle ne se déclare pas faite.",

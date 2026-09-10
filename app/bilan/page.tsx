@@ -9,7 +9,7 @@ import {
   whatMustProgress,
   whatProgresses,
 } from '@/lib/engine/advice'
-import { addDays, formatDate, formatPeriode, todayISO } from '@/lib/engine/date'
+import { addDays, formatDate, formatPeriode } from '@/lib/engine/date'
 import { computeRecovery } from '@/lib/engine/recovery'
 import { buildReview } from '@/lib/engine/review'
 import { historiqueDesBilans } from '@/lib/engine/historique'
@@ -17,6 +17,7 @@ import { projectionDeLAthlete } from '@/lib/engine/projection'
 import { planDe } from '@/lib/coach/quota'
 import { HistoriqueBilans } from '@/components/historique-bilans'
 import { currentUserId } from '@/lib/supabase/server'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Bilan · Hybrid' }
@@ -28,7 +29,7 @@ export default async function Page() {
   const state = await loadState(userId)
   if (!state || state.sessions.length === 0) redirect('/onboarding')
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
   const recovery = computeRecovery(state, today)
   const week = buildReview(state, today, 7)
   const month = buildReview(state, today, 30)

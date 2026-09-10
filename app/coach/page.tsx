@@ -2,11 +2,11 @@ import { redirect } from 'next/navigation'
 import { loadState } from '@/lib/db/queries'
 import { quickPrompts } from '@/lib/coach/context'
 import { openingMessage } from '@/lib/coach/local'
-import { todayISO } from '@/lib/engine/date'
 import { MAX_TOURS_ENVOYES } from '@/lib/coach/historique'
 import { etatQuota } from '@/lib/coach/quota'
 import { createClient, currentUserId } from '@/lib/supabase/server'
 import { CoachChat } from './chat'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Coach · Hybrid' }
@@ -18,7 +18,7 @@ export default async function Page() {
   const state = await loadState(userId)
   if (!state || state.sessions.length === 0) redirect('/onboarding')
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
   const supabase = createClient()
 
   /*

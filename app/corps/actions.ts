@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { todayISO } from '@/lib/engine/date'
 import { createClient } from '@/lib/supabase/server'
+import { jourDeLAthlete } from '@/lib/db/jour'
 
 export interface SaveResult {
   ok: boolean
@@ -16,7 +16,7 @@ const weightSchema = z.object({
 })
 
 export async function saveWeight(kg: number): Promise<SaveResult> {
-  const parsed = weightSchema.safeParse({ kg, date: todayISO() })
+  const parsed = weightSchema.safeParse({ kg, date: jourDeLAthlete() })
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message ?? 'Poids invalide.' }
   }
@@ -70,7 +70,7 @@ export async function saveMeasurement(input: MeasurementInput): Promise<SaveResu
   const { error } = await supabase
     .from('measurements')
     .upsert(
-      { user_id: user.id, date: todayISO(), ...parsed.data },
+      { user_id: user.id, date: jourDeLAthlete(), ...parsed.data },
       { onConflict: 'user_id,date' },
     )
   if (error) return { ok: false, message: error.message }
@@ -98,7 +98,7 @@ export async function uploadPhoto(formData: FormData): Promise<SaveResult> {
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, message: 'Session expirée.' }
 
-  const today = todayISO()
+  const today = jourDeLAthlete()
   const extension = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
   const path = `${user.id}/${today}-${crypto.randomUUID()}.${extension}`
 
