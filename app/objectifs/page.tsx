@@ -9,6 +9,7 @@ import {
   limitationsActives,
   objectifsActifs,
 } from '@/lib/engine/goals'
+import { manquesDuProgramme } from '@/lib/engine/couverture'
 import { Limitations } from './limitations'
 import { currentUserId } from '@/lib/supabase/server'
 import { jourDeLAthlete } from '@/lib/db/jour'
@@ -28,6 +29,7 @@ export default async function Page() {
   const declares = objectifsActifs(state)
   const actives = limitationsActives(state, today)
   const closes = state.limitations.filter((l) => !actives.some((a) => a.id === l.id))
+  const manques = manquesDuProgramme(state)
 
   return (
     <main className="wrap py-[18px]">
@@ -61,6 +63,36 @@ export default async function Page() {
           </Link>
           .
         </p>
+      )}
+
+      {/*
+        CE QUE LE PROGRAMME NE PEUT PAS FAIRE.
+        
+        Un objectif suppose des disciplines. Quand l'une manque, le
+        generateur substitue et le plan se construit quand meme : il tient
+        debout, mais il ne tient plus sa promesse. Une perte de poids sans
+        barre devient un plan de cardio, et rien ne le disait.
+        
+        L'avertissement vit ici, sur l'ecran ou l'on declare ses objectifs :
+        c'est le seul endroit ou le lire mene a une action.
+      */}
+      {manques.length > 0 && (
+        <div className="mb-6 flex flex-col gap-2">
+          {manques.map((m) => (
+            <div
+              key={m.quoi}
+              className="rounded-card border border-warn/40 bg-warn/10 p-3.5"
+            >
+              <p className="text-[13.5px] leading-relaxed text-text">
+                <b>Ton objectif demande {m.quoi}</b>, et tu ne l&rsquo;as pas déclarée.
+              </p>
+              <p className="mt-1.5 text-[12.5px] leading-relaxed text-mut">{m.consequence}</p>
+              <Link href="/onboarding" className="btn btn-ghost btn-sm mt-3">
+                Ajouter la discipline
+              </Link>
+            </div>
+          ))}
+        </div>
       )}
 
       <div className="colonnes">

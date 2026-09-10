@@ -3,15 +3,16 @@ import { acuteChronic, consecutiveDays } from './load'
 import { sum } from './math'
 import { raceFeasibility } from './program'
 import { vitesseMaximale } from './body'
+import { manquesDuProgramme, objectifPrincipal } from './couverture'
 import { BENCHMARK_LABELS, benchmarkValue, isPartial } from './state'
 import type { AthleteState, BenchmarkKey, ISODate } from './types'
 
 /**
  * SIGNAUX AUTOMATIQUES
  *
- * Dix règles, chacune adossée à une donnée réellement mesurée. Une règle dont
- * la donnée manque ne se déclenche pas : l'absence de signal ne vaut jamais
- * feu vert, elle est visible dans la couverture du score.
+ * Onze règles, chacune adossée à une donnée réellement mesurée. Une règle
+ * dont la donnée manque ne se déclenche pas : l'absence de signal ne vaut
+ * jamais feu vert.
  */
 
 export type AlertLevel = 'critical' | 'warn' | 'info'
@@ -27,6 +28,7 @@ export type AlertId =
   | 'swim_stagnation'
   | 'benchmarks_missing'
   | 'race_feasibility'
+  | 'discipline_manquante'
 
 export type AlertTarget = 'recovery' | 'body' | 'perf' | 'week' | 'coach' | 'goals'
 
@@ -50,6 +52,7 @@ const ID_RANK: AlertId[] = [
   'run_jump',
   'race_feasibility',
   'weight_rate',
+  'discipline_manquante',
   'swim_stagnation',
   'benchmarks_missing',
 ]
@@ -290,7 +293,31 @@ export function computeAlerts(state: AthleteState, today: ISODate): Alert[] {
     })
   }
 
-  /* 10 — Faisabilite du calendrier de course. */
+  /*
+   * 10 — Une discipline que l'objectif reclame et que l'athlete n'a pas
+   * declaree.
+   *
+   * Le generateur substitue et le programme se construit quand meme : il
+   * tient debout, mais il ne tient plus sa promesse. Une perte de poids sans
+   * barre devient un plan de cardio, et rien ne le disait — c'est arrive sur
+   * un compte reel, trente-deux courses et pas une seance de force.
+   *
+   * Le signal ne reproche rien et ne bloque rien : il dit ce que le plan ne
+   * peut pas faire, et ou le corriger.
+   */
+  for (const manque of manquesDuProgramme(state)) {
+    const objectif = objectifPrincipal(state)
+    out.push({
+      id: 'discipline_manquante',
+      level: 'warn',
+      title: `Ton objectif demande ${manque.quoi}`,
+      body: `${manque.consequence} Ajoute la discipline dans ton questionnaire et le programme se réécrit avec elle.`,
+      evidence: `${objectif ?? 'Objectif'} visé, ${manque.quoi} non déclarée`,
+      target: 'goals',
+    })
+  }
+
+  /* 11 — Faisabilite du calendrier de course. */
   const race = state.profile.raceDate
   if (race) {
     const f = raceFeasibility(today, race)
