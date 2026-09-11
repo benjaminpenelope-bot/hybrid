@@ -4,7 +4,8 @@ import { teinte } from '@/lib/ui/session-meta'
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { NumPad, Scale } from '@/components/ui/numpad'
+import { ChoixNombre, DureeMinSec, NumPad, Scale } from '@/components/ui/numpad'
+import { pace } from '@/lib/engine/math'
 import { zoneLabel, type ExerciseRef } from '@/lib/ui/exercises'
 import { addPastSession } from './actions'
 
@@ -54,9 +55,21 @@ export function AjoutSeance({
   const [minutes, setMinutes] = useState(45)
   const [km, setKm] = useState(0)
   const [metres, setMetres] = useState(0)
+  const [hr, setHr] = useState(0)
+  const [elev, setElev] = useState(0)
+  /** Les deux mesures de montre restent repliées : la plupart n'en ont pas. */
+  const [detail, setDetail] = useState(false)
   const [lignes, setLignes] = useState<LigneExercice[]>([])
   const [rpe, setRpe] = useState<number | null>(null)
   const [note, setNote] = useState('')
+
+  /*
+   * L'allure, calculee en direct. C'est elle qui dit si les deux chiffres
+   * saisis sont les bons : une erreur de distance ou de duree se voit
+   * immediatement sur une allure absurde, jamais sur les nombres eux-memes.
+   */
+  const allure = km > 0 && minutes > 0 ? `${pace(minutes / km, 1)}/km` : '—'
+  const allure100 = metres > 0 && minutes > 0 ? `${pace((minutes / metres) * 100, 1)}/100 m` : '—'
 
   const discipline = DISCIPLINES.find((d) => d.kind === kind)!
   const parKey = new Map(exercices.map((e) => [e.key, e]))
@@ -91,6 +104,9 @@ export function AjoutSeance({
         minutes,
         // Zéro veut dire « pas saisi » : on l'envoie comme absence, pas comme mesure.
         distance: kind === 'run' ? (km > 0 ? km : null) : kind === 'swim' ? (metres > 0 ? metres : null) : null,
+        // Zero veut dire « pas mesure » : ni un coeur a l'arret, ni du plat.
+        hr: hr > 0 ? Math.round(hr) : null,
+        elev: kind === 'run' && elev > 0 ? Math.round(elev) : null,
         exercises:
           kind === 'strength'
             ? lignes.map((l) => ({
@@ -130,17 +146,21 @@ export function AjoutSeance({
             </button>
           </div>
 
-          <div className="mb-3 flex gap-2">
+          {/* Une rangee de pastilles, comme partout ailleurs : les cadres
+              colores faisaient trois boutons de formulaire la ou il faut un
+              choix immediat. */}
+          <div className="mb-3.5 flex gap-1.5">
             {DISCIPLINES.map((d) => (
               <button
                 key={d.kind}
                 type="button"
+                aria-pressed={kind === d.kind}
                 onClick={() => setKind(d.kind)}
-                className="flex-1 rounded-[11px] border px-2 py-2.5 font-display text-[12px] font-semibold uppercase tracking-[0.08em] transition-colors"
+                className="min-h-[40px] flex-1 select-none rounded-full text-[13px] font-semibold tracking-[-0.01em] transition-[background-color,color,box-shadow] duration-200 active:scale-[0.97]"
                 style={{
-                  borderColor: kind === d.kind ? d.color : 'var(--line2)',
                   color: kind === d.kind ? d.color : 'var(--mut)',
-                  background: kind === d.kind ? teinte(d.canal, 0.1) : 'transparent',
+                  background: kind === d.kind ? teinte(d.canal, 0.16) : 'rgb(255 255 255 / 0.04)',
+                  boxShadow: kind === d.kind ? 'inset 0 1px 0 rgb(255 255 255 / 0.14)' : 'none',
                 }}
               >
                 {d.label}
@@ -148,36 +168,109 @@ export function AjoutSeance({
             ))}
           </div>
 
-          <label className="mb-3 block">
-            <span className="eyebrow">Date</span>
-            <input
-              type="date"
-              value={date}
-              max={maxDate}
-              onChange={(e) => setDate(e.target.value)}
-              className="mt-1.5 field"
-            />
-          </label>
+          {/* La date et le titre sur une rangee : deux champs courts qui
+              occupaient deux blocs entiers. */}
+          <div className="mb-3.5 flex gap-2">
+            <label className="block w-[9.5rem] shrink-0">
+              <span className="eyebrow mb-1.5 block">Date</span>
+              <input
+                type="date"
+                value={date}
+                max={maxDate}
+                onChange={(e) => setDate(e.target.value)}
+                className="field !mb-0"
+              />
+            </label>
+            <label className="block min-w-0 flex-1">
+              <span className="eyebrow mb-1.5 block">Titre</span>
+              <input
+                type="text"
+                value={titre}
+                placeholder={discipline.titre}
+                maxLength={120}
+                onChange={(e) => setTitre(e.target.value)}
+                className="field !mb-0 placeholder:text-dim focus:border-mut"
+              />
+            </label>
+          </div>
 
-          <label className="mb-3 block">
-            <span className="eyebrow">Titre</span>
-            <input
-              type="text"
-              value={titre}
-              placeholder={discipline.titre}
-              maxLength={120}
-              onChange={(e) => setTitre(e.target.value)}
-              className="mt-1.5 field placeholder:text-dim focus:border-mut"
-            />
-          </label>
+          {/*
+            LES CHIFFRES, ET CE QU'ILS DONNENT.
+            
+            La duree se saisissait en minutes entieres, par pas de cinq : une
+            sortie de 28'43" y devenait 28 ou 30, et l'allure passait de 5:24
+            a 5:16 ou 4:59 au kilometre. Sur une seance qu'on rattrape de
+            memoire on accepte l'approximation ; sur une seance qu'on recopie
+            d'une montre, la perdre est absurde.
+            
+            L'allure s'affiche en direct sous les deux champs. C'est elle qui
+            dit si les chiffres saisis sont les bons : une erreur de distance
+            ou de duree se voit immediatement sur une allure absurde, jamais
+            sur les nombres eux-memes.
+          */}
+          <div className="mb-3.5 rounded-card border border-line2 bg-bg2 p-3.5">
+            <DureeMinSec label="Durée" value={minutes} onChange={setMinutes} />
 
-          <NumPad label="Durée" value={minutes} onChange={setMinutes} unit="min" step={5} />
+            {kind === 'run' && (
+              <NumPad label="Distance" value={km} onChange={setKm} unit="km" step={0.1} />
+            )}
+            {kind === 'swim' && (
+              <ChoixNombre
+                label="Distance totale"
+                value={metres}
+                onChange={setMetres}
+                options={[500, 1000, 1500]}
+                unit="m"
+                step={25}
+              />
+            )}
 
-          {kind === 'run' && (
-            <NumPad label="Distance" value={km} onChange={setKm} unit="km" step={0.5} />
-          )}
-          {kind === 'swim' && (
-            <NumPad label="Distance totale" value={metres} onChange={setMetres} unit="m" step={50} />
+            {kind !== 'strength' && (
+              <div
+                className="flex items-center justify-between rounded-[11px] px-3 py-2.5"
+                style={{ background: teinte(discipline.canal, 0.08) }}
+              >
+                <span className="eyebrow">Allure</span>
+                <span className="num text-[19px]" style={{ color: discipline.color }}>
+                  {kind === 'run' ? allure : allure100}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/*
+            Les deux mesures que donne une montre. Repliees : la plupart des
+            seances qu'on rattrape n'en ont pas, et deux champs vides de plus
+            donnent a croire qu'on attend quelque chose.
+          */}
+          {detail ? (
+            <div className="mb-3.5 rounded-card border border-line2 bg-bg2 p-3.5">
+              <NumPad
+                label="FC moyenne"
+                value={hr}
+                onChange={setHr}
+                unit="bpm"
+                step={1}
+                hint="Laisse à 0 sans cardio : la donnée restera non mesurée plutôt que fausse."
+              />
+              {kind === 'run' && (
+                <NumPad
+                  label="Dénivelé positif"
+                  value={elev}
+                  onChange={setElev}
+                  unit="m"
+                  step={5}
+                />
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setDetail(true)}
+              className="mb-3.5 w-full rounded-[11px] border border-line px-3 py-2.5 text-[12.5px] text-mut active:bg-[rgb(255_255_255/0.05)]"
+            >
+              {kind === 'run' ? 'Ajouter la FC moyenne et le dénivelé' : 'Ajouter la FC moyenne'}
+            </button>
           )}
           {kind === 'strength' && (
             <div className="mt-3">

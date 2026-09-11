@@ -81,9 +81,22 @@ export const pastSessionSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date invalide.'),
   kind: z.enum(['run', 'swim', 'strength']),
   title: z.string().trim().min(1).max(120),
+  /**
+   * Minutes, décimales comprises : une sortie se chronomètre. En minutes
+   * entières, 28'43" devenait 28, et l'allure passait de 5:24 à 5:16 au
+   * kilomètre sans que rien ne le signale.
+   */
   minutes: z.number().min(1).max(600),
   /** Kilomètres pour la course, mètres pour la natation. */
   distance: z.number().min(0).max(200_000).nullable(),
+  /**
+   * Deux mesures que la montre donne et que le moteur lit déjà : la FC
+   * moyenne alimente l'efficacité cardiaque, le dénivelé le résumé de
+   * séance. Nulles quand la montre ne les a pas — jamais zéro, qui se
+   * lirait comme du plat et comme un cœur à l'arrêt.
+   */
+  hr: z.number().int().min(25).max(240).nullable(),
+  elev: z.number().int().min(0).max(20_000).nullable(),
   /**
    * Force : un mouvement par ligne. Un total sans exercice ne se rattache à
    * rien — ni à un groupe musculaire, ni à une progression.

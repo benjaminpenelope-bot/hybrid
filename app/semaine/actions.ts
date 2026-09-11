@@ -211,10 +211,18 @@ export async function addPastSession(input: unknown): Promise<ActionResult> {
 
   const log =
     s.kind === 'run'
-      ? { km: s.distance, minutes: s.minutes, hr: null, elev: null }
+      ? { km: s.distance, minutes: s.minutes, hr: s.hr, elev: s.elev }
       : s.kind === 'swim'
         ? // Le repère « en continu » ne se saisit qu'au moment d'un test.
-          { minutes: s.minutes, distance: s.distance, continuous: null, pauses: null, stroke: null, crawl: null }
+          {
+            minutes: s.minutes,
+            distance: s.distance,
+            continuous: null,
+            pauses: null,
+            stroke: null,
+            crawl: null,
+            hr: s.hr,
+          }
         : {
             minutes: s.minutes,
             // Totaux pour la charge et les graphiques, détail pour savoir ce
@@ -222,6 +230,7 @@ export async function addPastSession(input: unknown): Promise<ActionResult> {
             reps: s.exercises.reduce((a, e) => a + (e.unit === 'reps' ? e.sets * e.reps : 0), 0),
             sets: s.exercises.reduce((a, e) => a + e.sets, 0),
             exercises: s.exercises,
+            hr: s.hr,
           }
 
   const { error } = await supabase.from('sessions').insert({
